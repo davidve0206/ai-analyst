@@ -17,5 +17,5 @@ class Settings(BaseSettings):
     model_config = ConfigDict(extra="ignore")
 
 
-CONFIG_FILE_PATH = BASE_DIR / "src" / "configuration" / "config.env"
+CONFIG_FILE_PATH = BASE_DIR / ".env"
 app_settings = Settings(_env_file=CONFIG_FILE_PATH)
