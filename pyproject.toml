@@ -8,6 +8,7 @@ dependencies = [
     "pydantic[email]>=2.11.6",
     "pydantic-settings>=2.9.1",
     "python-crontab>=3.2.0",
+    "gradio>=5.34.0",
 ]
 
 [dependency-groups]

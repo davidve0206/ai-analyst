@@ -32,5 +32,5 @@ ENV PATH="/app/.venv/bin:$PATH"
 # Reset the entrypoint, don't invoke `uv`
 ENTRYPOINT []
 
-# Run the application by default
-CMD ["bash", "-c", "service cron start && tail -f /dev/null"]
+# Run the application in dev mode by default
+CMD ["gradio", "frontend_main.py"]

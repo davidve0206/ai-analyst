@@ -4,9 +4,12 @@ services:
         context: .
         dockerfile: Dockerfile
     ports:
-        - "8000:8000"
+        - "${GRADIO_SERVER_PORT:-7860}:${GRADIO_SERVER_PORT:-7860}"
     networks:
         - my_network
+    environment:
+        GRADIO_SERVER_NAME: ${GRADIO_SERVER_NAME:-0.0.0.0}
+        GRADIO_SERVER_PORT: ${GRADIO_SERVER_PORT:-7860}
     develop:
         # Create a `watch` configuration to update the app
         watch:
