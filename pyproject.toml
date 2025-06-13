@@ -9,3 +9,8 @@ dependencies = [
     "pydantic-settings>=2.9.1",
     "python-crontab>=3.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+]
