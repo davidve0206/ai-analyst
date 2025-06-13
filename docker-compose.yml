@@ -1,0 +1,34 @@
+services:
+  system:
+    build:
+        context: .
+        dockerfile: Dockerfile
+    ports:
+        - "8000:8000"
+    networks:
+        - my_network
+    develop:
+        # Create a `watch` configuration to update the app
+        watch:
+            # Sync the working directory with the `/app` directory in the container
+            - action: "sync"
+              path: .
+              target: /app
+              ignore:
+                  - .venv/
+
+            # Rebuild the image if dependencies change by checking uv.lock
+            - action: "rebuild"
+              path: uv.lock
+    
+    # Mailpit (for email testing)
+  mailpit:
+    image: 'axllent/mailpit:latest'
+    ports:
+      - '${FORWARD_MAILPIT_PORT:-1025}:1025'
+      - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
+    networks:
+      - my_network
+
+networks:
+    my_network:
