@@ -71,14 +71,20 @@ class CrontabFrequency(BaseModel):
         return self
 
 
-def set_crontab():
+def set_crontab(config: CrontabFrequency, write: bool = True) -> CronTab:
     """
     Set the crontab for the application.
 
-    TODO: Implement variable to set the frequency of the cron job.
+    Args:
+        config (CrontabFrequency): The configuration for the cron job.
+        write (bool): Whether to write the changes to the crontab file. Defaults to True.
+    Returns:
+        CronTab: The CronTab object representing the cron job.
+    Raises:
+        ValueError: If the frequency type is unsupported or if the configuration is invalid.
     """
 
-    cron = CronTab(user="root")
+    cron = CronTab()
     for job in cron:
         if "agent" in job.command:
             cron.remove(job)
@@ -86,8 +92,23 @@ def set_crontab():
     python_path = Path(sys.executable)
     agent_main_path = BASE_DIR / "agent_main.py"
 
-    command = f"{python_path} {agent_main_path} >> /var/log/agent.log 2>&1"
+    # Command in the form "python /path/to/agent_main.py"
+    command = f"{python_path} {agent_main_path}"
     job = cron.new(command=command, comment="AI Agent Cron Job")
-    job.minute.every(1)  # Set the job to run every minute
 
-    cron.write()
+    if config.frequency == CronFrequency.DAY:
+        job.setall(
+            f"0 {config.hour} * * {','.join(str(day) for day in config.days_of_week)}"
+        )
+    elif config.frequency == CronFrequency.MONTH:
+        job.setall(
+            f"0 {config.hour} {','.join(str(day) for day in config.days_of_month)} {','.join(str(month) for month in config.months)} *"
+        )
+    else:
+        raise ValueError("Unsupported frequency type")
+
+    # This allows us to test the cron job without writing to the crontab file.
+    if write:
+        cron.write()
+
+    return job
