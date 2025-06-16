@@ -1,6 +1,6 @@
 import gradio as gr
 from src.configuration.crontab import (
-    CronFrequency,
+    JobFrequency,
     CrontabFrequency,
     Month,
     Weekday,
@@ -14,18 +14,18 @@ day_of_month_choices = list(range(1, 31))
 hour_choices = list(range(0, 24))
 
 
-def setup_crontab(frequency: CronFrequency) -> str:
+def setup_crontab(frequency: JobFrequency) -> str:
     """
     Sets up the crontab with the specified frequency.
 
     Args:
-        frequency (CronFrequency): The frequency at which the cron job should run.
+        frequency (JobFrequency): The frequency at which the cron job should run.
     """
 
-    if frequency == CronFrequency.DAY.value:
+    if frequency == JobFrequency.DAY.value:
         # Set up daily cron job
         return "Setting up daily cron job..."
-    elif frequency == CronFrequency.MONTH.value:
+    elif frequency == JobFrequency.MONTH.value:
         # Set up monthly cron job
         return "Setting up monthly cron job..."
     else:
@@ -47,7 +47,7 @@ def setup_daily_crontab(
         bool: True if the setup was successful, False otherwise.
     """
     config = CrontabFrequency(
-        hour=hour, days_of_week=days_of_week, frequency=CronFrequency.DAY
+        hour=hour, days_of_week=days_of_week, frequency=JobFrequency.DAY
     )
 
     set_crontab(config, write)
@@ -73,7 +73,7 @@ def setup_monthly_crontab(
         hour=hour,
         days_of_month=days_of_month,
         months=months,
-        frequency=CronFrequency.MONTH,
+        frequency=JobFrequency.MONTH,
     )
 
     set_crontab(config, write)
@@ -92,13 +92,13 @@ def crontab_setup_ui():
         gr.Markdown("Set up your how frequently the AI Analyst runs.")
 
         cron_frequency = gr.Radio(
-            choices=[CronFrequency.DAY.value, CronFrequency.MONTH.value],
+            choices=[JobFrequency.DAY.value, JobFrequency.MONTH.value],
             label="Cron Frequency",
         )
 
         @gr.render(inputs=cron_frequency)
         def setup_crontab(frequency: str):
-            if frequency == CronFrequency.DAY.value:
+            if frequency == JobFrequency.DAY.value:
                 # Set up daily cron job
                 days_dropdown = gr.Dropdown(
                     choices=weekday_choices,
@@ -119,7 +119,7 @@ def crontab_setup_ui():
                     outputs=output_text,
                 )
 
-            elif frequency == CronFrequency.MONTH.value:
+            elif frequency == JobFrequency.MONTH.value:
                 month_dropdown = gr.Dropdown(
                     choices=month_choices,
                     multiselect=True,
