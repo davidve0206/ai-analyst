@@ -30,7 +30,7 @@ The following is the report structure I have pictured so far. I personally prefe
 
 ## High Level Architecture
 
-The following is the high level architecture I have imagined so far.
+The following is the high level architecture I have imagined so far, including the stack decisions I have already made.
 
 ```mermaid
 flowchart TD
@@ -39,31 +39,28 @@ flowchart TD
 
   %% System boundary: Single VM or Container
   subgraph system["Single VM or Container"]
-    frontend["<b>Configuration Frontend</b><br/>(FastAPI/Streamlit/Gradio)"]
+    frontend["<b>Configuration Frontend</b><br/>(Gradio)"]
     
     %% Agentic System boundary
     subgraph agent_system ["Agentic System"]
       config["<b>Config File(s)</b><br/>(File System, CronTab.py)"]
-      analyst["<b>Head Analyst Agent</b><br/>(Framework TBD)<br/>Coordinates group of research agents"]
+      analyst["<b>Head Analyst Agent</b><br/>(Semantic Kernel/AutoGen)<br/>Coordinates group of research agents"]
       email["<b>Email Dispatch</b><br/>(Python - SMTP)"]
       editor["<b>Editor Agent</b><br/>Writes the final report"]
       researcher["<b>Research Agent</b><br/>Receives research question<br/>Can call instances of itself"]
-      code_int["<b>Code Interpreter Agent</b><br/>Generates graphs and estimates"]
-      pbi_agent["<b>Power BI Agent</b><br/>Retrieves info from Power BI"]
-      sql_agent["<b>SQL Query Agent</b><br/>Retrieves info from Databases"]
+      internal_agent["<b>Internal Data Agent</b><br/>Access Semantic Schema or Database behind it"]
       yf_agent["<b>YahooFinance Agent</b><br/>Retrieves public financial info"]
       report_reader["<b>Financial Report Reader</b><br/>Reads specific reports"]
       internet_researcher["<b>Internet Researcher</b><br/>Researches authorized news websites"]
+      code_int["<b>Code Interpreter Agent</b><br/>Generates graphs and estimates"]
 
       %% External Systems
-      pbi["Power BI Schema"]
-      db["SQL Database"]
+      pbi@{shape: database, label: "PowerBI Semantic Schema or SQL Database"}
       yf_mpc["Yahoo Finance MPC"]
-      reports["Financial Reports<br/>(RAG/File System)"]
+      reports@{shape: documents, label: "Financial Reports<br/>(RAG/File System)"}
 
       %% Data relationships
-      pbi_agent -->|Reads| pbi
-      sql_agent -->|Queries| db
+      internal_agent -->|Queries| pbi
       yf_agent -->|Retrieves| yf_mpc
       report_reader -->|Reads| reports
 
@@ -73,8 +70,8 @@ flowchart TD
       analyst <--> researcher
       analyst --> email
       researcher <--> code_int
-      researcher <--> pbi_agent
-      researcher <--> sql_agent
+      researcher <--> internal_agent
+    
       researcher <--> yf_agent
       researcher <--> report_reader
       researcher <--> internet_researcher
@@ -90,21 +87,24 @@ flowchart TD
 
 I propose an incremental plan for developing this system, so we can ensure we get to a working MVP first, even if it does not include all the potential functionalities, and add on to it as time allows after.
 
-You will notice I am proposing to start with retrieving data only from a PowerBI file, I propose this for two reasons: it looks like the toughest problem in terms of agent access and it seems like the most important to A&M, so for both reasons I would prefer to handle it early.
+I have identified the [WideWorldImporters](https://github.com/Microsoft/sql-server-samples/blob/master/samples/databases/wide-world-importers/README.md) database as the source of dummy data for the MVP. It is a database created by Microsoft for their own educational content, and seems to have a default semantic schema to test the PowerBI agent if we do go that route. Please read the last section for my notes on PowerBI access.
 
-1. Define core stack:
-    - Inference provider
-    - Agent framework(s)
-    - Structure of data provision (e.g., how are we going to retrieve the PowerBI)
-    - Agent inputs (e.g., is the list of KPIs in prompt or set as configuration)
-2. Create a basic agent system that can achieve the following process:
-   1. Take information from a PowerBI
-   2. Create a simplified report (Executive Summary, Overview and Recommendations)
-   3. Self-review the report and ensure it has the required information
-   4. Email to a set address
-3. Create configuration frontend:
+1. Define core stack *(Mostly done)*:
+    - Inference provider - *GitHub Models Marketplace (Can be easily changed to any other provider if API Keys provided)*
+    - Agent framework - *Microsoft's Semantic Kernel and/or AutoGen*
+    - Structure of data provision - *Semantic Model, Azure DB or SQL Server depending on API keys*
+    - Agent inputs - *KPIs configured by the user*
+    - Sample data - *WideWorldImporters Sample Dataset*
+2. Create basic configuration frontend *(Done)*:
+   - Decide the stack - *I am using Gradio, a python library that renders a simple frontend*
    - Set up the system to run autonomously
-   - Update configuration values set so far (e.g., the list of KPIs or the URL to the PowerBI)
+   - Update the timing of autonomous runs
+3. Create a basic agent system that can achieve the following process:
+   1. Take information from a PowerBI or Database, depending on API Keys
+   2. Take a list of KPIs provided provided in configuration
+   3. Create a simplified report (Executive Summary, Overview and Recommendations)
+   4. Self-review the report and ensure it has the required information
+   5. Email to a set address
 4. Add basic forecasting (CAGR or similar) to the report
 5. Add “special case” detection
     1. Identify special cases (changes in trend, outliers, or negative trends)
@@ -112,11 +112,11 @@ You will notice I am proposing to start with retrieving data only from a PowerBI
     3. Implement research plan
     4. Add sections to the report
 6. **Up to here we will have the MVP; then we can continue adding additional sources of information, which I would suggest we add in the following order:**
-     1. Add database retrieval
-     2. Add document retrieval (define if using RAG or another agent)
-     3. Add access to Yahoo Finance
-     4. Add internet access to the internet in general (defining a list of approved sites)
-     5. Potentially: Add more advanced forecasting
+    1. Add document retrieval (define if using RAG or another agent)
+    2. Add access to Yahoo Finance
+    3. Add internet access to the internet in general, defining a list of approved sites
+    4. Potentially: Add flexibility of Database type
+    5. Potentially: Add more advanced forecasting
 
 ### Agent Development Process
 
@@ -135,11 +135,11 @@ This would make the development process a bit slower and maybe require a bit mor
 ## Questions / Asks for A&M Team
 
 - Report Structure:
-  - Are we writing a single report for a set of KPIs, or a report per KPI?
-  - Are the KPIs a given (and thus can they be included in the prompt) or should they be configured by the user?
+  - Are we writing a single report for a set of KPIs, or a report per KPI? - *I will work under the assumption of a single report unless advised differently*
+  - Are the KPIs a given (and thus can they be included in the prompt) or should they be configured by the user? - *I will work under the assumption that the user needs to be able to set this up from the configuration frontend*
 - Technology Stack:
-  - KEY ASK: Do you have preferred inference provider (e.g., OpenAI or Azure)? If so, I do need access to models.
-    - I am asking about the inference provider because that will define the list of models available (e.g., if its OpenAI I can only use their models). If you don't, we might want to look at Azure as I've seen Microsoft Fabric has a PowerBI agent which be helpful.
+  - Do you have preferred inference provider (e.g., OpenAI or Azure)? - *I will work with GitHub Model Marketplace as it provides free access to a few models*
+    - KEY NOTE: I believe the best alternative if we want to access a PowerBI Semantic Model is to use Azure's Data Agent.
   - Do you have a preferred Agent Framework to use in this project (e.g., LangGraph or OpenAI's SDK)?
   - Low priority for now but can help define which stack to use for the frontend:
     - Are there any specific needs for authentication (e.g., a specific OIDC provider)?
@@ -154,3 +154,16 @@ This would make the development process a bit slower and maybe require a bit mor
     - If it's a different Database, do you have a set schema? And a Database type (Postgres, MySQL, etc.)
 - Financial Reports
   - How would the financial reports be provided (e.g., URL, as files to be uploaded to the agent, etc.)
+
+## PowerBI Notes
+
+From my research, I find that if we want an agent that can access a PowerBI Semantic Model, we would need two things during development:
+
+1. Access to a way to share the Semantic Model.
+   - There seems to be two or three options but all require a subscription (such as Microsoft Fabric or Azure Active Directory).
+2. A way to consume the Semantic Model; the options seem to be:
+   - Use a Microsoft Fabric Data Agent: probably the best option in terms of quality; works with a Semantic Schema that can be accessed in Fabric.
+   - Use a community module for LangChain: seems to be experimental and not maintained, so likely not a good option; works with a PowerBI Rest (Azure Active Directory).
+   - Create our own connection: interesting to do, but we don't know how long it will take or how successful it would be; we can decide how to provide the Semantic Schema.
+
+With this in mind, I would prefer to use a Fabric Data Agent to extract information from the PowerBI and provide it to our own AI Analyst as a tool; that said, I am open to any approach, but for all of them I would need your support to get access to a Microsoft account with the appropriate permissions; otherwise, I will have to work with the agent directly querying the Database that feeds the Schema, but we then loose the power of the Semantic Schema; this right now is the biggest blocker to start working on the MVP.
