@@ -16,9 +16,16 @@ class Settings(BaseSettings):
     email_recipient: EmailStr = "test@test.com"
 
     # Azure identity settings
-    azure_tenant_id: str
-    azure_client_id: str
-    azure_client_secret: str
+    # Allows None in case the user wants to log in with a different method
+    # such as azure cli. NOTE: the app will fail if the user never authenticates.
+    azure_tenant_id: str | None = None
+    azure_client_id: str | None = None
+    azure_client_secret: str | None = None
+
+    # Database settings
+    azure_db_server: str
+    azure_db_database: str
+    azure_db_connection_timeout: int = 30
 
     model_config = ConfigDict(extra="ignore")
 

@@ -6,4 +6,8 @@ There is two types of configuration; on one side, a `.env` file, for configurati
 
 ### Authentication
 
-We will use Azure's own [identity management](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python#authenticate-with-defaultazurecredential&preserve-view=true) for authenticating.
+We will use Azure's own [identity management](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python#authenticate-with-defaultazurecredential&preserve-view=true) for authenticating. It's the user's decision to use environment variables, cli, or any of the methods Azure provides.
+
+## Running Locally
+
+For now, the project only has configuration for using Azure SQL Database; make sure your local configuration has the required ODBC Driver.
