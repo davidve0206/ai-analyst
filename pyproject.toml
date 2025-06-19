@@ -9,6 +9,7 @@ dependencies = [
     "pydantic-settings>=2.9.1",
     "python-crontab>=3.2.0",
     "gradio>=5.34.0",
+    "azure-identity>=1.23.0",
 ]
 
 [dependency-groups]
