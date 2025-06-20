@@ -8,6 +8,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "aioodbc" },
+    { name = "autogen-agentchat" },
     { name = "autogen-core" },
     { name = "azure-identity" },
     { name = "gradio" },
@@ -26,6 +27,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "aioodbc", specifier = ">=0.5.0" },
+    { name = "autogen-agentchat", specifier = ">=0.6.1" },
     { name = "autogen-core", specifier = ">=0.6.1" },
     { name = "azure-identity", specifier = ">=1.23.0" },
     { name = "gradio", specifier = ">=5.34.0" },
@@ -120,6 +122,18 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/65/6d/42d40da100be1afb661fd77c2b1c0dfab08af1540df57533621aea3db52a/audioop_lts-0.2.1-cp313-cp313t-win32.whl", hash = "sha256:f51bb55122a89f7a0817d7ac2319744b4640b5b446c4c3efcea5764ea99ae509", size = 26482, upload-time = "2024-08-04T21:14:40.269Z" },
     { url = "https://files.pythonhosted.org/packages/01/09/f08494dca79f65212f5b273aecc5a2f96691bf3307cac29acfcf84300c01/audioop_lts-0.2.1-cp313-cp313t-win_amd64.whl", hash = "sha256:f0f2f336aa2aee2bce0b0dcc32bbba9178995454c7b979cf6ce086a8801e14c7", size = 30780, upload-time = "2024-08-04T21:14:41.128Z" },
     { url = "https://files.pythonhosted.org/packages/5d/35/be73b6015511aa0173ec595fc579133b797ad532996f2998fd6b8d1bbe6b/audioop_lts-0.2.1-cp313-cp313t-win_arm64.whl", hash = "sha256:78bfb3703388c780edf900be66e07de5a3d4105ca8e8720c5c4d67927e0b15d0", size = 23918, upload-time = "2024-08-04T21:14:42.803Z" },
+]
+
+[[package]]
+name = "autogen-agentchat"
+version = "0.6.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "autogen-core" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ea/54/5288df190a2cbf04f0541b4e55d15af569fc5b1005d077b4402a6d06b140/autogen_agentchat-0.6.1.tar.gz", hash = "sha256:476946401b564006054af39849c64f04900df3401da10cb135387b9f5fc12c20", size = 117621, upload-time = "2025-06-05T05:56:20.604Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d2/2a/a41fc4eb1fefafa538dd841dca097efddeefcedc327299d067891d4fd6fa/autogen_agentchat-0.6.1-py3-none-any.whl", hash = "sha256:9d92d345b9d77f3a0371e0b36668bc8288537e5b96998930ac9ff745092d7b4d", size = 108186, upload-time = "2025-06-05T05:56:17.94Z" },
 ]
 
 [[package]]

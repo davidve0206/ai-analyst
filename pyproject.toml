@@ -14,6 +14,7 @@ dependencies = [
     "aioodbc>=0.5.0",
     "jinja2>=3.1.6",
     "autogen-core>=0.6.1",
+    "autogen-agentchat>=0.6.1",
 ]
 
 [dependency-groups]
