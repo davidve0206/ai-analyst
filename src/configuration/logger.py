@@ -1,5 +1,8 @@
 import logging
 from logging.handlers import RotatingFileHandler
+
+from autogen_core import TRACE_LOGGER_NAME
+
 from src.configuration.settings import BASE_DIR
 
 # Log file path
@@ -18,3 +21,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
+
+
+trace_logger = logging.getLogger(TRACE_LOGGER_NAME)
+trace_logger.addHandler(logging.StreamHandler())
+trace_logger.setLevel(logging.DEBUG)

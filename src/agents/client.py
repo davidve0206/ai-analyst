@@ -7,10 +7,9 @@ from src.configuration.settings import app_settings
 class GeminiModels(Enum):
     GEMINI_1_5_PRO = "gemini-1.5-pro"
     GEMINI_1_5_FLASH = "gemini-1.5-flash"
-    GEMINI_2_0_PRO = "gemini-2.0-pro"
     GEMINI_2_0_FLASH = "gemini-2.0-flash"
-    GEMINI_2_5_PRO = "gemini-2.5-pro"
-    GEMINI_2_5_FLASH = "gemini-2.5-flash"
+    #GEMINI_2_5_PRO = "gemini-2.5-pro" Currently not supported by autogen_ext
+    #GEMINI_2_5_FLASH = "gemini-2.5-flash" Currently not supported by autogen_ext
 
 
 def get_gemini_client(model: GeminiModels):

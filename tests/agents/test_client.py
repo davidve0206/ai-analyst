@@ -1,7 +1,7 @@
 import pytest
 from autogen_core.models import UserMessage
 
-from src.agents.common.client import get_gemini_client, GeminiModels
+from src.agents.client import get_gemini_client, GeminiModels
 from src.configuration.settings import app_settings
 
 

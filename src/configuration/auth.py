@@ -14,7 +14,7 @@ if app_settings.azure_client_id is not None:
 if app_settings.azure_tenant_id is not None:
     os.environ["AZURE_TENANT_ID"] = app_settings.azure_tenant_id
 if app_settings.azure_client_secret is not None:
-    os.environ["AZURE_CLIENT_SECRET"] = app_settings.azure_client_secret
+    os.environ["AZURE_CLIENT_SECRET"] = app_settings.azure_client_secret.get_secret_value()
 
 azure_credential = DefaultAzureCredential()
 
