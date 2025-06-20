@@ -1,7 +1,5 @@
 """
-Constants for the Wide World Importers database project, which is used in evaluations.
-
-In production, the configuration frontend should be used to set these values.
+Constants for the Wide World Importers database project, which is used in development.
 """
 
 COMPANY_DESCRIPTION = """
@@ -183,44 +181,5 @@ Procedures used by web front-end applications.
 ### Integration Schema
 
 Used by ETL processes to fetch data for export.
-
-### DataLoadSimulation Schema
-
-Used to simulate data loads.
-
-| Procedure                                  | Purpose |
-|--------------------------------------------|---------|
-| `Configuration_ApplyDataLoadSimulationProcedures` | Creates simulation procedures. |
-| `Configuration_RemoveDataLoadSimulationProcedures`| Removes simulation procedures. |
-| `DeactivateTemporalTablesBeforeDataLoad`  | Temporarily disables temporal tables. |
-| `PopulateDataToCurrentDate`               | Loads sample data to the current date. |
-| `ReactivateTemporalTablesAfterDataLoad`   | Reapplies temporal logic after load. |
-
-### Application Schema
-
-Setup and configuration procedures.
-
-| Procedure                          | Purpose |
-|------------------------------------|---------|
-| `AddRoleMemberIfNonexistent`       | Adds a user to a role if not present. |
-| `Configuration_ApplyAuditing`      | Adds server/database auditing. |
-| `Configuration_ApplyColumnstoreIndexing` | Adds columnstore indexes. |
-| `Configuration_ApplyFullTextIndexing`   | Adds full-text indexes to major tables. |
-| `Configuration_ApplyPartitioning` | Adds partitioning to transaction tables. |
-| `Configuration_ApplyRowLevelSecurity` | Applies row-level security. |
-| `Configuration_ConfigureForEnterpriseEdition` | Applies full enterprise features. |
-| `Configuration_EnableInMemory`     | Enables memory-optimized tables and types. |
-| `Configuration_RemoveAuditing`     | Removes auditing. |
-| `Configuration_RemoveRowLevelSecurity` | Removes row-level security. |
-| `CreateRoleIfNonexistent`         | Creates a role if not already present. |
-
-### Sequences Schema
-
-Used to manage and reseed sequences.
-
-| Procedure                        | Purpose |
-|----------------------------------|---------|
-| `ReseedAllSequences`             | Reseeds all sequences. |
-| `ReseedSequenceBeyondTableValue`| Moves sequence value beyond current data. |
 
 """
