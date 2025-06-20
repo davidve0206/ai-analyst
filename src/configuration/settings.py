@@ -1,6 +1,6 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings
-from pydantic import EmailStr, ConfigDict
+from pydantic import EmailStr, ConfigDict, SecretStr
 
 BASE_DIR = Path(__file__).resolve().parents[2]
 
@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     # Email settings
     email_from_address: EmailStr = "test@test.com"
     email_username: str | None
-    email_password: str | None
+    email_password: SecretStr | None
     email_host: str = "smtp.gmail.com"
     email_port: int = 465
     email_use_ssl: bool = False
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     # such as azure cli. NOTE: the app will fail if the user never authenticates.
     azure_tenant_id: str | None = None
     azure_client_id: str | None = None
-    azure_client_secret: str | None = None
+    azure_client_secret: SecretStr | None = None
 
     # Database settings
     azure_db_server: str
