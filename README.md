@@ -11,3 +11,7 @@ We will use Azure's own [identity management](https://learn.microsoft.com/en-us/
 ## Running Locally
 
 For now, the project only has configuration for using Azure SQL Database; make sure your local configuration has the required ODBC Driver.
+
+## Testing
+
+We have a single tests folders; that said, this test actually include agent evaluations; some of the evaluations are fully represented in code, while others might just be a a way to run an agent with a set scenario, but the actual evaluation might be human driven.
