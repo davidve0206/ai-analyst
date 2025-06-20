@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     azure_db_server: str
     azure_db_database: str
     azure_db_connection_timeout: int = 30
+    
+    # Model settings
+    gemini_api_key: SecretStr | None = None
 
     model_config = ConfigDict(extra="ignore")
 
