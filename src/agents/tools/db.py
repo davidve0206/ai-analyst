@@ -82,27 +82,33 @@ class InternalDatabase:
                 If several tables are provided, separate them by commas.
                 If None, describes all tables in the database.
         """
-        if table_names:
-            table_names = [name.strip() for name in table_names.split(",")]
-            try:
+        try:
+            if table_names:
+                table_names = [name.strip() for name in table_names.split(",")]
                 tables = [self.metadata.tables[table] for table in table_names]
-            except KeyError as e:
-                raise ProgrammingError(f"Invalid table name: {e}") from e
-        else:
-            tables = self.get_tables()
-        return "\n\n".join(format_table_schema(table) for table in tables)
+            else:
+                tables = self.get_tables()
+            return "\n\n".join(format_table_schema(table) for table in tables)
+
+        except KeyError as e:
+            return f"Error: Table not found - {str(e)}"
+        except Exception as e:
+            return f"An unexpected error occurred: {str(e)}"
 
     @kernel_function
-    async def execute_query(self, query: str) -> list[dict[str, Any]]:
+    async def execute_query(self, query: str) -> list[dict[str, Any]] | str:
         """Execute a SQL query; only allows SELECT queries."""
         if not query.strip().lower().startswith("select"):
-            raise ArgumentError("Only SELECT queries are allowed.")
+            return "Error: Only SELECT queries are allowed."
 
         default_logger.debug(f"Executing query: {query}")
-        async with self.engine.connect() as connection:
-            result = await connection.execute(text(query))
-            rows = result.mappings().all()
-            return make_json_serializable(rows)
+        try:
+            async with self.engine.connect() as connection:
+                result = await connection.execute(text(query))
+                rows = result.mappings().all()
+                return make_json_serializable(rows)
+        except Exception as e:
+            return f"Query execution failed: {str(e)}"
 
 
 def make_json_serializable(dict_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
