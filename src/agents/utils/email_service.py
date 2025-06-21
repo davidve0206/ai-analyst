@@ -3,7 +3,7 @@ import ssl
 from email.message import EmailMessage
 
 from src.configuration.settings import Settings
-from src.configuration.logger import logger
+from src.configuration.logger import default_logger
 
 
 class MailingService:
@@ -50,8 +50,8 @@ class MailingService:
             server.send_message(message)
             server.quit()
 
-            logger.info(f"Email sent successfully to {recipient}")
+            default_logger.info(f"Email sent successfully to {recipient}")
             return True
         except Exception as e:
-            logger.error(f"Failed to send email: {e}")
+            default_loggererror(f"Failed to send email: {e}")
             return False

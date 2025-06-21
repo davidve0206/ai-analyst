@@ -1,7 +1,10 @@
 import pytest
-from autogen_core.models import UserMessage
 
-from src.agents.client import get_gemini_client, GeminiModels
+from semantic_kernel.contents.chat_history import ChatHistory
+from src.agents.models import (
+    get_gemini_service,
+    GeminiModels,
+)
 from src.configuration.settings import app_settings
 
 
@@ -12,14 +15,21 @@ async def test_client_connects():
         "Gemini API key must be set for testing."
     )
 
-    # Create a Gemini client instance
-    client = get_gemini_client(GeminiModels.GEMINI_1_5_FLASH)
+    service = get_gemini_service(
+        GeminiModels.GEMINI_1_5_FLASH, service_id="test_service"
+    )
+    execution_settings = service.get_prompt_execution_settings_class()()
+    chat_history = ChatHistory()
+    chat_history.add_user_message(
+        "Hello, how are you?",
+    )
 
     # Test the connection by making a simple request
-    response = await client.create(
-        [UserMessage(content="What is the capital of France?", source="user")]
+    response = await service.get_chat_message_content(
+        chat_history=chat_history,
+        service_id="test_service",
+        settings=execution_settings,
     )
-    print(response)
 
     # Check if the response is valid
-    assert response is not None, "Response should not be None."
+    assert response is not None

@@ -1,5 +1,5 @@
 import pytest
-from autogen_agentchat.messages import TextMessage
+
 
 from src.agents.internal_data_agent import create_internal_data_agent
 
@@ -23,28 +23,18 @@ async def test_single_table_task(internal_database):
         {"Calendar Year": 2016, "Total Revenue": 25971029.11},
     ]
 
-    agent = await create_internal_data_agent(internal_database)
-    result = await agent.run(task=task)
+    agent = create_internal_data_agent(internal_database)
+    response = await agent.get_response(messages=task)
+    
+    assert response is not None
 
-    final_message = next(
-        (
-            msg
-            for msg in reversed(result.messages)
-            if isinstance(msg, TextMessage) and msg.source == "InternalDataAgent"
-        ),
-        None,
-    )
-    result_content = final_message.content if final_message else None
-
-    assert result_content is not None
-    print("Agent response:", result_content)
-
+    response_content = response.content.content
     for record in expected:
         # Check that each year and revenue is present in the result content
         # as well as the revenue, be it formatted or not.
         year = str(record["Calendar Year"])
         revenue = str(record["Total Revenue"])
         formatted_revenue = f"{record['Total Revenue']:,.2f}"
-        assert year in result_content and (
-            revenue in result_content or formatted_revenue in result_content
+        assert year in response_content and (
+            revenue in response_content or formatted_revenue in response_content
         )
