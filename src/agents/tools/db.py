@@ -5,12 +5,13 @@ from typing import Any
 from sqlalchemy import ForeignKeyConstraint, MetaData, NullPool, Table, event, text
 from sqlalchemy.exc import ArgumentError, ProgrammingError
 from sqlalchemy.ext.asyncio import create_async_engine
+from semantic_kernel.functions import kernel_function
 
 from src.configuration.auth import (
     get_azure_sql_connection_string,
     provide_azure_sql_token,
 )
-from src.configuration.logger import logger
+from src.configuration.logger import default_logger
 
 # NOTE: The code for now only supports Azure SQL Database.
 # Ensure you have the ODBC Driver 18 for SQL Server installed.
@@ -34,7 +35,7 @@ class InternalDatabase:
     @classmethod
     async def create(cls):
         """Create an instance of InternalDatabase with an async engine and metadata."""
-        logger.info("Creating InternalDatabase instance...")
+        default_logger.info("Creating InternalDatabase instance...")
         connection_string = get_azure_sql_connection_string()
         engine = create_async_engine(connection_string, poolclass=NullPool)
         event.listen(engine.sync_engine, "do_connect", provide_azure_sql_token)
@@ -71,15 +72,18 @@ class InternalDatabase:
         """
         return list(self.metadata.tables.values())
 
-    def describe_schema(self, table_names: list[str] | None = None) -> str:
+    @kernel_function
+    def describe_schema(self, table_names: str | None = None) -> str:
         """Get a string representation of the structure of tables in
         the database
 
         Args:
-            table_names (list[str] | None): List of table names to describe.
+            table_names (srt | None): Name of the table to describe.
+                If several tables are provided, separate them by commas.
                 If None, describes all tables in the database.
         """
         if table_names:
+            table_names = [name.strip() for name in table_names.split(",")]
             try:
                 tables = [self.metadata.tables[table] for table in table_names]
             except KeyError as e:
@@ -88,12 +92,13 @@ class InternalDatabase:
             tables = self.get_tables()
         return "\n\n".join(format_table_schema(table) for table in tables)
 
+    @kernel_function
     async def execute_query(self, query: str) -> list[dict[str, Any]]:
         """Execute a SQL query; only allows SELECT queries."""
         if not query.strip().lower().startswith("select"):
             raise ArgumentError("Only SELECT queries are allowed.")
 
-        logger.debug(f"Executing query: {query}")
+        default_logger.debug(f"Executing query: {query}")
         async with self.engine.connect() as connection:
             result = await connection.execute(text(query))
             rows = result.mappings().all()
