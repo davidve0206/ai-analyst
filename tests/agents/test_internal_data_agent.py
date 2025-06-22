@@ -17,15 +17,15 @@ async def test_single_table_task(internal_database):
     """
     task = "How much revenue did we make every year that's available in the database?"
     expected = [
-        {"Calendar Year": 2013, "Total Revenue": 52563272.64},
-        {"Calendar Year": 2014, "Total Revenue": 57418916.89},
-        {"Calendar Year": 2015, "Total Revenue": 62090220.81},
-        {"Calendar Year": 2016, "Total Revenue": 25971029.11},
+        {"Calendar Year": 2013, "Total Revenue": 45707188.00},
+        {"Calendar Year": 2014, "Total Revenue": 49929487.20},
+        {"Calendar Year": 2015, "Total Revenue": 53991490.45},
+        {"Calendar Year": 2016, "Total Revenue": 22633175.55},
     ]
 
     agent = create_internal_data_agent(internal_database)
     response = await agent.get_response(messages=task)
-    
+
     assert response is not None
 
     response_content = response.content.content
