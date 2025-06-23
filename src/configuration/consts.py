@@ -15,158 +15,64 @@ of packaging materials, and sell these in smaller quantities as a convenience fo
 FISCAL_YEAR_END = "October 31"
 
 DATABASE_CATALOG = """
-# WideWorldImporters Database Catalog
+# WideWorldImportersDW Database Catalog
 
-The WideWorldImporters database contains all the transaction information and daily data for sales and purchases, as well as sensor data for vehicles and cold rooms.
+**Date:** 02/28/2023  
+**Applies to:**  
+- SQL Server: Not supported  
+- Azure SQL Database  
+- Azure Synapse Analytics  
+- Analytics Platform System (PDW)
+
+Explanations for the schemas, tables, and stored procedures in the WideWorldImportersDW database.
+
+The `WideWorldImportersDW` database is used for data warehousing and analytical processing. The transactional data about sales and purchases is generated in the `WideWorldImporters` database and loaded into `WideWorldImportersDW` using a daily ETL process.
+
+The data in `WideWorldImportersDW` mirrors the data in `WideWorldImporters`, but the tables are organized differently. While `WideWorldImporters` uses a traditional normalized schema, `WideWorldImportersDW` uses a star schema approach. Besides the fact and dimension tables, the database includes several staging tables used in the ETL process.
 
 ---
 
 ## Schemas
 
-WideWorldImporters uses schemas for different purposes: storing data, controlling access, and enabling integration with data warehouses.
+The different types of tables are organized in three schemas:
 
-### Data Schemas
-
-These schemas contain the core data. Many common tables are located in the `Application` schema.
-
-| Schema      | Description |
-|-------------|-------------|
-| **Application** | Application-wide users, contacts, and parameters. Contains reference tables used across multiple schemas. |
-| **Purchasing**  | Stock item purchases from suppliers and supplier details. |
-| **Sales**       | Stock item sales to customers, including customer and salesperson details. |
-| **Warehouse**   | Stock inventory and transactions. |
-
-### Secure-access Schemas
-
-Used by external apps to access the database without direct access to data tables.
-
-| Schema     | Description |
-|------------|-------------|
-| **Website** | All website database access. |
-| **Reports** | Used by Reporting Services (not used in initial release). |
-| **PowerBI** | Used by Power BI dashboards via Enterprise Gateway (not used in initial release). |
-
-### Development Schemas
-
-Special-purpose schemas for integration and sequencing.
-
-| Schema       | Description |
-|--------------|-------------|
-| **Integration** | Objects and procedures for ETL to `WideWorldImportersDW`. |
-| **Sequences**   | Stores sequences used by all tables. |
+| Schema      | Description                                      |
+|-------------|--------------------------------------------------|
+| Dimension   | Dimension tables.                                |
+| Fact        | Fact tables.                                     |
+| Integration | Staging tables and other objects needed for ETL. |
 
 ---
 
 ## Tables
 
-### Application Schema
+The dimension and fact tables are listed below. The tables in the `Integration` schema are used only for the ETL process and are not listed.
 
-General configuration and reference data.
+### Dimension Tables
 
-| Table               | Description |
-|---------------------|-------------|
-| `SystemParameters`  | System-wide configurable parameters. |
-| `People`            | Users and contacts, with login data if applicable. |
-| `Cities`            | References to cities for all addresses; includes spatial location. |
-| `StateProvinces`    | Includes spatial boundaries of states/provinces. |
-| `Countries`         | Includes spatial boundaries of countries/regions. |
-| `DeliveryMethods`   | Delivery options (truck, courier, pickup, etc.). |
-| `PaymentMethods`    | Payment options (cash, check, EFT, etc.). |
-| `TransactionTypes`  | Types of transactions (invoice, credit note, etc.). |
+`WideWorldImportersDW` has the following dimension tables, along with their source tables from the `WideWorldImporters` database:
 
-### Purchasing Schema
+| Table          | Source Tables                                                                 |
+|----------------|--------------------------------------------------------------------------------|
+| City           | Application.Cities, Application.StateProvinces, Application.Countries         |
+| Customer       | Sales.Customers, Sales.BuyingGroups, Sales.CustomerCategories                  |
+| Date           | New table with information about dates, including financial year (Nov 1 start) |
+| Employee       | Application.People                                                             |
+| StockItem      | Warehouse.StockItems, Warehouse.Colors, Warehouse.PackageType                 |
+| Supplier       | Purchasing.Suppliers, Purchasing.SupplierCategories                            |
+| PaymentMethod  | Application.PaymentMethods                                                     |
+| TransactionType| Application.TransactionTypes                                                   |
 
-Supplier and purchase order data.
+### Fact Tables
 
-| Table                 | Description |
-|-----------------------|-------------|
-| `Suppliers`           | Supplier organizations. |
-| `SupplierCategories`  | Categories (e.g. novelties, toys). |
-| `SupplierTransactions`| Supplier-related financial transactions. |
-| `PurchaseOrders`      | Supplier purchase order details. |
-| `PurchaseOrderLines`  | Purchase order line items. |
+The following fact tables are used in `WideWorldImportersDW`:
 
-### Sales Schema
-
-Customer and sales data.
-
-| Table                 | Description |
-|-----------------------|-------------|
-| `Customers`           | Customer entities (orgs or individuals). |
-| `CustomerCategories`  | Customer types (e.g. supermarkets). |
-| `BuyingGroups`        | Grouped customers for bulk buying. |
-| `CustomerTransactions`| Customer financial transactions. |
-| `SpecialDeals`        | Pricing deals, fixed or discounted. |
-| `Orders`              | Customer orders. |
-| `OrderLines`          | Order line items. |
-| `Invoices`            | Invoice records. |
-| `InvoiceLines`        | Invoice line items. |
-
-### Warehouse Schema
-
-Stock and environmental sensor data.
-
-| Table                   | Description |
-|-------------------------|-------------|
-| `StockItems`            | Stock item data. |
-| `StockItemHoldings`     | Frequently updated stock details. |
-| `StockGroups`           | Categorization (e.g. toys, food). |
-| `StockItemStockGroups`  | Many-to-many mapping of stock and groups. |
-| `Colors`                | Optional color tagging. |
-| `PackageTypes`          | Packaging methods (box, pallet, etc.). |
-| `StockItemTransactions` | All stock item movement records. |
-| `VehicleTemperatures`   | Temperature sensor data from vehicles. |
-| `ColdRoomTemperatures`  | Temperature sensor data from cold rooms. |
-
----
-
-## Design Considerations
-
-### Schema Design
-
-- Schemas group commonly queried tables to reduce complexity.
-- Schema definitions are code-generated from metadata in `WWI_Preparation` for consistency.
-
-### Table Design
-
-- All tables have single-column primary keys.
-- Extended descriptions exist for all schemas, tables, columns, and constraints (except memory-optimized tables).
-- Foreign keys are indexed unless a suitable existing index is present.
-- Sequences (not IDENTITY columns) are used for auto-numbering.
-- `TransactionID` sequence is shared across `CustomerTransactions`, `SupplierTransactions`, and `StockItemTransactions`.
-
----
-
-## Security Schemas
-
-- External applications do not access data schemas directly.
-- Views and stored procedures in secure-access schemas (`Website`, `Reports`, `PowerBI`) control access.
-- Example: Power BI dashboards access the database through a read-only user limited to `SELECT` and `EXECUTE` on the PowerBI schema.
-
----
-
-## Stored Procedures
-
-Stored procedures are organized by schema.
-
-### Website Schema
-
-Procedures used by web front-end applications.
-
-| Procedure                  | Purpose |
-|----------------------------|---------|
-| `ActivateWebsiteLogon`     | Grants web access to a person. |
-| `ChangePassword`           | Changes user passwords. |
-| `InsertCustomerOrders`     | Inserts customer orders and lines. |
-| `InvoiceCustomerOrders`    | Processes order invoices. |
-| `RecordColdRoomTemperatures` | Inserts cold room sensor data (TVP). |
-| `RecordVehicleTemperature` | Updates vehicle temperatures from JSON. |
-| `SearchForCustomers`       | Finds customers by name. |
-| `SearchForPeople`          | Finds people by name. |
-| `SearchForStockItems`      | Finds stock by name/comments. |
-| `SearchForStockItemsByTags`| Finds stock by tags. |
-| `SearchForSuppliers`       | Finds suppliers by name. |
-
-### Integration Schema
-
-Used by ETL processes to fetch data for export."""
+| Table          | Source Tables                                                  | Sample Analytics                                                                 |
+|----------------|----------------------------------------------------------------|-----------------------------------------------------------------------------------|
+| Order          | Sales.Orders and Sales.OrderLines                              | Sales people, picker/packer productivity, on-time pick orders, back orders       |
+| Sale           | Sales.Invoices and Sales.InvoiceLines                          | Sales dates, delivery dates, profitability over time/by salesperson              |
+| Purchase       | Purchasing.PurchaseOrderLines                                  | Expected vs actual lead times                                                    |
+| Transaction    | Sales.CustomerTransactions, Purchasing.SupplierTransactions    | Measuring issue dates vs finalization dates and amounts                          |
+| Movement       | Warehouse.StockTransactions                                    | Movements over time                                                               |
+| Stock Holding  | Warehouse.StockItemHoldings                                    | On-hand stock levels and value                                                    |
+"""
