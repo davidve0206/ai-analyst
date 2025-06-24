@@ -10,28 +10,32 @@ from .models import (
     get_gemini_default_execution_settings,
     get_azure_openai_service,
     get_azure_openai_default_execution_settings,
+    default_function_choice_behavior,
 )
 from .tools.db import InternalDatabase
 
 from src.configuration.consts import DATABASE_CATALOG
+from src.configuration.logger import default_logger
 
 
-def create_internal_data_agent(
+def create_database_agent(
     internal_db: InternalDatabase,
-    model_type: ModelTypes = ModelTypes.GEMINI,
+    model_type: ModelTypes = ModelTypes.AZURE_OPENAI,
 ) -> ChatCompletionAgent:
     """
-    Create an instance of the InternalDataAgent with the necessary configurations.
+    Create an instance of the DatabaseAgent with the necessary configurations.
     This agent can access internal data and answer questions based on it.
     """
-    agent_name = "InternalDataAgent"
+    agent_name = "DatabaseAgent"
     system_prompt = render_prompt_from_jinja(
-        "internal_data_agent_system_prompt.md.j2",
+        "database_agent_system_prompt.md.j2",
         {
             "table_list": internal_db.table_names,
             "database_catalog": DATABASE_CATALOG,
         },
     )
+
+    default_logger.debug(f"Creating DatabaseAgent with model type: {model_type.value}")
     match model_type:
         case ModelTypes.GEMINI:
             model_service = get_gemini_service(
@@ -48,9 +52,9 @@ def create_internal_data_agent(
 
     return ChatCompletionAgent(
         name=agent_name,
-        description="A helpful agent that can access financial and operational internal company data and answer natural language questions based on it; it does not analyze or interpret the data, just retrieves it.",
         instructions=system_prompt,
         arguments=KernelArguments(execution_settings=execution_settings),
+        function_choice_behavior=default_function_choice_behavior,
         plugins=[internal_db],
         service=model_service,
     )

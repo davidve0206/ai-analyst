@@ -1,7 +1,7 @@
 import pytest
 
 
-from src.agents.internal_data_agent import create_internal_data_agent
+from src.agents.database_agent import create_database_agent
 
 
 @pytest.mark.asyncio
@@ -20,44 +20,36 @@ async def test_single_column_task(internal_database):
         {
             "Year": 2013,
             "TotalRevenue": 38373718.70,
-            "TotalProfit": 19143873.90,
-            "ProfitMargin": 0.498879,
         },
         {
             "Year": 2014,
             "TotalRevenue": 48879106.25,
-            "TotalProfit": 24283242.45,
-            "ProfitMargin": 0.496802,
         },
         {
             "Year": 2015,
             "TotalRevenue": 53827320.95,
-            "TotalProfit": 26815310.85,
-            "ProfitMargin": 0.498172,
         },
         {
             "Year": 2016,
             "TotalRevenue": 31181195.30,
-            "TotalProfit": 15486753.70,
-            "ProfitMargin": 0.496669,
         },
     ]
 
-    agent = create_internal_data_agent(internal_database)
+    agent = create_database_agent(internal_database)
     response = await agent.get_response(messages=task)
 
     assert response is not None
 
     response_content = response.content.content
+    print(response_content)
     for record in expected:
         # Check that each year and revenue is present in the result content
         # as well as the revenue, be it formatted or not.
-        year = str(record["Fiscal Year"])
-        revenue = str(record["Total Revenue"])
-        formatted_revenue = f"{record['Total Revenue']:,.2f}"
-        assert year in response_content and (
-            revenue in response_content or formatted_revenue in response_content
-        )
+        year = str(record["Year"])
+        revenue = str(record["TotalRevenue"])
+        formatted_revenue = f"{record['TotalRevenue']:,.2f}"
+        assert year in response_content
+        assert revenue in response_content or formatted_revenue in response_content
 
 
 @pytest.mark.asyncio
@@ -97,12 +89,13 @@ async def test_multi_column_task(internal_database):
         },
     ]
 
-    agent = create_internal_data_agent(internal_database)
+    agent = create_database_agent(internal_database)
     response = await agent.get_response(messages=task)
 
     assert response is not None
 
     response_content = response.content.content
+    print(response_content)
     for record in expected:
         year = str(record["FiscalYear"])
         revenue = str(record["TotalRevenue"])
@@ -234,12 +227,13 @@ async def test_quarterly_task(internal_database):
         },
     ]
 
-    agent = create_internal_data_agent(internal_database)
+    agent = create_database_agent(internal_database)
     response = await agent.get_response(messages=task)
 
     assert response is not None
 
     response_content = response.content.content
+    print(response_content)
     for record in expected:
         revenue = str(record["TotalRevenue"])
         profit = str(record["TotalProfit"])
@@ -274,13 +268,14 @@ async def test_last_quarterly_task(internal_database):
         "ProfitMargin": 0.491547,
     }
 
-    agent = create_internal_data_agent(internal_database)
+    agent = create_database_agent(internal_database)
     response = await agent.get_response(messages=task)
 
     assert response is not None
 
     response_content = response.content.content
-
+    print(response_content)
+    
     revenue = str(expected["TotalRevenue"])
     profit = str(expected["TotalProfit"])
     margin = str(expected["ProfitMargin"])

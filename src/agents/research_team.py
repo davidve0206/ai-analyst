@@ -1,7 +1,7 @@
 from semantic_kernel.agents import StandardMagenticManager, MagenticOrchestration
 from semantic_kernel.agents.runtime import CoreRuntime
 
-from src.agents.internal_data_agent import create_internal_data_agent
+from src.agents.database_agent import create_database_agent
 from src.agents.tools.db import InternalDatabase
 from src.agents.utils.prompt_utils import render_prompt_from_jinja
 from src.configuration.logger import default_logger
@@ -63,7 +63,7 @@ async def research_team_task(
     )
 
     # Create the team for the research task
-    db_agent = create_internal_data_agent(
+    db_agent = create_database_agent(
         internal_db=internal_db, model_type=ModelTypes.AZURE_OPENAI
     )
 

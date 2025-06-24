@@ -41,6 +41,7 @@ class InternalDatabase:
 
         # Reflect the database schema
         # This will load all tables and their metadata from the database.
+        # TODO: Implement retry logic for cold databases.
         metadata = MetaData()
         async with engine.begin() as conn:
             schemas = await conn.execute(
