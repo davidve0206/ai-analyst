@@ -48,6 +48,7 @@ def create_internal_data_agent(
 
     return ChatCompletionAgent(
         name=agent_name,
+        description="A helpful agent that can access financial and operational internal company data and answer natural language questions based on it; it does not analyze or interpret the data, just retrieves it.",
         instructions=system_prompt,
         arguments=KernelArguments(execution_settings=execution_settings),
         plugins=[internal_db],

@@ -90,8 +90,10 @@ class InternalDatabase:
             return "\n\n".join(format_table_schema(table) for table in tables)
 
         except KeyError as e:
+            default_logger.debug(f"Table not found: {str(e)}")
             return f"Error: Table not found - {str(e)}"
         except Exception as e:
+            default_logger.debug(f"An unexpected error occurred: {str(e)}")
             return f"An unexpected error occurred: {str(e)}"
 
     @kernel_function

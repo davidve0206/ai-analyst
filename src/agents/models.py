@@ -50,7 +50,7 @@ def get_gemini_default_execution_settings() -> GoogleAIChatPromptExecutionSettin
 
 def get_azure_openai_service(
     model: AzureOpenAIModels, service_id: str | None = None
-) -> GoogleAIChatCompletion:
+) -> AzureChatCompletion:
     """
     Get an instance of the Google AI Gemini service with the specified model.
     """

@@ -252,3 +252,43 @@ async def test_quarterly_task(internal_database):
         assert revenue in response_content or formatted_revenue in response_content
         assert profit in response_content or formatted_profit in response_content
         assert margin in response_content or formatted_margin in response_content
+
+
+"Please provide the current value of the Quarterly Gross Profit Margin for the latest reporting period."
+
+
+@pytest.mark.asyncio
+async def test_last_quarterly_task(internal_database):
+    """
+    Test the InternalDataAgent with a "last" quarterly task.
+
+    This test checks if the agent can correctly answer a question
+    the "last" quarterly revenue from the database.
+    """
+    task = "What was our quarterly profit margin for the available data?"
+    expected = {
+        "Year": 2016,
+        "Quarter": 3,
+        "TotalRevenue": 4970932.65,
+        "TotalProfit": 2443448.55,
+        "ProfitMargin": 0.491547,
+    }
+
+    agent = create_internal_data_agent(internal_database)
+    response = await agent.get_response(messages=task)
+
+    assert response is not None
+
+    response_content = response.content.content
+
+    revenue = str(expected["TotalRevenue"])
+    profit = str(expected["TotalProfit"])
+    margin = str(expected["ProfitMargin"])
+    formatted_revenue = f"{expected['TotalRevenue']:,.2f}"
+    formatted_profit = f"{expected['TotalProfit']:,.2f}"
+    formatted_margin = f"{expected['ProfitMargin'] * 100:.4f}"
+    # Note we don't check for the year and quarter in the response
+    # because the agent might not return them in the same format.
+    assert revenue in response_content or formatted_revenue in response_content
+    assert profit in response_content or formatted_profit in response_content
+    assert margin in response_content or formatted_margin in response_content

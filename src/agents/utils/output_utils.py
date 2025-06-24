@@ -1,6 +1,9 @@
+from datetime import datetime
 from semantic_kernel.agents import Agent
 from semantic_kernel.contents import FunctionCallContent, FunctionResultContent
 from semantic_kernel.contents.chat_message_content import ChatMessageContent
+
+from src.configuration.settings import BASE_DIR
 
 
 async def invoke_agent_displaying_intermediate_steps(
@@ -24,7 +27,7 @@ async def handle_intermediate_steps(message: ChatMessageContent) -> None:
         elif isinstance(item, FunctionResultContent):
             print(f"Function Result:> {item.result} for function: {item.name}")
         else:
-            print(f"{message.role}: {message.content}")
+            print(f"{message.role} - {message.name}: {message.content}")
 
 
 async def invoke_agent_in_chat_mode(agent: Agent):
@@ -43,3 +46,14 @@ async def invoke_agent_in_chat_mode(agent: Agent):
             break
 
         invoke_agent_displaying_intermediate_steps(agent, user_input)
+
+
+def store_response_with_timestamp(response: str, file_name: str):
+    """
+    Store the agent's response in a file.
+    """
+    timestamp = datetime.now().strftime("%y%m%d%H%M")
+    file_path = BASE_DIR / "outputs" / f"{timestamp}-{file_name}"
+
+    with open(file_path, "a") as file:
+        file.write(response.content)
