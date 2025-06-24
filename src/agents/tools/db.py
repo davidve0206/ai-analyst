@@ -52,6 +52,7 @@ class InternalDatabase:
                 """)
             )
             for (schema,) in schemas:
+                default_logger.info(f"Reflecting {schema} schema...")
                 await conn.run_sync(metadata.reflect, schema=schema)
 
         return cls(engine=engine, metadata=metadata)
@@ -82,11 +83,16 @@ class InternalDatabase:
                 If several tables are provided, separate them by commas.
                 If None, describes all tables in the database.
         """
+        default_logger.debug(
+            f"Getting schema for tables {[name.strip() for name in table_names.split(',')]}"
+        )
         try:
             if table_names:
                 table_names = [name.strip() for name in table_names.split(",")]
+                default_logger.debug(f"Getting schema for tables {table_names}")
                 tables = [self.metadata.tables[table] for table in table_names]
             else:
+                default_logger.debug("Getting schema for all tables")
                 tables = self.get_tables()
             return "\n\n".join(format_table_schema(table) for table in tables)
 

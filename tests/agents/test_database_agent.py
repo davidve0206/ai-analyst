@@ -7,13 +7,13 @@ from src.agents.database_agent import create_database_agent
 @pytest.mark.asyncio
 async def test_single_column_task(internal_database):
     """
-    Test the InternalDataAgent with a single table task.
+    Test the DatabaseAgent with a single table task.
 
     This test checks if the agent can correctly answer a question
     about revenue from a single table in the database.
 
     This test will be reviewed in the future when we have a final
-    implementation of the InternalDataAgent.
+    implementation of the DatabaseAgent.
     """
     task = "How much revenue did we make every year that's available in the database?"
     expected = [
@@ -55,7 +55,7 @@ async def test_single_column_task(internal_database):
 @pytest.mark.asyncio
 async def test_multi_column_task(internal_database):
     """
-    Test the InternalDataAgent with a multi-column task.
+    Test the DatabaseAgent with a multi-column task.
 
     This test checks if the agent can correctly follow the instruction of
     including all columns for the calculation.
@@ -113,7 +113,7 @@ async def test_multi_column_task(internal_database):
 @pytest.mark.asyncio
 async def test_quarterly_task(internal_database):
     """
-    Test the InternalDataAgent with a quarterly task.
+    Test the DatabaseAgent with a quarterly task.
 
     This test checks if the agent can correctly answer a question
     about quarterly revenue from the database.
@@ -254,7 +254,7 @@ async def test_quarterly_task(internal_database):
 @pytest.mark.asyncio
 async def test_last_quarterly_task(internal_database):
     """
-    Test the InternalDataAgent with a "last" quarterly task.
+    Test the DatabaseAgent with a "last" quarterly task.
 
     This test checks if the agent can correctly answer a question
     the "last" quarterly revenue from the database.
@@ -275,7 +275,7 @@ async def test_last_quarterly_task(internal_database):
 
     response_content = response.content.content
     print(response_content)
-    
+
     revenue = str(expected["TotalRevenue"])
     profit = str(expected["TotalProfit"])
     margin = str(expected["ProfitMargin"])
