@@ -42,7 +42,7 @@ def get_azure_sql_access_token_bytes() -> bytes:
 
 # TODO: Review if this is the right place for the following functions.
 # The logic to putting it here is that this is closely related to azure authentication
-def get_azure_sql_connection_string() -> str:
+def get_db_connection_string() -> str:
     """
     Generates the connection string for Azure SQL Database using the ClientSecretCredential.
     """
