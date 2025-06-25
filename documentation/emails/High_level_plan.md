@@ -99,22 +99,23 @@ I have identified the [WideWorldImporters](https://github.com/Microsoft/sql-serv
    - Decide the stack - *I am using Gradio, a python library that renders a simple frontend*
    - Set up the system to run autonomously
    - Update the timing of autonomous runs
-3. Create a basic agent system that can achieve the following process:
-   1. Take a single KPI provided in configuration *Partially Done (missing Frontend to Update)*
-   2. Take information from a PowerBI or Database, depending on API Keys *Done*
-   3. Create a simplified report (Executive Summary, Overview and Recommendations) *Done*
-   4. Self-review the report and ensure it has the required information *Done (in theory)*
-   5. Email to a set address
+3. Create a basic agent system that can achieve the following process *(Done)*:
+   1. Take a single KPI provided in configuration *(Done)*
+   2. Take information from a PowerBI or Database, depending on API Keys *(Done)*
+   3. Create a simplified report (Executive Summary, Overview and Recommendations) *(Done)*
+   4. Self-review the report and ensure it has the required information *(Done - in theory)*
+   5. Email to a set address *(Done)*
 4. Add basic forecasting (CAGR or similar) to the report
 5. Add “special case” detection
     1. Identify special cases (changes in trend, outliers, or negative trends)
     2. Define research plan with available tools, including exploring operational information if available
     3. Implement research plan
     4. Add sections to the report
-6. Open to take more than a single KPI
+6. Add "correction plans" for special cases
+7. Open to take more than a single KPI
     - Add an editor agent that can take all the individual reports and make a consolidated one
-7. Prompt Engineering
-8. **Up to here we will have the MVP; then we can continue adding additional sources of information, which I would suggest we add in the following order:**
+8. Prompt Engineering
+9. **Up to here we will have the MVP; then we can continue adding additional sources of information, which I would suggest we add in the following order:**
     1. Add document retrieval (define if using RAG or another agent)
     2. Add access to Yahoo Finance
     3. Add internet access to the internet in general, defining a list of approved sites
