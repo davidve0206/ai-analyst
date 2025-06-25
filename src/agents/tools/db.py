@@ -1,13 +1,15 @@
+import asyncio
 from datetime import date, datetime
 from decimal import Decimal
 from typing import Any
 
 from sqlalchemy import ForeignKeyConstraint, MetaData, NullPool, Table, event, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import create_async_engine
 from semantic_kernel.functions import kernel_function
 
 from src.configuration.auth import (
-    get_azure_sql_connection_string,
+    get_db_connection_string,
     provide_azure_sql_token,
 )
 from src.configuration.logger import default_logger
@@ -22,6 +24,8 @@ Credits:
 My implementation is inspired by https://github.com/Finndersen/dbdex.
 
 """
+DB_CONNECTION_RETRIES = 3
+DB_RETRY_DELAY = 10  # seconds
 
 
 class InternalDatabase:
@@ -35,23 +39,39 @@ class InternalDatabase:
     async def create(cls):
         """Create an instance of InternalDatabase with an async engine and metadata."""
         default_logger.info("Creating InternalDatabase instance...")
-        connection_string = get_azure_sql_connection_string()
+        connection_string = get_db_connection_string()
         engine = create_async_engine(connection_string, poolclass=NullPool)
         event.listen(engine.sync_engine, "do_connect", provide_azure_sql_token)
 
         # Reflect the database schema
         # This will load all tables and their metadata from the database.
+        # TODO: Implement retry logic for cold databases.
         metadata = MetaData()
-        async with engine.begin() as conn:
-            schemas = await conn.execute(
-                text("""
-                    SELECT DISTINCT TABLE_SCHEMA
-                    FROM INFORMATION_SCHEMA.TABLES
-                    WHERE TABLE_TYPE = 'BASE TABLE';
-                """)
-            )
-            for (schema,) in schemas:
-                await conn.run_sync(metadata.reflect, schema=schema)
+        retry_number = 0
+        for retry_number in range(1, DB_CONNECTION_RETRIES + 1):
+            try:
+                async with engine.begin() as conn:
+                    schemas = await conn.execute(
+                        text("""
+                            SELECT DISTINCT TABLE_SCHEMA
+                            FROM INFORMATION_SCHEMA.TABLES
+                            WHERE TABLE_TYPE = 'BASE TABLE';
+                        """)
+                    )
+                    for (schema,) in schemas:
+                        default_logger.info(f"Reflecting {schema} schema...")
+                        await conn.run_sync(metadata.reflect, schema=schema)
+                    break
+            except OperationalError as e:
+                if retry_number == DB_CONNECTION_RETRIES:
+                    default_logger.error(
+                        f"Failed to connect to the database after {DB_CONNECTION_RETRIES} retries: {e}"
+                    )
+                    raise e
+                default_logger.warning(
+                    f"Failed to reflect database schema, retrying ({retry_number}/{DB_CONNECTION_RETRIES}): {e}"
+                )
+                await asyncio.sleep(DB_RETRY_DELAY)
 
         return cls(engine=engine, metadata=metadata)
 
@@ -81,17 +101,26 @@ class InternalDatabase:
                 If several tables are provided, separate them by commas.
                 If None, describes all tables in the database.
         """
+        default_logger.debug(
+            f"Getting schema for tables {[name.strip() for name in table_names.split(',')]}"
+        )
         try:
             if table_names:
                 table_names = [name.strip() for name in table_names.split(",")]
+                default_logger.debug(f"Getting schema for tables {table_names}")
                 tables = [self.metadata.tables[table] for table in table_names]
             else:
+                default_logger.debug("Getting schema for all tables")
                 tables = self.get_tables()
-            return "\n\n".join(format_table_schema(table) for table in tables)
+            output = "\n\n".join(format_table_schema(table) for table in tables)
+            default_logger.debug(f"Schema description: {output}")
+            return output
 
         except KeyError as e:
+            default_logger.debug(f"Table not found: {str(e)}")
             return f"Error: Table not found - {str(e)}"
         except Exception as e:
+            default_logger.debug(f"An unexpected error occurred: {str(e)}")
             return f"An unexpected error occurred: {str(e)}"
 
     @kernel_function
@@ -107,6 +136,7 @@ class InternalDatabase:
                 rows = result.mappings().all()
                 return make_json_serializable(rows)
         except Exception as e:
+            default_logger.debug(f"Query execution failed: {str(e)}")
             return f"Query execution failed: {str(e)}"
 
 

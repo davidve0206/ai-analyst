@@ -2,6 +2,51 @@
 Constants for the Wide World Importers database project, which is used in development.
 """
 
+# TODO: This is likely not the best place for the KPIs definition and dictionary.
+
+from typing import Literal
+from pydantic import BaseModel
+
+
+KpiDirections = Literal["Higher is better", "Lower is better", "No direction"]
+KpiPeriods = Literal["Daily", "Weekly", "Monthly", "Quarterly", "Yearly"]
+
+
+class KpiRequest(BaseModel):
+    """
+    Request model for KPI calculations.
+    """
+
+    name: str
+    description: str
+    direction: KpiDirections
+    period: KpiPeriods
+
+
+KPI_LIST: list[KpiRequest] = [
+    KpiRequest(
+        name="Gross Profit Margin",
+        description="The percentage of revenue that exceeds the cost of the goods sold; it might be referred as profit in the Sales table.",
+        direction="Higher is better",
+        period="Quarterly",
+    )
+]
+
+REPORT_STRUCTURE = """
+1. **Executive Summary**
+    - This section provides a high-level summary of the KPIs for the reporting period, as well as any other key findings or insights.
+    - Current value of KPIs and comparison to last period.
+    - No chars or tables.
+2. **Overview**
+    - Quick snapshot of the value of the KPIs for the last available period.
+    - Comparison with the previous period.
+    - Key insights or highlights about performance.
+3. **Trends and Context**
+    - Short-term trend chart or table (last 3–5 periods) for each KPI.
+    - High-level explanation of what drives changes in each KPI (e.g., volume, price, cost impact, broader market events).
+    - Other relevant operational metrics directly influencing the KPIs.
+"""
+
 COMPANY_DESCRIPTION = """
 Wide World Importers (WWI) is a wholesale novelty goods importer and distributor operating from the San Francisco bay area.
 

@@ -14,7 +14,9 @@ if app_settings.azure_client_id is not None:
 if app_settings.azure_tenant_id is not None:
     os.environ["AZURE_TENANT_ID"] = app_settings.azure_tenant_id
 if app_settings.azure_client_secret is not None:
-    os.environ["AZURE_CLIENT_SECRET"] = app_settings.azure_client_secret.get_secret_value()
+    os.environ["AZURE_CLIENT_SECRET"] = (
+        app_settings.azure_client_secret.get_secret_value()
+    )
 
 azure_credential = DefaultAzureCredential()
 
@@ -40,7 +42,7 @@ def get_azure_sql_access_token_bytes() -> bytes:
 
 # TODO: Review if this is the right place for the following functions.
 # The logic to putting it here is that this is closely related to azure authentication
-def get_azure_sql_connection_string() -> str:
+def get_db_connection_string() -> str:
     """
     Generates the connection string for Azure SQL Database using the ClientSecretCredential.
     """
@@ -51,6 +53,7 @@ def get_azure_sql_connection_string() -> str:
         "Encrypt=yes;"
         "TrustServerCertificate=no;"
         f"Connection Timeout={app_settings.azure_db_connection_timeout};"
+        f"LoginTimeout={app_settings.azure_db_connection_timeout};"
     )
 
     encoded = urllib.parse.quote_plus(connection_string)

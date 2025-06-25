@@ -7,7 +7,7 @@ The following is the report structure I have pictured so far. I personally prefe
 1. **Executive Summary**
     - Key findings
     - Current value of KPIs and comparison to last period
-    - No chars  or tables
+    - No charts or tables
 2. **Overview**
     - Quick snapshot of the value of the KPIs for the current period
     - Comparison with the previous period
@@ -101,7 +101,7 @@ I have identified the [WideWorldImporters](https://github.com/Microsoft/sql-serv
    - Update the timing of autonomous runs
 3. Create a basic agent system that can achieve the following process:
    1. Take information from a PowerBI or Database, depending on API Keys
-   2. Take a list of KPIs provided provided in configuration
+   2. Take a list of KPIs provided in configuration
    3. Create a simplified report (Executive Summary, Overview and Recommendations)
    4. Self-review the report and ensure it has the required information
    5. Email to a set address

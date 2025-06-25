@@ -1,7 +1,9 @@
 import logging
 from logging.handlers import RotatingFileHandler
 
+
 from src.configuration.settings import BASE_DIR
+from semantic_kernel.agents.orchestration.magentic import logger as magentic_logger
 
 # Log file path
 LOG_DIR = BASE_DIR / "logs"
@@ -25,3 +27,4 @@ default_logger.setLevel(logging.DEBUG)
 
 # Set the logging level for  semantic_kernel.kernel to DEBUG.
 logging.getLogger("kernel").setLevel(logging.DEBUG)
+magentic_logger.setLevel(logging.DEBUG)

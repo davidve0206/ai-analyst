@@ -1,5 +1,7 @@
 from semantic_kernel.agents import ChatCompletionAgent
-from semantic_kernel.functions import KernelArguments
+from semantic_kernel.functions import KernelArguments, kernel_function
+
+from src.agents.database_agent import create_database_agent
 
 from .utils.prompt_utils import render_prompt_from_jinja
 from .models import (
@@ -10,27 +12,58 @@ from .models import (
     get_gemini_default_execution_settings,
     get_azure_openai_service,
     get_azure_openai_default_execution_settings,
+    default_function_choice_behavior,
 )
 from .tools.db import InternalDatabase
 
-from src.configuration.consts import DATABASE_CATALOG
+from src.configuration.consts import COMPANY_DESCRIPTION
+from src.configuration.logger import default_logger
+
+
+class DBAgentPlugin:
+    _agent: ChatCompletionAgent
+
+    def __init__(self, internal_db: InternalDatabase, model_type: ModelTypes):
+        self._agent = create_database_agent(
+            internal_db=internal_db, model_type=model_type
+        )
+
+    @kernel_function(
+        name="database_agent_tool",
+        description="A tool to interact with the database agent.",
+    )
+    async def database_agent_tool(self, query: str) -> str:
+        """
+        Get a response from the database agent a tool.
+
+        Args:
+          query (str): The natural language query to send to the agent.
+        """
+        response = await self._agent.get_response(messages=query)
+        if response is None:
+            raise ValueError("No response received from the agent.")
+        return response.content.content
 
 
 def create_internal_data_agent(
     internal_db: InternalDatabase,
-    model_type: ModelTypes = ModelTypes.GEMINI,
+    model_type: ModelTypes = ModelTypes.AZURE_OPENAI,
+    db_agent_model_type: ModelTypes = ModelTypes.AZURE_OPENAI,
 ) -> ChatCompletionAgent:
     """
-    Create an instance of the InternalDataAgent with the necessary configurations.
-    This agent can access internal data and answer questions based on it.
+    Create an instance of the InternalDataAgent with the DatabaseAgent
+    as tool.
     """
     agent_name = "InternalDataAgent"
     system_prompt = render_prompt_from_jinja(
         "internal_data_agent_system_prompt.md.j2",
         {
-            "table_list": internal_db.table_names,
-            "database_catalog": DATABASE_CATALOG,
+            "company_description": COMPANY_DESCRIPTION,
         },
+    )
+
+    default_logger.debug(
+        f"Creating InternalDataAgent with model type: {model_type.value}"
     )
     match model_type:
         case ModelTypes.GEMINI:
@@ -46,10 +79,16 @@ def create_internal_data_agent(
         case _:
             raise ValueError(f"Unsupported model type: {model_type}")
 
+    db_agent_tool = DBAgentPlugin(
+        internal_db=internal_db, model_type=db_agent_model_type
+    )
+
     return ChatCompletionAgent(
         name=agent_name,
+        description="High level agent that can process natural language questions using the company's internal database",
         instructions=system_prompt,
         arguments=KernelArguments(execution_settings=execution_settings),
-        plugins=[internal_db],
+        function_choice_behavior=default_function_choice_behavior,
+        plugins=[db_agent_tool],
         service=model_service,
     )
