@@ -196,3 +196,6 @@ cython_debug/
 
 # MacOS
 *.DS_Store
+
+# Configuration database
+src/configuration/*.db

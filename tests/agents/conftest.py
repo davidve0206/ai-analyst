@@ -1,4 +1,3 @@
-import pytest
 import pytest_asyncio
 
 from src.agents.tools.db import InternalDatabase

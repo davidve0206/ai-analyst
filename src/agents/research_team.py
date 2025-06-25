@@ -4,8 +4,9 @@ from semantic_kernel.agents.runtime import CoreRuntime
 from src.agents.internal_data_agent import create_internal_data_agent
 from src.agents.tools.db import InternalDatabase
 from src.agents.utils.prompt_utils import render_prompt_from_jinja
+from src.configuration.kpis import KpiRequest
 from src.configuration.logger import default_logger
-from src.configuration.company import COMPANY_DESCRIPTION, REPORT_STRUCTURE, KpiRequest
+from src.configuration.company import COMPANY_DESCRIPTION, REPORT_STRUCTURE
 from src.agents.models import AzureOpenAIModels, ModelTypes, get_azure_openai_service
 from src.agents.utils.output_utils import (
     handle_intermediate_steps,

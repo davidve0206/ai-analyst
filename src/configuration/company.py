@@ -1,36 +1,10 @@
 """
 Constants for the Wide World Importers database project, which is used in development.
+
+This file includes information about the company, the database and the report structure,
+which are configuration constants used throughout the project but don't need to be changed
+through the frontend.
 """
-
-# TODO: This is likely not the best place for the KPIs definition and dictionary.
-
-from typing import Literal
-from pydantic import BaseModel
-
-
-KpiDirections = Literal["Higher is better", "Lower is better", "No direction"]
-KpiPeriods = Literal["Daily", "Weekly", "Monthly", "Quarterly", "Yearly"]
-
-
-class KpiRequest(BaseModel):
-    """
-    Request model for KPI calculations.
-    """
-
-    name: str
-    description: str
-    direction: KpiDirections
-    period: KpiPeriods
-
-
-KPI_LIST: list[KpiRequest] = [
-    KpiRequest(
-        name="Gross Profit Margin",
-        description="The percentage of revenue that exceeds the cost of the goods sold; it might be referred as profit in the Sales table.",
-        direction="Higher is better",
-        period="Quarterly",
-    )
-]
 
 REPORT_STRUCTURE = """
 1. **Executive Summary**
