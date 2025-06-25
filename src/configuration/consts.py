@@ -26,7 +26,7 @@ class KpiRequest(BaseModel):
 KPI_LIST: list[KpiRequest] = [
     KpiRequest(
         name="Gross Profit Margin",
-        description="The percentage of revenue that exceeds the cost of goods sold (COGS).",
+        description="The percentage of revenue that exceeds the cost of the goods sold; it might be referred as profit in the Sales table.",
         direction="Higher is better",
         period="Quarterly",
     )

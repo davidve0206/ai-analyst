@@ -85,6 +85,7 @@ def create_internal_data_agent(
 
     return ChatCompletionAgent(
         name=agent_name,
+        description="High level agent that can process natural language questions using the company's internal database",
         instructions=system_prompt,
         arguments=KernelArguments(execution_settings=execution_settings),
         function_choice_behavior=default_function_choice_behavior,
