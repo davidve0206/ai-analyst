@@ -56,4 +56,4 @@ def store_response_with_timestamp(response: str, file_name: str):
     file_path = BASE_DIR / "outputs" / f"{timestamp}-{file_name}"
 
     with open(file_path, "a") as file:
-        file.write(response.content)
+        file.write(response)
