@@ -18,19 +18,19 @@ async def test_single_column_task(internal_database):
     task = "How much revenue did we make every year that's available in the database?"
     expected = [
         {
-            "Year": 2013,
+            "Year": 2022,
             "TotalRevenue": 38373718.70,
         },
         {
-            "Year": 2014,
+            "Year": 2023,
             "TotalRevenue": 48879106.25,
         },
         {
-            "Year": 2015,
+            "Year": 2024,
             "TotalRevenue": 53827320.95,
         },
         {
-            "Year": 2016,
+            "Year": 2025,
             "TotalRevenue": 31181195.30,
         },
     ]
@@ -64,25 +64,25 @@ async def test_multi_column_task(internal_database):
     task = "What is the profit margin for each year available in the database?"
     expected = [
         {
-            "FiscalYear": 2013,
+            "FiscalYear": 2022,
             "TotalRevenue": 38373718.70,
             "TotalProfit": 19143873.90,
             "ProfitMargin": 0.498879,
         },
         {
-            "FiscalYear": 2014,
+            "FiscalYear": 2023,
             "TotalRevenue": 48879106.25,
             "TotalProfit": 24283242.45,
             "ProfitMargin": 0.496802,
         },
         {
-            "FiscalYear": 2015,
+            "FiscalYear": 2024,
             "TotalRevenue": 53827320.95,
             "TotalProfit": 26815310.85,
             "ProfitMargin": 0.498172,
         },
         {
-            "FiscalYear": 2016,
+            "FiscalYear": 2025,
             "TotalRevenue": 31181195.30,
             "TotalProfit": 15486753.70,
             "ProfitMargin": 0.496669,
@@ -121,105 +121,105 @@ async def test_quarterly_task(internal_database):
     task = "What was our quarterly profit margin for the available data?"
     expected = [
         {
-            "Year": 2013,
+            "Year": 2022,
             "Quarter": 1,
             "TotalRevenue": 3770410.85,
             "TotalProfit": 1890687.80,
             "ProfitMargin": 0.501454,
         },
         {
-            "Year": 2013,
+            "Year": 2022,
             "Quarter": 2,
             "TotalRevenue": 10706898.35,
             "TotalProfit": 5328659.55,
             "ProfitMargin": 0.497684,
         },
         {
-            "Year": 2013,
+            "Year": 2022,
             "Quarter": 3,
             "TotalRevenue": 12868769.20,
             "TotalProfit": 6413070.45,
             "ProfitMargin": 0.498343,
         },
         {
-            "Year": 2013,
+            "Year": 2022,
             "Quarter": 4,
             "TotalRevenue": 11027640.30,
             "TotalProfit": 5511456.10,
             "ProfitMargin": 0.499785,
         },
         {
-            "Year": 2014,
+            "Year": 2023,
             "Quarter": 1,
             "TotalRevenue": 11401007.30,
             "TotalProfit": 5669875.95,
             "ProfitMargin": 0.497313,
         },
         {
-            "Year": 2014,
+            "Year": 2023,
             "Quarter": 2,
             "TotalRevenue": 11427372.60,
             "TotalProfit": 5653511.05,
             "ProfitMargin": 0.494734,
         },
         {
-            "Year": 2014,
+            "Year": 2023,
             "Quarter": 3,
             "TotalRevenue": 13643584.25,
             "TotalProfit": 6799583.55,
             "ProfitMargin": 0.498372,
         },
         {
-            "Year": 2014,
+            "Year": 2023,
             "Quarter": 4,
             "TotalRevenue": 12407142.10,
             "TotalProfit": 6160271.90,
             "ProfitMargin": 0.496510,
         },
         {
-            "Year": 2015,
+            "Year": 2024,
             "Quarter": 1,
             "TotalRevenue": 12785549.50,
             "TotalProfit": 6397937.95,
             "ProfitMargin": 0.500403,
         },
         {
-            "Year": 2015,
+            "Year": 2024,
             "Quarter": 2,
             "TotalRevenue": 13796715.65,
             "TotalProfit": 6888240.15,
             "ProfitMargin": 0.499266,
         },
         {
-            "Year": 2015,
+            "Year": 2024,
             "Quarter": 3,
             "TotalRevenue": 14152243.00,
             "TotalProfit": 7028442.20,
             "ProfitMargin": 0.496630,
         },
         {
-            "Year": 2015,
+            "Year": 2024,
             "Quarter": 4,
             "TotalRevenue": 13092812.80,
             "TotalProfit": 6500690.55,
             "ProfitMargin": 0.496508,
         },
         {
-            "Year": 2016,
+            "Year": 2025,
             "Quarter": 1,
             "TotalRevenue": 12995725.70,
             "TotalProfit": 6537343.25,
             "ProfitMargin": 0.503037,
         },
         {
-            "Year": 2016,
+            "Year": 2025,
             "Quarter": 2,
             "TotalRevenue": 13214536.95,
             "TotalProfit": 6505961.90,
             "ProfitMargin": 0.492333,
         },
         {
-            "Year": 2016,
+            "Year": 2025,
             "Quarter": 3,
             "TotalRevenue": 4970932.65,
             "TotalProfit": 2443448.55,
@@ -261,7 +261,7 @@ async def test_last_quarterly_task(internal_database):
     """
     task = "What was our quarterly profit margin for the available data?"
     expected = {
-        "Year": 2016,
+        "Year": 2025,
         "Quarter": 3,
         "TotalRevenue": 4970932.65,
         "TotalProfit": 2443448.55,

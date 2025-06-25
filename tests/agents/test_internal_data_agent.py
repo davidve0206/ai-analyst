@@ -15,19 +15,19 @@ async def test_internal_data_agent_uses_database_agent(internal_database):
     task = "How much revenue did we make every year that's available in the database?"
     expected = [
         {
-            "Year": 2013,
+            "Year": 2022,
             "TotalRevenue": 38373718.70,
         },
         {
-            "Year": 2014,
+            "Year": 2023,
             "TotalRevenue": 48879106.25,
         },
         {
-            "Year": 2015,
+            "Year": 2024,
             "TotalRevenue": 53827320.95,
         },
         {
-            "Year": 2016,
+            "Year": 2025,
             "TotalRevenue": 31181195.30,
         },
     ]
