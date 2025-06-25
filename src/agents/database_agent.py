@@ -32,6 +32,7 @@ def create_database_agent(
         {
             "table_list": internal_db.table_names,
             "database_catalog": DATABASE_CATALOG,
+            "dialect": internal_db.dialect,
         },
     )
 
@@ -49,9 +50,13 @@ def create_database_agent(
             execution_settings = get_azure_openai_default_execution_settings()
         case _:
             raise ValueError(f"Unsupported model type: {model_type}")
+    
+    # The database agent needs additional retries for function calls
+    default_function_choice_behavior.maximum_auto_invoke_attempts = 10
 
     return ChatCompletionAgent(
         name=agent_name,
+        description="An agent that can access internal data and answer questions based on it.",
         instructions=system_prompt,
         arguments=KernelArguments(execution_settings=execution_settings),
         function_choice_behavior=default_function_choice_behavior,

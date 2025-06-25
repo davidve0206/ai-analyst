@@ -36,7 +36,7 @@ API_VERSION_MAPPING = {AzureOpenAIModels.GPT_4o_MINI: "2025-01-01-preview"}
 
 # Default function choice behavior; with additional attempts than default
 default_function_choice_behavior = FunctionChoiceBehavior(
-    enable_kernel_functions=True, maximum_auto_invoke_attempts=15, type_="auto"
+    enable_kernel_functions=True, maximum_auto_invoke_attempts=5, type_="auto"
 )
 
 
