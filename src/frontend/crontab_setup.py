@@ -81,8 +81,6 @@ def setup_monthly_crontab(
 
 
 def crontab_setup_ui():
-    gr.Markdown("# AI Analyst Setup")
-
     # TODO: Replace with actual logic to retrieve the last configuration
     last_config: CrontabFrequency | None = None
 
