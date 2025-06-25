@@ -4,7 +4,7 @@ from semantic_kernel.agents.runtime import InProcessRuntime
 
 from src.agents.research_team import invoke_research_team_task
 from src.agents.tools.db import InternalDatabase
-from src.configuration.consts import KPI_LIST
+from src.configuration.company import KPI_LIST
 from src.configuration.logger import default_logger
 
 

@@ -16,7 +16,7 @@ from .models import (
 )
 from .tools.db import InternalDatabase
 
-from src.configuration.consts import COMPANY_DESCRIPTION
+from src.configuration.company import COMPANY_DESCRIPTION
 from src.configuration.logger import default_logger
 
 

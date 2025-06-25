@@ -14,7 +14,7 @@ from .models import (
 )
 from .tools.db import InternalDatabase
 
-from src.configuration.consts import DATABASE_CATALOG
+from src.configuration.company import DATABASE_CATALOG
 from src.configuration.logger import default_logger
 
 
