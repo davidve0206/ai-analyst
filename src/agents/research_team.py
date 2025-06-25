@@ -25,12 +25,12 @@ async def invoke_research_team_task(
         internal_db=internal_db,
         runtime=runtime,
     )
-    store_response_with_timestamp(result, f"{kpi.name}_report.md")
+    output_path = store_response_with_timestamp(result, f"{kpi.name}_report.md")
     if results_dict is not None:
         results_dict[kpi.name] = result
 
     default_logger.info(f"Completed research task for KPI: {kpi.name}")
-    print(result)
+    return output_path
 
 
 async def research_team_task(
