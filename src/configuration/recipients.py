@@ -3,22 +3,19 @@ from sqlalchemy.orm import sessionmaker
 from src.configuration.db import RecipientEmail
 
 
-def add_recipient_email(session_maker: sessionmaker, emails: str):
+def add_recipient_email(session_maker: sessionmaker, email: str):
     session = session_maker()
     try:
-        # Add new emails
-        for email in emails:
-            session.add(RecipientEmail(email=email))
+        session.add(RecipientEmail(email=email))
         session.commit()
     finally:
         session.close()
 
 
-def remove_recipient_email(session_maker: sessionmaker, id: int):
+def remove_recipient_email(session_maker: sessionmaker, email: str):
     session = session_maker()
     try:
-        # Remove a single recipient email by ID
-        session.query(RecipientEmail).filter(RecipientEmail.id == id).delete()
+        session.query(RecipientEmail).filter(RecipientEmail.email == email).delete()
         session.commit()
     finally:
         session.close()

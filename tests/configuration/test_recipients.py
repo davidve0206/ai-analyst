@@ -29,7 +29,7 @@ def test_can_remove_recipient_emails(test_session_maker):
     for email in emails:
         add_recipient_email(test_session_maker, [email])
 
-    remove_recipient_email(test_session_maker, 1)  # Remove the first email
+    remove_recipient_email(test_session_maker, emails[0])  # Remove the first email
     retrieved_emails = get_recipient_emails(test_session_maker)
     assert len(retrieved_emails) == len(emails) - 1
     assert emails[0] not in retrieved_emails  # First email should be removed

@@ -37,7 +37,7 @@ class RecipientEmail(Base):
     email = Column(String, nullable=False)
 
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "kpi_data.db")
+DB_PATH = os.path.join(os.path.dirname(__file__), "configuration.db")
 DB_URL = f"sqlite:///{DB_PATH}"
 
 
