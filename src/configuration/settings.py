@@ -10,10 +10,9 @@ class Settings(BaseSettings):
     email_from_address: EmailStr = "test@test.com"
     email_username: str | None
     email_password: SecretStr | None
-    email_host: str = "smtp.gmail.com"
-    email_port: int = 465
-    email_use_ssl: bool = False
-    email_recipient: EmailStr = "test@test.com"
+    email_host: str
+    email_port: int
+    email_use_ssl: bool
 
     # Azure identity settings
     # Allows None in case the user wants to log in with a different method
