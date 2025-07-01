@@ -11,14 +11,11 @@ from src.configuration.logger import default_logger
 from src.configuration.db import default_config_db_sessionmaker
 from src.configuration.recipients import get_recipient_emails
 from src.configuration.settings import app_settings
+from src.configuration.auth import get_azure_ai_agent_client
 
 
 async def main():
     default_logger.info("Starting agent main process...")
-
-    # Get a Runtime instance
-    runtime = InProcessRuntime()
-    runtime.start()
 
     # Get the list of KPIs to be processed
     request = get_sales_report_request(default_config_db_sessionmaker)
@@ -26,6 +23,12 @@ async def main():
         default_logger.error("No Sales requests found. Exiting.")
         return
 
+    # Get a Runtime instance
+    runtime = InProcessRuntime()
+    runtime.start()
+
+    # Get the Azure AI Agent client
+    azure_ai_client = get_azure_ai_agent_client()
     # Initialize the internal database
     internal_db = await InternalDatabase.create()
 
@@ -33,6 +36,7 @@ async def main():
         request=request,
         internal_db=internal_db,
         runtime=runtime,
+        azure_ai_client=azure_ai_client,
     )
 
     # Send email notification with the report
@@ -49,7 +53,10 @@ async def main():
     default_logger.info(
         f"AI Analyst agent started successfully. Report saved at {pdf_path}."
     )
-
+    
+    await runtime.stop_when_idle()
+    azure_ai_client.close()
+    
     """ 
     For future use
     results = {}

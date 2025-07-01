@@ -38,7 +38,7 @@ async def render_prompt_from_yml_template(
     arguments = KernelArguments(**context)
     return await prompt_template.render(kernel, arguments)
 
-def render_prompt_from_jinja(template_name: str, context: dict) -> str:
+def render_prompt_from_jinja(template_name: str, context: dict = {}) -> str:
     """
     Renders a Jinja2 template with the given context.
 

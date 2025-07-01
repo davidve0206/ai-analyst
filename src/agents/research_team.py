@@ -1,6 +1,8 @@
 from semantic_kernel.agents import StandardMagenticManager, MagenticOrchestration
 from semantic_kernel.agents.runtime import CoreRuntime
+from azure.ai.projects.aio import AIProjectClient
 
+from src.agents.coder_agent import create_coder_agent
 from src.agents.internal_data_agent import create_internal_data_agent
 from src.agents.tools.db import InternalDatabase
 from src.agents.utils.prompt_utils import render_prompt_from_jinja
@@ -18,12 +20,14 @@ async def invoke_research_team_task(
     request: KpiRequest | SalesReportRequest,
     internal_db: InternalDatabase,
     runtime: CoreRuntime,
+    azure_ai_client: AIProjectClient,
     results_dict: dict[str, str] | None = None,
 ):
     result = await research_team_task(
         request=request,
         internal_db=internal_db,
         runtime=runtime,
+        azure_ai_client=azure_ai_client,
     )
     output_path = store_response_with_timestamp(result, f"{request.name}_report.md")
     if results_dict is not None:
@@ -37,6 +41,7 @@ async def research_team_task(
     request: KpiRequest | SalesReportRequest,
     internal_db: InternalDatabase,
     runtime: CoreRuntime,
+    azure_ai_client: AIProjectClient,
 ) -> str | None:
     """
     Research team task to handle KPI requests.
@@ -80,6 +85,11 @@ async def research_team_task(
         db_agent_model_type=ModelTypes.AZURE_OPENAI,
     )
 
+    coder_agent = await create_coder_agent(
+        model_type=ModelTypes.AZURE_OPENAI,
+        azure_ai_client=azure_ai_client,
+    )
+
     manager = StandardMagenticManager(
         chat_completion_service=get_azure_openai_service(
             model=AzureOpenAIModels.GPT_4o_MINI,
@@ -87,7 +97,7 @@ async def research_team_task(
     )
 
     magentic_orchestration = MagenticOrchestration(
-        members=[db_agent],
+        members=[db_agent, coder_agent],
         manager=manager,
         agent_response_callback=handle_intermediate_steps,
     )
@@ -98,4 +108,10 @@ async def research_team_task(
         runtime=runtime,
     )
     value = await orchestration_result.get()
+
+    # Delete the coder agent after use
+    # This is necessary to clean up resources as the coder agent is created on
+    # azure AI foundry.
+    await azure_ai_client.agents.delete_agent(coder_agent.id)
+
     return value.content

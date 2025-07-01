@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 
     # Model settings
     gemini_api_key: SecretStr | None = None
+    azure_foundry_project_endpoint: str | None = None
     azure_openai_api_key: SecretStr | None = None
     azure_openai_endpoint: str | None = None
 
