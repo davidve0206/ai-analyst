@@ -6,7 +6,12 @@ from src.configuration.db import (
     default_config_db_sessionmaker,
 )
 from src.configuration.recipients import add_recipient_email
-from src.configuration.kpis import KpiRequest, add_kpi_request
+from src.configuration.kpis import (
+    KpiRequest,
+    SalesReportRequest,
+    add_kpi_request,
+    add_sales_report_request,
+)
 
 
 def populate_default_db():
@@ -21,11 +26,17 @@ def populate_default_db():
         direction=KpiDirectionsEnum.HIGHER.value,
         period=KpiPeriodsEnum.QUARTERLY.value,
     )
+    sales = SalesReportRequest(
+        grouping="STATE",
+        grouping_value="California",
+        period=KpiPeriodsEnum.MONTHLY.value,
+    )
 
     for email in recipient_emails:
         add_recipient_email(session_maker, email)
 
     add_kpi_request(session_maker, kpi)
+    add_sales_report_request(session_maker, sales)
 
 
 if __name__ == "__main__":

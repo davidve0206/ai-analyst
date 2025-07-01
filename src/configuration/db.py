@@ -21,6 +21,13 @@ class KpiPeriodsEnum(PyEnum):
     YEARLY = "Yearly"
 
 
+class SalesGroupingsEnum(PyEnum):
+    COUNTRY = "Country"
+    STATE = "State"
+    CITY = "City"
+    PRODUCT_CATEGORY = "Product Category"
+
+
 # SQLAlchemy model
 class KpiRequestModel(Base):
     __tablename__ = "kpi_requests"
@@ -30,6 +37,13 @@ class KpiRequestModel(Base):
     direction = Column(Enum(KpiDirectionsEnum), nullable=False)
     period = Column(Enum(KpiPeriodsEnum), nullable=False)
 
+
+class SalesReportRequestModel(Base):
+    __tablename__ = "sales_report_requests"
+    id = Column(Integer, primary_key=True)
+    period = Column(Enum(KpiPeriodsEnum), nullable=False)
+    grouping = Column(Enum(SalesGroupingsEnum), nullable=False)
+    grouping_value = Column(String, nullable=False)
 
 class RecipientEmail(Base):
     __tablename__ = "recipient_emails"
