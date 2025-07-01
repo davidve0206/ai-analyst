@@ -7,8 +7,10 @@ demo = gr.Blocks()
 
 with demo:
     with gr.Row():
-        gr.Markdown("# AI Analyst Setup")
-        gr.Button("Run Now", variant="primary").click(agent_main)
+        with gr.Column(scale=4):
+            gr.Markdown("# AI Analyst Setup")
+        with gr.Column(scale=1):
+            gr.Button("Run Now", variant="primary").click(agent_main)
 
     crontab_setup_ui()
     kpis_setup_ui()
