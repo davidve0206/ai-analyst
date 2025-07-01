@@ -6,7 +6,7 @@ from src.agents.research_team import invoke_research_team_task
 from src.agents.tools.db import InternalDatabase
 from src.agents.utils import email_service
 from src.agents.utils.output_utils import convert_markdown_to_pdf
-from src.configuration.kpis import get_kpi_requests
+from src.configuration.kpis import get_sales_report_request
 from src.configuration.logger import default_logger
 from src.configuration.db import default_config_db_sessionmaker
 from src.configuration.recipients import get_recipient_emails
@@ -21,16 +21,16 @@ async def main():
     runtime.start()
 
     # Get the list of KPIs to be processed
-    kpi = get_kpi_requests(default_config_db_sessionmaker)
-    if not kpi:
-        default_logger.error("No KPI requests found. Exiting.")
+    request = get_sales_report_request(default_config_db_sessionmaker)
+    if not request:
+        default_logger.error("No Sales requests found. Exiting.")
         return
 
     # Initialize the internal database
     internal_db = await InternalDatabase.create()
 
     md_file_path = await invoke_research_team_task(
-        kpi=kpi,
+        request=request,
         internal_db=internal_db,
         runtime=runtime,
     )
