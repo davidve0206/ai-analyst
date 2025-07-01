@@ -3,6 +3,7 @@
 from src.configuration.db import (
     KpiPeriodsEnum,
     KpiDirectionsEnum,
+    SalesGroupingsEnum,
     default_config_db_sessionmaker,
 )
 from src.configuration.recipients import add_recipient_email
@@ -27,7 +28,7 @@ def populate_default_db():
         period=KpiPeriodsEnum.QUARTERLY.value,
     )
     sales = SalesReportRequest(
-        grouping="STATE",
+        grouping=SalesGroupingsEnum.STATE.value,
         grouping_value="California",
         period=KpiPeriodsEnum.MONTHLY.value,
     )

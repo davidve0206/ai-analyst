@@ -5,6 +5,7 @@ from src.configuration.db import (
     KpiDirectionsEnum,
     KpiPeriodsEnum,
     KpiRequestModel,
+    SalesGroupingsEnum,
     SalesReportRequestModel,
 )
 
@@ -70,7 +71,7 @@ def add_sales_report_request(session_maker: sessionmaker, report: SalesReportReq
         # Add new sales report request
         new_report = SalesReportRequestModel(
             period=KpiPeriodsEnum(report.period),
-            grouping=report.grouping,
+            grouping=SalesGroupingsEnum(report.grouping),
             grouping_value=report.grouping_value,
         )
         session.add(new_report)
