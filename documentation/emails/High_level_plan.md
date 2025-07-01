@@ -112,6 +112,7 @@ I have identified the [WideWorldImporters](https://github.com/Microsoft/sql-serv
     3. Implement research plan
     4. Add sections to the report
 6. Add "correction plans" for special cases
+    - Include attempting to obtain historical correlation - check similar clients in the past (e.g., if a client's revenue is down 10%, how have similar clients behaved in the past)
 7. Open to take more than a single KPI
     - Add an editor agent that can take all the individual reports and make a consolidated one
 8. Prompt Engineering
