@@ -63,7 +63,7 @@ async def main():
 
     await runtime.stop_when_idle()
     await azure_ai_client.close()
-    clean_temp_folder()
+    # clean_temp_folder() # Commented out for debugging purposes, can be uncommented later
 
     """ 
     For future use
