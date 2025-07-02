@@ -1,4 +1,4 @@
-import gradio as gr
+import streamlit as st
 
 from src.configuration.db import default_config_db_sessionmaker
 from src.configuration.recipients import (
@@ -8,55 +8,52 @@ from src.configuration.recipients import (
 )
 
 
-def add_and_rerender(email_input):
-    """Add an email and re-render the list."""
-    add_recipient_email(default_config_db_sessionmaker, email_input)
-    # Returns the updated list of recipient emails and clears the input field
-    return get_recipient_emails(default_config_db_sessionmaker), ""
-
-
-def remove_and_rerender(email_to_remove):
-    """Remove an email and re-render the list."""
-    remove_recipient_email(default_config_db_sessionmaker, email_to_remove)
-    return get_recipient_emails(default_config_db_sessionmaker)
-
-
 def recipients_setup_ui():
-    gr.Markdown(
-        """
-        # Recipients Setup
-
-        Here you can update the emails that will receive the AI Analyst's reports.
-        """
+    st.markdown("---")
+    st.header("Recipients Setup")
+    st.write(
+        "Here you can update the emails that will receive the AI Analyst's reports."
     )
 
-    email_state = gr.State(get_recipient_emails(default_config_db_sessionmaker))
+    # Get current recipients
+    current_emails = get_recipient_emails(default_config_db_sessionmaker)
 
-    @gr.render(inputs=email_state)
-    def render_email_list(email_list):
-        """Render the list of recipient emails."""
-        gr.Markdown(f"## Current Recipients ({len(email_list)}):")
-        for email in email_list:
-            with gr.Row():
-                gr.Textbox(email, show_label=False, container=False)
-                delete_btn = gr.Button("Remove", scale=0, variant="stop")
+    st.subheader(f"Current Recipients ({len(current_emails)})")
 
-                def remove(email=email):
-                    return remove_and_rerender(email)
+    if current_emails:
+        # Display current recipients with remove buttons
+        for i, email in enumerate(current_emails):
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.text(email)
+            with col2:
+                if st.button("Remove", key=f"remove_{i}_{email}"):
+                    remove_recipient_email(default_config_db_sessionmaker, email)
+                    st.success(f"Removed {email}")
+                    st.rerun()
+    else:
+        st.info("No recipients configured yet.")
 
-                delete_btn.click(remove, None, [email_state])
+    st.subheader("Add New Recipient")
 
-    gr.Markdown("## Add New Recipient:")
+    col1, col2 = st.columns([4, 1], vertical_alignment="bottom")
 
-    email_input = gr.Textbox(
-        label="Email Address",
-        placeholder="Enter the email address to receive reports",
-        type="email",
-    )
-    submit_button = gr.Button("Add Email")
-    submit_button.click(
-        add_and_rerender,
-        inputs=[email_input],
-        trigger_mode="once",
-        outputs=[email_state, email_input],
-    )
+    with col1:
+        new_email = st.text_input(
+            "Email Address",
+            placeholder="Enter the email address to receive reports",
+            key="new_recipient_email",
+        )
+
+    with col2:
+        st.write("")  # Add spacing
+        if st.button("Add Email", key="add_recipient"):
+            if new_email:
+                if "@" in new_email and "." in new_email:  # Basic email validation
+                    add_recipient_email(default_config_db_sessionmaker, new_email)
+                    st.success(f"Added {new_email}")
+                    st.rerun()
+                else:
+                    st.error("Please enter a valid email address.")
+            else:
+                st.error("Please enter an email address.")

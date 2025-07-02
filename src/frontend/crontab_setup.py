@@ -1,4 +1,4 @@
-import gradio as gr
+import streamlit as st
 from src.configuration.crontab import (
     JobFrequency,
     CrontabFrequency,
@@ -84,64 +84,79 @@ def crontab_setup_ui():
     # TODO: Replace with actual logic to retrieve the last configuration
     last_config: CrontabFrequency | None = None
 
-    if last_config:
-        gr.Markdown(f"Update the frequency of the analyst's runs: {last_config}")
-    else:
-        gr.Markdown("Set up your how frequently the AI Analyst runs.")
+    st.markdown("---")
+    st.header("Cron Schedule Setup")
 
-        cron_frequency = gr.Radio(
-            choices=[JobFrequency.DAY.value, JobFrequency.MONTH.value],
-            label="Cron Frequency",
+    if last_config:
+        st.info(f"Update the frequency of the analyst's runs: {last_config}")
+    else:
+        st.write("Set up how frequently the AI Analyst runs.")
+
+        frequency = st.radio(
+            "When do you want the AI Analyst to run?",
+            options=[JobFrequency.DAY.value, JobFrequency.MONTH.value],
+            key="cron_frequency",
         )
 
-        @gr.render(inputs=cron_frequency)
-        def setup_crontab(frequency: str):
-            if frequency == JobFrequency.DAY.value:
-                # Set up daily cron job
-                days_dropdown = gr.Dropdown(
-                    choices=weekday_choices,
-                    multiselect=True,
-                    label="Days of the week the agent will run",
-                )
-                hour_dropdown = gr.Dropdown(
-                    choices=hour_choices,
-                    label="Hour of the day",
-                    info="Hour in UTC (0-23); adjust for your timezone if necessary.",
+        if frequency == JobFrequency.DAY.value:
+            col1, col2 = st.columns(2)
+
+            with col1:
+                selected_days = st.multiselect(
+                    "Days of the week the agent will run",
+                    options=weekday_choices,
+                    key="daily_days",
                 )
 
-                setup_button = gr.Button("Set Daily Execution")
-                output_text = gr.Textbox(label="Result", interactive=False)
-
-                setup_button.click(
-                    fn=setup_daily_crontab,
-                    inputs=[hour_dropdown, days_dropdown],
-                    outputs=output_text,
+            with col2:
+                selected_hour = st.selectbox(
+                    "Hour of the day",
+                    options=hour_choices,
+                    help="Hour in UTC (0-23); adjust for your timezone if necessary.",
+                    key="daily_hour",
                 )
 
-            elif frequency == JobFrequency.MONTH.value:
-                month_dropdown = gr.Dropdown(
-                    choices=month_choices,
-                    multiselect=True,
-                    label="Months the agent will run",
-                    info="Hour in UTC (0-23); adjust for your timezone if necessary.",
-                )
-                days_dropdown = gr.Dropdown(
-                    choices=day_of_month_choices,
-                    multiselect=True,
-                    label="Days of the month the agent will run",
-                )
-                hour_dropdown = gr.Dropdown(
-                    choices=hour_choices, label="Hour of the day"
+            if st.button("Set Daily Execution", key="daily_setup"):
+                if selected_days and selected_hour is not None:
+                    # Convert string days back to Weekday enums
+                    weekday_enums = [Weekday(day) for day in selected_days]
+                    result = setup_daily_crontab(selected_hour, weekday_enums)
+                    st.success(result)
+                else:
+                    st.error("Please select both days and hour.")
+
+        elif frequency == JobFrequency.MONTH.value:
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                selected_months = st.multiselect(
+                    "Months the agent will run",
+                    options=month_choices,
+                    key="monthly_months",
                 )
 
-                setup_button = gr.Button("Set Monthly Execution")
-                output_text = gr.Textbox(label="Result", interactive=False)
-
-                setup_button.click(
-                    fn=setup_monthly_crontab,
-                    inputs=[hour_dropdown, days_dropdown, month_dropdown],
-                    outputs=output_text,
+            with col2:
+                selected_days = st.multiselect(
+                    "Days of the month the agent will run",
+                    options=day_of_month_choices,
+                    key="monthly_days",
                 )
 
-            else:
-                return
+            with col3:
+                selected_hour = st.selectbox(
+                    "Hour of the day",
+                    options=hour_choices,
+                    help="Hour in UTC (0-23); adjust for your timezone if necessary.",
+                    key="monthly_hour",
+                )
+
+            if st.button("Set Monthly Execution", key="monthly_setup"):
+                if selected_months and selected_days and selected_hour is not None:
+                    # Convert string months back to Month enums
+                    month_enums = [Month(month) for month in selected_months]
+                    result = setup_monthly_crontab(
+                        selected_hour, selected_days, month_enums
+                    )
+                    st.success(result)
+                else:
+                    st.error("Please select months, days, and hour.")
