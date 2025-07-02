@@ -55,7 +55,7 @@ async def main():
     )
     
     await runtime.stop_when_idle()
-    azure_ai_client.close()
+    await azure_ai_client.close()
     
     """ 
     For future use
