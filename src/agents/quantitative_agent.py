@@ -7,7 +7,7 @@ from src.agents.tools.projections import ProjectionsPlugin
 from src.agents.utils.prompt_utils import render_prompt_from_jinja
 
 
-async def create_quantitavie_agent(
+async def create_quantitative_agent(
     azure_ai_client: AIProjectClient,
     model_type: ModelTypes = ModelTypes.AZURE_OPENAI,
 ) -> AzureAIAgent:
@@ -15,7 +15,7 @@ async def create_quantitavie_agent(
     Create an instance of the QuantitativeAgent with the Code Interpreter tool.
     """
     code_interpreter = CodeInterpreterTool()
-    system_prompt = render_prompt_from_jinja("quantitavie_agent_system_prompt.md.j2")
+    system_prompt = render_prompt_from_jinja("quantitative_agent_system_prompt.md.j2")
 
     if model_type == ModelTypes.AZURE_OPENAI:
         agent_definition = await azure_ai_client.agents.create_agent(
