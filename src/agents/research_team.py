@@ -38,7 +38,7 @@ async def invoke_research_team_task(
     edited_report_content = edited_report.content.content
 
     output_path = store_response_with_timestamp(
-        response=edited_report_content, file_name=f"{request.name}_report.md"
+        response=edited_report_content, file_name=f"{request.name}"
     )
     default_logger.info(f"Completed research task for KPI: {request.name}")
     return output_path
