@@ -186,3 +186,75 @@ def test_plot_values_and_store_error_handling():
     assert "Invalid plot type" in result["error"]
 
     # Note: Error cases don't generate plot files, so no cleanup needed
+
+
+def test_plot_values_and_store_many_labels():
+    """Test plotting functionality with many labels to verify label formatting improvements."""
+    plugin = ProjectionsPlugin()
+
+    # Create data with many labels (simulating 2 years of monthly data)
+    labels = []
+    data = []
+    base_value = 1000
+
+    # Generate 24 months of data (2 years)
+    for year in [2023, 2024]:
+        for month in range(1, 13):
+            labels.append(f"{year}-{month:02d}")
+            # Add some variation to the data
+            data.append(base_value + (month * 10) + (year - 2023) * 200)
+
+    result = plugin.plot_values_and_store(
+        labels=labels,
+        data=data,
+        plot_tite="Test Many Labels Plot",
+        plot_type="line",
+        include_trend_line=True,
+        projection_period=3,
+    )
+
+    # Check that plot was created successfully
+    assert "error" not in result
+    assert "plot_path" in result
+    assert os.path.exists(result["plot_path"])
+    assert "data_summary" in result
+    assert len(result["data_summary"]["historical_data"]) == 24
+
+    # Cleanup
+    if os.path.exists(result["plot_path"]):
+        os.remove(result["plot_path"])
+
+
+def test_plot_values_and_store_extreme_many_labels():
+    """Test plotting functionality with extreme number of labels to verify skipping logic."""
+    plugin = ProjectionsPlugin()
+
+    # Create data with extreme number of labels (simulating daily data for 3 months)
+    labels = []
+    data = []
+    base_value = 1000
+
+    # Generate 90 days of data
+    for day in range(1, 91):
+        labels.append(f"Day-{day}")
+        data.append(base_value + (day * 5))
+
+    result = plugin.plot_values_and_store(
+        labels=labels,
+        data=data,
+        plot_tite="Test Extreme Labels Plot",
+        plot_type="bar",
+        include_trend_line=False,
+        projection_period=0,
+    )
+
+    # Check that plot was created successfully
+    assert "error" not in result
+    assert "plot_path" in result
+    assert os.path.exists(result["plot_path"])
+    assert "data_summary" in result
+    assert len(result["data_summary"]["historical_data"]) == 90
+
+    # Cleanup
+    if os.path.exists(result["plot_path"]):
+        os.remove(result["plot_path"])

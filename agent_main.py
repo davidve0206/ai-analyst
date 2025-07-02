@@ -14,7 +14,7 @@ from src.configuration.kpis import get_sales_report_request
 from src.configuration.logger import default_logger
 from src.configuration.db import default_config_db_sessionmaker
 from src.configuration.recipients import get_recipient_emails
-from src.configuration.settings import TEMP_DIR, app_settings
+from src.configuration.settings import app_settings
 from src.configuration.auth import get_azure_ai_agent_client
 
 

@@ -49,8 +49,8 @@ class ProjectionsPlugin:
         x_axis_name: str = "Time Period",
         y_axis_name: str = "Value",
         plot_type: Literal["line", "bar", "horizontal_bar"] = "line",
-        include_trend_line: bool = True,
-        projection_period: int = 3,
+        include_trend_line: bool = False,
+        projection_period: int = 0,
     ) -> dict[str, str | dict]:
         """
         Generate a plot of the financial values with a trend line
@@ -187,6 +187,29 @@ class ProjectionsPlugin:
         plt.ylabel(y_axis_name, fontsize=12)
         plt.legend()
         plt.grid(True, alpha=0.3)
+
+        # Handle label formatting based on number of labels
+        total_labels = len(labels) + (projection_period if projection_period > 0 else 0)
+
+        # For horizontal bar plots, no x-axis label adjustments needed
+        if plot_type != "horizontal_bar":
+            ax = plt.gca()
+
+            if total_labels > 10:
+                # Calculate skip factor to show approximately 10 labels
+                skip_factor = max(1, total_labels // 10)
+
+                # Hide labels that don't match the skip pattern
+                for i, label in enumerate(ax.get_xticklabels()):
+                    if i % skip_factor != 0 and i != len(ax.get_xticklabels()) - 1:
+                        label.set_visible(False)
+
+                # Rotate remaining visible labels
+                plt.xticks(rotation=45, ha="right")
+            elif total_labels > 8:
+                # Rotate labels when there are more than 8 labels
+                plt.xticks(rotation=45, ha="right")
+
         plt.tight_layout()
 
         # Save the plot to the outputs directory
