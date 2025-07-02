@@ -3,7 +3,9 @@ from pydantic_settings import BaseSettings
 from pydantic import EmailStr, ConfigDict, SecretStr
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-
+OUTPUTS_DIR = BASE_DIR / "outputs"
+TEMP_DIR = OUTPUTS_DIR / "temp"
+STORAGE_DIR = OUTPUTS_DIR / "storage"
 
 class Settings(BaseSettings):
     # Email settings
@@ -28,6 +30,7 @@ class Settings(BaseSettings):
 
     # Model settings
     gemini_api_key: SecretStr | None = None
+    azure_foundry_project_endpoint: str | None = None
     azure_openai_api_key: SecretStr | None = None
     azure_openai_endpoint: str | None = None
 

@@ -1,3 +1,6 @@
+""" NOTE: For now this isn't used, as the MVP only allows Sales Reports, but
+the logic might be useful when expanding the system."""
+
 import gradio as gr
 from src.configuration.db import (
     default_config_db_sessionmaker,

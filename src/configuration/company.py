@@ -6,21 +6,6 @@ which are configuration constants used throughout the project but don't need to 
 through the frontend.
 """
 
-REPORT_STRUCTURE = """
-1. **Executive Summary**
-    - This section provides a high-level summary of the KPIs for the reporting period, as well as any other key findings or insights.
-    - Current value of KPIs and comparison to last period.
-    - No chars or tables.
-2. **Overview**
-    - Quick snapshot of the value of the KPIs for the last available period.
-    - Comparison with the previous period.
-    - Key insights or highlights about performance.
-3. **Trends and Context**
-    - Short-term trend chart or table (last 3–5 periods) for each KPI.
-    - High-level explanation of what drives changes in each KPI (e.g., volume, price, cost impact, broader market events).
-    - Other relevant operational metrics directly influencing the KPIs.
-"""
-
 COMPANY_DESCRIPTION = """
 Wide World Importers (WWI) is a wholesale novelty goods importer and distributor operating from the San Francisco bay area.
 
