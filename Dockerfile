@@ -20,4 +20,4 @@ COPY --from=deps /app/.venv /app/.venv
 COPY . .
 RUN uv sync --frozen --no-dev
 ENV PATH="/app/.venv/bin:$PATH"
-CMD ["gradio", "frontend_main.py"]
+CMD ["streamlit", "run", "frontend_main.py", "--server.address", "0.0.0.0"]
