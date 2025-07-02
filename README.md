@@ -4,6 +4,7 @@
 
 Framework: [Microsoft's Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/)
 Database: Azure SQL
+Frontend: [Streamlit](https://docs.streamlit.io/)
 
 ## Configuration
 

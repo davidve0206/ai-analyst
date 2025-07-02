@@ -39,7 +39,7 @@ flowchart TD
 
   %% System boundary: Single VM or Container
   subgraph system["Single VM or Container"]
-    frontend["<b>Configuration Frontend</b><br/>(Gradio)"]
+    frontend["<b>Configuration Frontend</b><br/>(StreamLit)"]
     
     %% Agentic System boundary
     subgraph agent_system ["Agentic System"]
@@ -96,7 +96,7 @@ I have identified the [WideWorldImporters](https://github.com/Microsoft/sql-serv
     - Agent inputs - *KPIs configured by the user*
     - Sample data - *WideWorldImporters Sample Dataset*
 2. Create basic configuration frontend *(Done)*:
-   - Decide the stack - *I am using Gradio, a python library that renders a simple frontend*
+   - Decide the stack - *I am using StreamLit, a python library that renders a simple frontend*
    - Set up the system to run autonomously
    - Update the timing of autonomous runs
 3. Create a basic agent system that can achieve the following process *(Done)*:
