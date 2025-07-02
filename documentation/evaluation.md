@@ -14,6 +14,7 @@ For the final report, we will follow a scoring system that evaluates the followi
    5. Does the report include at least one graph?
    6. Does the report include a projection of the KPI?
    7. Is the data retrieved correct? (i.e., manually retrieving the data results in the same numbers)
+   8. Does the report accurately present the last information period?
 2. Questions regarding depth (evaluates reasoning capabilities):
    1. Is the content of each section accurate to the section's description? (5 points, 1 per section)
    2. Does the analysis in the report accurately represent the evolution of the KPI? (e.g., if there is seasonality, as there usually is in sales, the best comparison is the same period the year before, not the previous month)
@@ -23,6 +24,7 @@ For the final report, we will follow a scoring system that evaluates the followi
    6. Are all projections adequate for the data presented?  (e.g., if the data represents categories, a trend line and projection does not make sense)
    7. Does the report accurately note any "special case" present? (e.g., declining sales or a sharp change in trend)
    8. Does the report provide next steps for any "special case" present?
+   9. Are all statements in the report sustained with data? (i.e., make sure the agent didn't make something up)
 
 ## Data
 
