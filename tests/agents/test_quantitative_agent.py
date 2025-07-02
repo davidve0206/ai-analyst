@@ -4,22 +4,22 @@ import pytest_asyncio
 from azure.ai.projects.aio import AIProjectClient
 from semantic_kernel.agents import AzureAIAgent
 
-from src.agents.coder_agent import create_coder_agent
+from src.agents.quantitative_agent import create_quantitavie_agent
 
 
 @pytest_asyncio.fixture(scope="function")
-async def coder_agent(azure_ai_client: AIProjectClient):
+async def quantitavie_agent(azure_ai_client: AIProjectClient):
     """
-    Fixture to create an instance of CoderAgent for testing.
+    Fixture to create an instance of QuantitativeAgent for testing.
     This agent is used to test code generation and execution capabilities.
     """
-    agent = await create_coder_agent(azure_ai_client=azure_ai_client)
+    agent = await create_quantitavie_agent(azure_ai_client=azure_ai_client)
     yield agent
     await azure_ai_client.agents.delete_agent(agent.id)
 
 
 @pytest.mark.asyncio
-async def test_task_with_basic_interpreter(coder_agent: AzureAIAgent):
+async def test_task_with_basic_interpreter(quantitavie_agent: AzureAIAgent):
     """
     Test the agent with a task that requires basic code generation and execution.
     """
@@ -30,7 +30,7 @@ async def test_task_with_basic_interpreter(coder_agent: AzureAIAgent):
     What is the average yearly revenue?"""
     expected = 340
 
-    response = await coder_agent.get_response(messages=task)
+    response = await quantitavie_agent.get_response(messages=task)
 
     assert response is not None
 
@@ -40,7 +40,7 @@ async def test_task_with_basic_interpreter(coder_agent: AzureAIAgent):
 
 
 @pytest.mark.asyncio
-async def test_task_with_intermediate_interpreter(coder_agent: AzureAIAgent):
+async def test_task_with_intermediate_interpreter(quantitavie_agent: AzureAIAgent):
     """
     Test the agent with a task that requires basic code generation and execution.
     """
@@ -53,7 +53,7 @@ async def test_task_with_intermediate_interpreter(coder_agent: AzureAIAgent):
         "7.46"  # %, but might include more decimal places so we check for substring
     )
 
-    response = await coder_agent.get_response(messages=task)
+    response = await quantitavie_agent.get_response(messages=task)
 
     assert response is not None
 
@@ -63,7 +63,7 @@ async def test_task_with_intermediate_interpreter(coder_agent: AzureAIAgent):
 
 
 @pytest.mark.asyncio
-async def test_task_with_projection_tool(coder_agent: AzureAIAgent):
+async def test_task_with_projection_tool(quantitavie_agent: AzureAIAgent):
     """
     Test the agent with a task that requires the projection tool.
     """
@@ -74,7 +74,7 @@ async def test_task_with_projection_tool(coder_agent: AzureAIAgent):
     What is the projected revenue for the three years starting in 2026 round to integers?"""
     expected = expected = {2026: 400, 2027: 420, 2028: 440}
 
-    response = await coder_agent.get_response(messages=task)
+    response = await quantitavie_agent.get_response(messages=task)
 
     assert response is not None
 

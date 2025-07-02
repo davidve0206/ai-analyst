@@ -4,7 +4,7 @@ from src.agents.tools.projections import ProjectionsPlugin
 
 
 def test_projections_tool_projection():
-    """This test is the counterpart to the test in the CoderAgent test suite.
+    """This test is the counterpart to the test in the QuantitativeAgent test suite.
 
     It tests the ProjectionsPlugin directly, ensuring it can calculate projections."""
 
