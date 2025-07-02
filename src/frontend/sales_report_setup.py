@@ -1,4 +1,4 @@
-import gradio as gr
+import streamlit as st
 from src.configuration.db import (
     default_config_db_sessionmaker,
     KpiPeriodsEnum,
@@ -51,46 +51,53 @@ def add_request(
 
 
 def sales_report_setup_ui():
-    gr.Markdown(
-        """
-        # Sales Report Setup
-
-        Here you can update the scope the AI Analyst will consider when providing your report.
-        """
+    st.markdown("---")
+    st.header("Sales Report Setup")
+    st.write(
+        "Here you can update the scope the AI Analyst will consider when providing your report."
     )
 
     current_report = get_sales_report_request(default_config_db_sessionmaker)
 
     if current_report:
-        gr.Markdown("## Current Configuration")
-        current_report_output = gr.Markdown(display_request(current_report))
+        st.subheader("Current Configuration")
+        current_config_placeholder = st.empty()
+        current_config_placeholder.info(display_request(current_report))
     else:
-        gr.Markdown("No configuration found. Please set up.")
+        st.warning("No configuration found. Please set up.")
+        current_config_placeholder = st.empty()
 
-    gr.Markdown("## Update Configuration")
+    st.subheader("Update Configuration")
 
-    grouping_dropdown = gr.Dropdown(
-        choices=grouping_choices,
-        label="Scope type",
-        info="Select the type of scope for your report (e.g., region, product, etc.)",
-    )
-    grouping_value_input = gr.Textbox(
-        label="Scope value",
-        info="Enter the specific value for the selected scope (e.g., North America, Electronics, etc.)",
-    )
-    period_dropdown = gr.Dropdown(
-        choices=period_choices,
-        label="Periodicity of the KPI you want to track",
-    )
-    submit_button = gr.Button("Update KPI")
+    col1, col2, col3 = st.columns(3)
 
-    submit_button.click(
-        add_request,
-        inputs=[
-            grouping_dropdown,
-            grouping_value_input,
-            period_dropdown,
-        ],
-        trigger_mode="once",
-        outputs=current_report_output,
-    )
+    with col1:
+        grouping = st.selectbox(
+            "Scope type",
+            options=grouping_choices,
+            help="Select the type of scope for your report (e.g., region, product, etc.)",
+            key="sales_grouping",
+        )
+
+    with col2:
+        grouping_value = st.text_input(
+            "Scope value",
+            help="Enter the specific value for the selected scope (e.g., North America, Electronics, etc.)",
+            key="sales_grouping_value",
+        )
+
+    with col3:
+        period = st.selectbox(
+            "Periodicity you want to track",
+            options=period_choices,
+            key="sales_period",
+        )
+
+    if st.button("Update Report", key="update_sales_kpi"):
+        if grouping and grouping_value and period:
+            result = add_request(grouping, grouping_value, period)
+            st.success("Configuration updated successfully!")
+            # Replace the current configuration display
+            current_config_placeholder.info(result)
+        else:
+            st.error("Please fill in all fields.")
