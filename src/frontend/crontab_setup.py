@@ -106,6 +106,7 @@ def crontab_setup_ui():
                 hour_dropdown = gr.Dropdown(
                     choices=hour_choices,
                     label="Hour of the day",
+                    info="Hour in UTC (0-23); adjust for your timezone if necessary.",
                 )
 
                 setup_button = gr.Button("Set Daily Execution")
@@ -122,6 +123,7 @@ def crontab_setup_ui():
                     choices=month_choices,
                     multiselect=True,
                     label="Months the agent will run",
+                    info="Hour in UTC (0-23); adjust for your timezone if necessary.",
                 )
                 days_dropdown = gr.Dropdown(
                     choices=day_of_month_choices,
