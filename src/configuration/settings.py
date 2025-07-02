@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 from pydantic import EmailStr, ConfigDict, SecretStr
 
 BASE_DIR = Path(__file__).resolve().parents[2]
-
+TEMP_DIR = BASE_DIR / "outputs" / "temp"
 
 class Settings(BaseSettings):
     # Email settings

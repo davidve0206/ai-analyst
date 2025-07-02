@@ -1,3 +1,5 @@
+import os
+
 from src.agents.tools.projections import ProjectionsPlugin
 
 
@@ -66,3 +68,121 @@ def test_projection_tool_trendile():
         assert abs(projected[i] - expected[i]) < 1e-6, (
             f"Expected {expected[i]}, got {projected[i]} at index {i}"
         )
+
+
+def test_plot_values_and_store_basic_functionality():
+    """Test basic plotting functionality with trend line and projections."""
+    plugin = ProjectionsPlugin()
+
+    labels = ["2020", "2021", "2022", "2023"]
+    data = [100, 120, 110, 140]
+
+    result = plugin.plot_values_and_store(
+        labels=labels,
+        data=data,
+        plot_tite="Test Financial Plot",
+        plot_type="line",
+        include_trend_line=True,
+        projection_period=2,
+    )
+
+    # Check that plot was created successfully
+    assert "error" not in result
+    assert "plot_path" in result
+    assert "data_summary" in result
+    assert "message" in result
+
+    # Verify the data structure in summary
+    data_summary = result["data_summary"]
+    assert "historical_data" in data_summary
+    assert "trend_line" in data_summary  # Should include trend line data
+    assert "projections" in data_summary  # Should include projections
+    assert data_summary["plot_type"] == "line"
+    assert data_summary["include_trend_line"] is True
+    assert data_summary["projection_period"] == 2
+
+    # Check historical data is correct
+    assert data_summary["historical_data"] == list(zip(labels, data))
+
+    # Check projections have correct labels
+    projections = data_summary["projections"]
+    assert len(projections) == 2
+    assert projections[0][0] == "t+1"
+    assert projections[1][0] == "t+2"
+
+    # Clean up - delete the generated plot file
+    if os.path.exists(result["plot_path"]):
+        os.remove(result["plot_path"])
+
+
+def test_plot_values_and_store_no_projections():
+    """Test plotting without projections but with trend line."""
+    plugin = ProjectionsPlugin()
+
+    labels = ["1", "2", "3", "4"]
+    data = [50, 60, 70, 80]
+
+    result = plugin.plot_values_and_store(
+        labels=labels,
+        data=data,
+        plot_tite="Test No Projections",
+        plot_type="bar",
+        include_trend_line=True,
+        projection_period=0,
+    )
+
+    # Check success
+    assert "error" not in result
+    assert "plot_path" in result
+
+    # Verify data summary
+    data_summary = result["data_summary"]
+    assert "historical_data" in data_summary
+    assert "trend_line" in data_summary  # Should still have trend line
+    assert "projections" not in data_summary  # Should not have projections
+    assert data_summary["projection_period"] == 0
+
+    # Clean up - delete the generated plot file
+    if os.path.exists(result["plot_path"]):
+        os.remove(result["plot_path"])
+
+
+def test_plot_values_and_store_error_handling():
+    """Test error handling for invalid inputs."""
+    plugin = ProjectionsPlugin()
+
+    # Test mismatched label and data lengths
+    result = plugin.plot_values_and_store(
+        labels=[1, 2, 3],
+        data=[100, 200],  # Different length
+        plot_tite="Test Error",
+        plot_type="line",
+    )
+
+    assert "error" in result
+    assert "length of labels and data must be the same" in result["error"]
+
+    # Test negative projection period
+    result = plugin.plot_values_and_store(
+        labels=[1, 2, 3],
+        data=[100, 200, 300],
+        plot_tite="Test Error",
+        plot_type="line",
+        projection_period=-1,
+    )
+
+    assert "error" in result
+    assert "non-negative integer" in result["error"]
+
+    # Test invalid plot type
+    result = plugin.plot_values_and_store(
+        labels=[1, 2, 3],
+        data=[100, 200, 300],
+        plot_tite="Test Error",
+        plot_type="invalid_type",
+    )
+
+    assert "error" in result
+    assert "Invalid plot type" in result["error"]
+
+    # Note: Error cases don't generate plot files, so no cleanup needed
