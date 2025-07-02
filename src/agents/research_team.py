@@ -2,13 +2,14 @@ from semantic_kernel.agents import StandardMagenticManager, MagenticOrchestratio
 from semantic_kernel.agents.runtime import CoreRuntime
 from azure.ai.projects.aio import AIProjectClient
 
-from src.agents.coder_agent import create_coder_agent
+from src.agents.quantitative_agent import create_quantitative_agent
+from src.agents.editor_agent import create_editor_agent
 from src.agents.internal_data_agent import create_internal_data_agent
 from src.agents.tools.db import InternalDatabase
 from src.agents.utils.prompt_utils import render_prompt_from_jinja
 from src.configuration.kpis import KpiRequest, SalesReportRequest
 from src.configuration.logger import default_logger
-from src.configuration.company import COMPANY_DESCRIPTION, REPORT_STRUCTURE
+from src.configuration.company import COMPANY_DESCRIPTION
 from src.agents.models import AzureOpenAIModels, ModelTypes, get_azure_openai_service
 from src.agents.utils.output_utils import (
     handle_intermediate_steps,
@@ -21,18 +22,24 @@ async def invoke_research_team_task(
     internal_db: InternalDatabase,
     runtime: CoreRuntime,
     azure_ai_client: AIProjectClient,
-    results_dict: dict[str, str] | None = None,
 ):
-    result = await research_team_task(
+    research_result = await research_team_task(
         request=request,
         internal_db=internal_db,
         runtime=runtime,
         azure_ai_client=azure_ai_client,
     )
-    output_path = store_response_with_timestamp(result, f"{request.name}_report.md")
-    if results_dict is not None:
-        results_dict[request.name] = result
 
+    editor_agent = create_editor_agent(
+        model_type=ModelTypes.AZURE_OPENAI,
+    )
+
+    edited_report = await editor_agent.get_response(messages=research_result)
+    edited_report_content = edited_report.content.content
+
+    output_path = store_response_with_timestamp(
+        response=edited_report_content, file_name=f"{request.name}_report.md"
+    )
     default_logger.info(f"Completed research task for KPI: {request.name}")
     return output_path
 
@@ -64,7 +71,6 @@ async def research_team_task(
             "research_team_kpi_task_prompt.md.j2",
             {
                 "kpi": request,
-                "report_structure": REPORT_STRUCTURE,
                 "company_description": COMPANY_DESCRIPTION,
             },
         )
@@ -73,7 +79,6 @@ async def research_team_task(
             "research_team_sales_task_prompt.md.j2",
             {
                 "request": request,
-                "report_structure": REPORT_STRUCTURE,
                 "company_description": COMPANY_DESCRIPTION,
             },
         )
@@ -85,7 +90,7 @@ async def research_team_task(
         db_agent_model_type=ModelTypes.AZURE_OPENAI,
     )
 
-    coder_agent = await create_coder_agent(
+    quantitative_agent = await create_quantitative_agent(
         model_type=ModelTypes.AZURE_OPENAI,
         azure_ai_client=azure_ai_client,
     )
@@ -97,7 +102,7 @@ async def research_team_task(
     )
 
     magentic_orchestration = MagenticOrchestration(
-        members=[db_agent, coder_agent],
+        members=[db_agent, quantitative_agent],
         manager=manager,
         agent_response_callback=handle_intermediate_steps,
     )
@@ -112,6 +117,6 @@ async def research_team_task(
     # Delete the coder agent after use
     # This is necessary to clean up resources as the coder agent is created on
     # azure AI foundry.
-    await azure_ai_client.agents.delete_agent(coder_agent.id)
+    await azure_ai_client.agents.delete_agent(quantitative_agent.id)
 
     return value.content
