@@ -49,7 +49,7 @@ async def research_team_task(
     internal_db: InternalDatabase,
     runtime: CoreRuntime,
     azure_ai_client: AIProjectClient,
-) -> str | None:
+) -> str:
     """
     Research team task to handle KPI requests.
 
@@ -115,8 +115,7 @@ async def research_team_task(
     value = await orchestration_result.get()
 
     # Delete the coder agent after use
-    # This is necessary to clean up resources as the coder agent is created on
-    # azure AI foundry.
+    # This is necessary as the coder agent is created on Azure AI foundry.
     await azure_ai_client.agents.delete_agent(quantitative_agent.id)
 
     return value.content

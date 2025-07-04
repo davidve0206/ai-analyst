@@ -58,7 +58,7 @@ async def main():
     )
 
     default_logger.info(
-        f"AI Analyst agent started successfully. Report saved at {pdf_path}."
+        f"AI Analyst agent ran successfully. Report saved at {pdf_path}."
     )
 
     await runtime.stop_when_idle()

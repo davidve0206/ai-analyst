@@ -81,16 +81,16 @@ def convert_markdown_to_pdf(markdown_path: Path) -> Path:
     with open(markdown_path, "r") as file:
         markdown_content = file.read()
 
-    # Check if the file is in TEMP_DIR and convert absolute paths to relative
-    if TEMP_DIR in markdown_path.parents or markdown_path.parent == TEMP_DIR:
-        temp_dir_str = str(TEMP_DIR)
-        patterns_to_remove = [
-            r"sandbox:",  # Remove sandbox: prefix
-            re.escape(temp_dir_str) + r"[/\\]?",  # Make TEMP_DIR paths relative
-        ]
+    temp_dir_str = str(TEMP_DIR)
 
-        for pattern in patterns_to_remove:
-            markdown_content = re.sub(pattern, "", markdown_content)
+    patterns_to_remove = [
+        r"sandbox:/mnt/data/",
+        r"sandbox:",  # Remove sandbox: prefix if still present
+        re.escape(temp_dir_str) + r"[/\\]?",  # Make TEMP_DIR paths relative
+    ]
+
+    for pattern in patterns_to_remove:
+        markdown_content = re.sub(pattern, "", markdown_content)
 
     # By default, no table of content is generated in the PDF.
     pdf = MarkdownPdf(toc_level=0)
