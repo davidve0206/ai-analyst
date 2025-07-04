@@ -18,6 +18,7 @@ class AppChatModels:
     gemini_2_0_flash: ChatGoogleGenerativeAI
     gemini_2_5_pro: ChatGoogleGenerativeAI
     gpt_o4_mini: AzureChatOpenAI
+    default_model: ChatGoogleGenerativeAI | AzureChatOpenAI
 
     def __init__(self):
         DEFAULT_TEMPERATURE = 0.4  # We want consistent responses, but be careful about loops and repetition
@@ -46,3 +47,10 @@ class AppChatModels:
             temperature=DEFAULT_TEMPERATURE,
             top_p=DEFAULT_TOP_P,
         )
+
+        # Sets a default model for places where we don't specify a model
+        # Recommended to use a cheap but fast model, explicitly set a
+        # different model in the agent if needed
+        self.default_model = self.gemini_2_0_flash 
+
+default_models = AppChatModels()
