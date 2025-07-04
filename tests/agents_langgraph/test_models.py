@@ -2,11 +2,6 @@ import pytest
 from src.agents_langgraph.models import AppChatModels
 
 
-@pytest.fixture(scope="session")
-def models_client() -> AppChatModels:
-    return AppChatModels()
-
-
 @pytest.mark.asyncio
 async def test_gemini_2_0_client_connects(models_client: AppChatModels):
     invoke_result = await models_client.gemini_2_0_flash.ainvoke(

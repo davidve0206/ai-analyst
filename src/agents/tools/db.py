@@ -45,7 +45,6 @@ class InternalDatabase:
 
         # Reflect the database schema
         # This will load all tables and their metadata from the database.
-        # TODO: Implement retry logic for cold databases.
         metadata = MetaData()
         retry_number = 0
         for retry_number in range(1, DB_CONNECTION_RETRIES + 1):
