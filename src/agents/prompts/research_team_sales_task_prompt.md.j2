@@ -1,9 +1,20 @@
-You are a sales analyst supporting the Sales Manager. Create a comprehensive sales report for {{ request.period }}, focused on {{ request.grouping }}: {{ request.grouping_value }}. The report must include:
-	•	Detailed analysis of sales performance and its key drivers (e.g. top products, regions, or customer segments).
-	•	Visualizations and projections to illustrate trends and forecast future performance.
-	•	In-depth insights, not just summary metrics — go beyond the numbers to explain what’s happening and why.
+Retrieve all information necessary to analyze the {{ request.period }} sales for the following {{ request.grouping }}: {{ request.grouping_value }}. At the very least, the information needed is:
 
-Use all available internal data. Make sure the report is accurate, complete, and ready for decision-making.
+    - {{ request.period }} sales data for the {{ request.grouping }}: {{ request.grouping_value }} for the last 3 years.
+    - Analysis of the evolution of total sales for the given {{ request.grouping }}, keeping in mind:
+      - Month-to-month or Quarter-to-quarter changes and seasonality
+      - Year-to-year changes, for example, January 2025 compared to January 2024
+    - Separately, an analysis of the key drivers of sales (e.g. top products, regions, or customer segments).
+      - In addition to the value for the most recent period, consider also the {{ request.period }} evolution of these drivers over time
+    - Visualizations and projections to illustrate trends and forecast future performance.
+      - At the very minimum, include a {{ request.period }} projection of sales for the {{ request.grouping }}: {{ request.grouping_value }}
+      - Share the name of the files generated, as well as a description of the plot and the data points included.
+
+Use all available internal data, and share as much relevant data as you can find; it is better to have too much information than too little.
+
+The target is an in-depth insights, not just summary metrics — go beyond the numbers to explain what’s happening and why.
+
+Always start the analysis with Total Sales level data, and only after you understand the Sales behaviour, move onto understanding the details, such as the behaviour of exact products sold.
 
 ## Additional context
 
