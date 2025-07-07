@@ -27,7 +27,7 @@ def render_system_prompt_template(
     return template.format(**context)
 
 
-def extract_response_content(response: dict) -> str:
+def extract_graph_response_content(response: dict) -> str:
     """
     Extract the content of the last message from a list of messages.
 

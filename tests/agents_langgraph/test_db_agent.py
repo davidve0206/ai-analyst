@@ -3,7 +3,7 @@ import pytest
 from src.agents_langgraph.models import AppChatModels
 from src.agents_langgraph.tools.db import InternalDatabaseToolkit
 from src.agents_langgraph.db_agent import get_database_agent
-from src.agents_langgraph.utils import extract_response_content
+from src.agents_langgraph.utils import extract_graph_response_content
 from .helpers import assert_numeric_value_in_str, california_monthly_sales_in_db
 
 
@@ -27,7 +27,7 @@ async def test_simple_internal_db_agent_request(
     response = await db_agent.ainvoke({"messages": [("user", query)]})
 
     assert response is not None
-    response_content = extract_response_content(response)
+    response_content = extract_graph_response_content(response)
     assert "2025" in response_content
     assert "05" in response_content
 
@@ -43,7 +43,7 @@ async def test_real_internal_db_agent_request(
     response = await db_agent.ainvoke({"messages": [("user", query)]})
 
     assert response is not None
-    response_content = extract_response_content(response)
+    response_content = extract_graph_response_content(response)
     for month, sales in california_monthly_sales_in_db.items():
         assert_numeric_value_in_str(sales, response_content, None)
         assert month in response_content, f"Month {month} not found in response."
