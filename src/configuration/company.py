@@ -19,14 +19,6 @@ of packaging materials, and sell these in smaller quantities as a convenience fo
 FISCAL_YEAR_END = "October 31"
 
 DATABASE_CATALOG = """
-# WideWorldImportersDW Database Catalog
-
-**Date:** 02/28/2023  
-**Applies to:**  
-- SQL Server: Not supported  
-- Azure SQL Database  
-- Azure Synapse Analytics  
-- Analytics Platform System (PDW)
 
 Explanations for the schemas, tables, and stored procedures in the WideWorldImportersDW database.
 
