@@ -4,11 +4,9 @@ from logging.handlers import RotatingFileHandler
 
 from semantic_kernel.agents.orchestration.magentic import logger as magentic_logger
 
-from src.configuration.settings import BASE_DIR, app_settings
+from src.configuration.settings import LOG_DIR, app_settings
 
 # Log file path
-LOG_DIR = BASE_DIR / "logs"
-LOG_DIR.mkdir(exist_ok=True)
 log_file = LOG_DIR / "app.log"
 
 # Configure logger

@@ -1,6 +1,8 @@
 import asyncio
+import pickle
 from datetime import date, datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
 from langchain_core.tools import tool
 
@@ -13,6 +15,7 @@ from src.configuration.auth import (
     provide_azure_sql_token,
 )
 from src.configuration.logger import default_logger
+from src.configuration.settings import CACHE_DIR
 
 # NOTE: The code for now only supports Azure SQL Database.
 # Ensure you have the ODBC Driver 18 for SQL Server installed.
@@ -33,23 +36,47 @@ class InternalDatabaseToolkit:
 
     _engine: AsyncEngine
     _metadata: MetaData
+    _cache_file: Path = CACHE_DIR / "db_metadata_cache.pkl"
 
     def __init__(self, _engine, metadata):
         self._engine = _engine
         self._metadata = metadata
 
     @classmethod
-    async def create(cls):
+    async def create(cls, force_refresh: bool = False):
         """Create an instance of InternalDatabase with an async _engine and metadata."""
         default_logger.info("Creating InternalDatabase instance...")
         connection_string = get_db_connection_string()
         _engine = create_async_engine(connection_string, poolclass=NullPool)
         event.listen(_engine.sync_engine, "do_connect", provide_azure_sql_token)
 
-        # Reflect the database schema
-        # This will load all tables and their metadata from the database.
+        # Try to load metadata from cache first
+        metadata = None
+        if not force_refresh and cls._cache_file.exists():
+            try:
+                with open(cls._cache_file, "rb") as f:
+                    metadata = pickle.load(f)
+                default_logger.info("Loaded metadata from cache")
+            except Exception as e:
+                default_logger.warning(f"Failed to load metadata cache: {e}")
+
+        # If no cached metadata, reflect from database
+        if metadata is None:
+            metadata = await cls._reflect_database_schema(_engine)
+            # Cache the metadata
+            try:
+                with open(cls._cache_file, "wb") as f:
+                    pickle.dump(metadata, f)
+                default_logger.info("Cached metadata to disk")
+            except Exception as e:
+                default_logger.warning(f"Failed to cache metadata: {e}")
+
+        return cls(_engine=_engine, metadata=metadata)
+
+    @classmethod
+    async def _reflect_database_schema(cls, _engine: AsyncEngine) -> MetaData:
+        """Reflect the database schema."""
         metadata = MetaData()
-        retry_number = 0
         for retry_number in range(1, DB_CONNECTION_RETRIES + 1):
             try:
                 async with _engine.begin() as conn:
@@ -74,8 +101,7 @@ class InternalDatabaseToolkit:
                     f"Failed to reflect database schema, retrying ({retry_number}/{DB_CONNECTION_RETRIES}): {e}"
                 )
                 await asyncio.sleep(DB_RETRY_DELAY)
-
-        return cls(_engine=_engine, metadata=metadata)
+        return metadata
 
     @property
     def dialect(self) -> str:

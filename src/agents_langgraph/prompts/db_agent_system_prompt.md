@@ -18,6 +18,7 @@ And you have the following information about the database:
 ## Constraints
 
 - DO NOT make any DML statements (INSERT, UPDATE, DELETE, DROP etc.) to the database.
+- Use table and column names as provided in the schema. For example, if the Schema includes [This Column] NEVER change it to This_Column; instead, query as table.[This Column].
 
 ## Process
 

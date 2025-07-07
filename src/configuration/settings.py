@@ -7,6 +7,8 @@ SRC_DIR = BASE_DIR / "src"
 OUTPUTS_DIR = BASE_DIR / "outputs"
 TEMP_DIR = OUTPUTS_DIR / "temp"
 STORAGE_DIR = OUTPUTS_DIR / "storage"
+CACHE_DIR = OUTPUTS_DIR / "cache"
+LOG_DIR = BASE_DIR / "logs"
 
 
 class Settings(BaseSettings):
@@ -47,3 +49,22 @@ class Settings(BaseSettings):
 
 CONFIG_FILE_PATH = BASE_DIR / ".env"
 app_settings = Settings(_env_file=CONFIG_FILE_PATH)
+
+
+# Ensure all required directories exist
+def ensure_directories_exist():
+    """Create all required directories if they don't exist."""
+    directories = [
+        OUTPUTS_DIR,
+        TEMP_DIR,
+        STORAGE_DIR,
+        CACHE_DIR,
+        LOG_DIR,
+    ]
+
+    for directory in directories:
+        directory.mkdir(parents=True, exist_ok=True)
+
+
+# Create directories on import
+ensure_directories_exist()
