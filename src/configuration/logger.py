@@ -1,9 +1,10 @@
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 
-
-from src.configuration.settings import BASE_DIR
 from semantic_kernel.agents.orchestration.magentic import logger as magentic_logger
+
+from src.configuration.settings import BASE_DIR, app_settings
 
 # Log file path
 LOG_DIR = BASE_DIR / "logs"
@@ -28,3 +29,12 @@ default_logger.setLevel(logging.DEBUG)
 # Set the logging level for  semantic_kernel.kernel to DEBUG.
 logging.getLogger("kernel").setLevel(logging.DEBUG)
 magentic_logger.setLevel(logging.DEBUG)
+
+# Set tracing
+# LangSmith tracing is handles in environment variables
+# so we only need to make sure the environment is set up correctly
+if app_settings.langsmith_tracing:
+    os.environ["LANGCHAIN_TRACING"] = "true"
+    os.environ["LANGCHAIN_ENDPOINT"] = app_settings.langsmith_endpoint
+    os.environ["LANGCHAIN_API_KEY"] = app_settings.langsmith_api_key._secret_value
+    os.environ["LANGCHAIN_PROJECT"] = app_settings.langsmith_project

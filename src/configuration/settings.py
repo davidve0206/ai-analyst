@@ -8,6 +8,7 @@ OUTPUTS_DIR = BASE_DIR / "outputs"
 TEMP_DIR = OUTPUTS_DIR / "temp"
 STORAGE_DIR = OUTPUTS_DIR / "storage"
 
+
 class Settings(BaseSettings):
     # Email settings
     email_from_address: EmailStr = "test@test.com"
@@ -34,6 +35,12 @@ class Settings(BaseSettings):
     azure_foundry_project_endpoint: str | None = None
     azure_openai_api_key: SecretStr | None = None
     azure_openai_endpoint: str | None = None
+
+    # Observability settings
+    langsmith_tracing: bool = False
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
+    langsmith_api_key: SecretStr | None = None
+    langsmith_project: str = "default"
 
     model_config = ConfigDict(extra="ignore")
 
