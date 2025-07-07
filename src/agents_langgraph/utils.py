@@ -6,7 +6,7 @@ from src.configuration.settings import SRC_DIR
 PROMPTS_PATH = SRC_DIR / "agents_langgraph" / "prompts"
 
 
-async def render_system_prompt_template(
+def render_system_prompt_template(
     template_name: str, context: dict[str, str | int | float]
 ) -> SystemMessage:
     """
@@ -24,4 +24,22 @@ async def render_system_prompt_template(
         template_path,
         input_variables=[],  # input_variables is deprecated but still required for compatibility
     )
-    return await template.aformat(**context)
+    return template.format(**context)
+
+
+def extract_response_content(response: dict) -> str:
+    """
+    Extract the content of the last message from a list of messages.
+
+    Args:
+        messages (list[dict]): List of message dictionaries.
+
+    Returns:
+        str: Content of the last message.
+    """
+    messages: list[dict] = response.get("messages", [])
+    if not messages:
+        return ""
+
+    last_message = messages[-1]
+    return last_message.content
