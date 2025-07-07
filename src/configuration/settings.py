@@ -1,3 +1,4 @@
+import matplotlib
 from pathlib import Path
 from pydantic_settings import BaseSettings
 from pydantic import EmailStr, ConfigDict, SecretStr
@@ -68,3 +69,6 @@ def ensure_directories_exist():
 
 # Create directories on import
 ensure_directories_exist()
+
+# Ensure matplotlib uses a non-interactive backend
+matplotlib.use("Agg")
