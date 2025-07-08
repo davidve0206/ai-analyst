@@ -1,9 +1,14 @@
+import re
 import pytest
 import pandas as pd
 
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.utils import PrompTypes, render_prompt_template
+from src.agents.utils import (
+    PrompTypes,
+    extract_graph_response_content,
+    render_prompt_template,
+)
 from src.configuration.constants import DATA_PROVIDED
 from src.configuration.kpis import SalesReportRequest
 from src.configuration.settings import DATA_DIR, app_settings
@@ -77,3 +82,55 @@ async def test_sales_retrieval_step(
         # Clean up the temp file
         if expected_file_path.exists():
             expected_file_path.unlink()
+
+
+@pytest.mark.asyncio
+async def test_sales_analysis_step(
+    spain_sales_history_df: pd.DataFrame,
+    default_request: SalesReportRequest,
+    quantitative_agent: CompiledStateGraph,
+) -> None:
+    """Test that replicates the sales analysis step."""
+
+    # Store the sales history as a file in the temp directory
+    sales_history_file = (
+        test_temp_dir
+        / f"sales_analysis_{default_request.grouping_value}_sales_history.csv"
+    )
+    spain_sales_history_df.to_csv(sales_history_file, index=False)
+
+    task_prompt = render_prompt_template(
+        template_name="analyse_sales_step_prompt.md",
+        context={
+            "grouping": default_request.grouping,
+            "grouping_value": default_request.grouping_value,
+            "input_location": str(sales_history_file),
+        },
+        type=PrompTypes.HUMAN,
+    )
+
+    response = await quantitative_agent.ainvoke({"messages": [task_prompt]})
+    assert response is not None
+
+    response_content = extract_graph_response_content(response)
+    print(response_content)
+
+    # Use regex to find .png or .csv files mentioned in the response_content
+    file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
+    found_files: list[str] = re.findall(file_pattern, response_content)
+
+    print(f"Found files: {found_files}")
+    assert found_files, "No output files were generated in the response."
+
+    # Check that the files mentioned exist in the temp directory
+    for file in found_files:
+        file_path = test_temp_dir / file
+        assert file_path.exists(), f"Expected output file {file} does not exist."
+    # TODO: consider adding an LLM as a judge to validate the analysis
+    # For now, we just check that the response contains some output files
+
+    # Clean up the temp files
+    sales_history_file.unlink(missing_ok=True)
+    for file in found_files:
+        file_path = test_temp_dir / file
+        file_path.unlink(missing_ok=True)

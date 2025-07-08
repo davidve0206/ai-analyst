@@ -52,7 +52,7 @@ async def create_research_graph(
         default_logger.info(
             f"Retrieving sales history for {state.request.grouping} - {state.request.grouping_value}."
         )
-
+        output_location = TEMP_DIR / f"{state.request.grouping_value}_sales_history.csv"
         task_prompt = render_prompt_template(
             template_name="retrieve_sales_step_prompt.md",
             context={
@@ -62,9 +62,7 @@ async def create_research_graph(
                 "grouping_value": state.request.grouping_value,
                 "input_location": str(DATA_DIR / DATA_PROVIDED.name),
                 "data_description": DATA_PROVIDED.description,
-                "output_location": str(
-                    TEMP_DIR / f"{state.request.grouping_value}_sales_history.csv"
-                ),
+                "output_location": str(output_location),
             },
             type=PrompTypes.HUMAN,
         )
@@ -78,11 +76,18 @@ async def create_research_graph(
         Process the sales data retrieved from the database.
         This is a placeholder for the actual processing logic.
         """
-        query = f"""Perform an in-depth analysis of the sales history data for {state.request.grouping} - {state.request.grouping_value}. Identify trends, patterns, and insights that can be derived from the data. Provide all of your findings in a structured format.
-        
-        The sales history data is as follows:
-        {state.sales_history}"""
-        response = await db_agent.ainvoke(query)
+        input_location = TEMP_DIR / f"{state.request.grouping_value}_sales_history.csv"
+        task_prompt = render_prompt_template(
+            template_name="analyse_sales_step_prompt.md",
+            context={
+                "grouping": state.request.grouping,
+                "grouping_value": state.request.grouping_value,
+                "input_location": str(input_location),
+            },
+            type=PrompTypes.HUMAN,
+        )
+
+        response = await quant_agent.ainvoke({"messages": [("user", task_prompt)]})
         response_content = extract_graph_response_content(response)
         return {"sales_analysis": response_content}
 
