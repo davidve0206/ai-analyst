@@ -1,5 +1,5 @@
 import pytest
-from src.agents_langgraph.models import AppChatModels
+from src.agents.models import AppChatModels
 
 
 @pytest.mark.asyncio

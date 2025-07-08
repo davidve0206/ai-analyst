@@ -1,10 +1,10 @@
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents_langgraph.models import AppChatModels
-from src.agents_langgraph.tools.python_interpreter import repl_tool
-from src.agents_langgraph.utils import render_system_prompt_template
-from src.configuration.company import COMPANY_DESCRIPTION
+from src.agents.models import AppChatModels
+from src.agents.tools.python_interpreter import repl_tool
+from src.agents.utils import render_system_prompt_template
+from src.configuration.constants import COMPANY_DESCRIPTION
 from src.configuration.settings import TEMP_DIR
 
 RECURSION_LIMIT = 10

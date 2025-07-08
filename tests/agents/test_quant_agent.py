@@ -2,8 +2,8 @@ import pytest
 
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents_langgraph.models import AppChatModels
-from src.agents_langgraph.utils import extract_graph_response_content
+from src.agents.models import AppChatModels
+from src.agents.utils import extract_graph_response_content
 
 from .helpers import california_monthly_sales_in_db, test_temp_dir
 
@@ -16,7 +16,7 @@ def quantitative_agent(models_client: AppChatModels, monkeypatch):
     """
     monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
 
-    from src.agents_langgraph.quant_agent import get_quantitative_agent
+    from src.agents.quant_agent import get_quantitative_agent
 
     return get_quantitative_agent(models_client)
 

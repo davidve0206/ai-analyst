@@ -1,10 +1,15 @@
+"""
+This agent is currently deprecated as the data ended being provided as a csv file.
+It is kept here for reference and future use.
+"""
+
 from langgraph.prebuilt import create_react_agent
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents_langgraph.models import AppChatModels
-from src.agents_langgraph.tools.db import InternalDatabaseToolkit
-from src.agents_langgraph.utils import render_system_prompt_template
-from src.configuration.company import DATABASE_CATALOG
+from src.agents.models import AppChatModels
+from src.agents.tools.db import InternalDatabaseToolkit
+from src.agents.utils import render_system_prompt_template
+from src.configuration.constants import DATABASE_CATALOG
 
 RECURSION_LIMIT = 10
 

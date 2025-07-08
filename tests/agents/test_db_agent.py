@@ -1,9 +1,9 @@
 import pytest
 
-from src.agents_langgraph.models import AppChatModels
-from src.agents_langgraph.tools.db import InternalDatabaseToolkit
-from src.agents_langgraph.db_agent import get_database_agent
-from src.agents_langgraph.utils import extract_graph_response_content
+from src.agents.models import AppChatModels
+from src.agents.tools.db import InternalDatabaseToolkit
+from src.agents.db_agent import get_database_agent
+from src.agents.utils import extract_graph_response_content
 from .helpers import assert_numeric_value_in_str, california_monthly_sales_in_db
 
 

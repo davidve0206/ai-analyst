@@ -6,7 +6,7 @@ def test_render_system_prompt_template(monkeypatch):
     monkeypatch.setattr("src.configuration.settings.SRC_DIR", BASE_DIR / "tests")
 
     # Import after patching
-    from src.agents_langgraph.utils import render_system_prompt_template
+    from src.agents.utils import render_system_prompt_template
 
     context = {"language": "spanish"}
     template_name = "test_system_prompt.md"

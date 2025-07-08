@@ -10,6 +10,7 @@ TEMP_DIR = OUTPUTS_DIR / "temp"
 STORAGE_DIR = OUTPUTS_DIR / "storage"
 CACHE_DIR = OUTPUTS_DIR / "cache"
 LOG_DIR = BASE_DIR / "logs"
+DATA_DIR = BASE_DIR / "data"
 
 
 class Settings(BaseSettings):

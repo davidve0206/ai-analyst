@@ -1,18 +1,21 @@
 import asyncio
+import pickle
 from datetime import date, datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Any
+from langchain_core.tools import tool
 
 from sqlalchemy import ForeignKeyConstraint, MetaData, NullPool, Table, event, text
 from sqlalchemy.exc import OperationalError
-from sqlalchemy.ext.asyncio import create_async_engine
-from semantic_kernel.functions import kernel_function
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
 from src.configuration.auth import (
     get_db_connection_string,
     provide_azure_sql_token,
 )
 from src.configuration.logger import default_logger
+from src.configuration.settings import CACHE_DIR
 
 # NOTE: The code for now only supports Azure SQL Database.
 # Ensure you have the ODBC Driver 18 for SQL Server installed.
@@ -28,28 +31,55 @@ DB_CONNECTION_RETRIES = 3
 DB_RETRY_DELAY = 10  # seconds
 
 
-class InternalDatabase:
-    """A class to interact with a SQL database using SQLAlchemy."""
+class InternalDatabaseToolkit:
+    """A toolkit to interact with a SQL database using SQLAlchemy."""
 
-    def __init__(self, engine, metadata):
-        self.engine = engine
-        self.metadata = metadata
+    _engine: AsyncEngine
+    _metadata: MetaData
+    _cache_file: Path = CACHE_DIR / "db_metadata_cache.pkl"
+
+    def __init__(self, _engine, metadata):
+        self._engine = _engine
+        self._metadata = metadata
 
     @classmethod
-    async def create(cls):
-        """Create an instance of InternalDatabase with an async engine and metadata."""
+    async def create(cls, force_refresh: bool = False):
+        """Create an instance of InternalDatabase with an async _engine and metadata."""
         default_logger.info("Creating InternalDatabase instance...")
         connection_string = get_db_connection_string()
-        engine = create_async_engine(connection_string, poolclass=NullPool)
-        event.listen(engine.sync_engine, "do_connect", provide_azure_sql_token)
+        _engine = create_async_engine(connection_string, poolclass=NullPool)
+        event.listen(_engine.sync_engine, "do_connect", provide_azure_sql_token)
 
-        # Reflect the database schema
-        # This will load all tables and their metadata from the database.
+        # Try to load metadata from cache first
+        metadata = None
+        if not force_refresh and cls._cache_file.exists():
+            try:
+                with open(cls._cache_file, "rb") as f:
+                    metadata = pickle.load(f)
+                default_logger.info("Loaded metadata from cache")
+            except Exception as e:
+                default_logger.warning(f"Failed to load metadata cache: {e}")
+
+        # If no cached metadata, reflect from database
+        if metadata is None:
+            metadata = await cls._reflect_database_schema(_engine)
+            # Cache the metadata
+            try:
+                with open(cls._cache_file, "wb") as f:
+                    pickle.dump(metadata, f)
+                default_logger.info("Cached metadata to disk")
+            except Exception as e:
+                default_logger.warning(f"Failed to cache metadata: {e}")
+
+        return cls(_engine=_engine, metadata=metadata)
+
+    @classmethod
+    async def _reflect_database_schema(cls, _engine: AsyncEngine) -> MetaData:
+        """Reflect the database schema."""
         metadata = MetaData()
-        retry_number = 0
         for retry_number in range(1, DB_CONNECTION_RETRIES + 1):
             try:
-                async with engine.begin() as conn:
+                async with _engine.begin() as conn:
                     schemas = await conn.execute(
                         text("""
                             SELECT DISTINCT TABLE_SCHEMA
@@ -71,67 +101,87 @@ class InternalDatabase:
                     f"Failed to reflect database schema, retrying ({retry_number}/{DB_CONNECTION_RETRIES}): {e}"
                 )
                 await asyncio.sleep(DB_RETRY_DELAY)
-
-        return cls(engine=engine, metadata=metadata)
+        return metadata
 
     @property
     def dialect(self) -> str:
-        return self.engine.dialect.name
+        return self._engine.dialect.name
 
     @property
     def table_names(self) -> list[str]:
-        return list(self.metadata.tables.keys())
+        return list(self._metadata.tables.keys())
 
-    def get_tables(self) -> list[Table]:
+    def get_tools(self) -> list:
+        """Get the tools in the toolkit."""
+        return [
+            self._create_describe_schema_tool(),
+            self._create_execute_query_tool(),
+        ]
+
+    def _get_tables(self) -> list[Table]:
         """Get list of all tables in the database.
 
         Returns:
             List of table names
         """
-        return list(self.metadata.tables.values())
+        return list(self._metadata.tables.values())
 
-    @kernel_function
-    def describe_schema(self, table_names: str | None = None) -> str:
-        """Get a string representation of the structure of tables in
-        the database
+    def _create_describe_schema_tool(self):
+        """Create a describe_schema tool bound to this database instance."""
 
-        Args:
-            table_names (srt | None): Name of the table to describe.
-                If several tables are provided, separate them by commas.
-                If None, describes all tables in the database.
-        """
+        @tool
+        def describe_schema_impl(table_names: str | None = None) -> str:
+            """Get the schema for tables in a comma-separated list;
+            if no list is provided, describes all tables.
 
-        try:
-            if table_names:
-                table_names = [name.strip() for name in table_names.split(",")]
-                tables = [self.metadata.tables[table] for table in table_names]
-            else:
-                tables = self.get_tables()
-            output = "\n\n".join(format_table_schema(table) for table in tables)
-            
-            return output
+            Args:
+                table_names (str | None): Comma-separated list of tables to describe.
+            Returns:
+                A string representation of the schema for the specified tables.
+            """
+            try:
+                if table_names:
+                    table_names = [name.strip() for name in table_names.split(",")]
+                    tables = [self._metadata.tables[table] for table in table_names]
+                else:
+                    tables = self._get_tables()
+                output = "\n\n".join(format_table_schema(table) for table in tables)
+                return output
+            except KeyError as e:
+                default_logger.debug(f"Table not found: {str(e)}")
+                return f"Error: Table not found - {str(e)}"
+            except Exception as e:
+                default_logger.debug(f"An unexpected error occurred: {str(e)}")
+                return f"An unexpected error occurred: {str(e)}"
 
-        except KeyError as e:
-            default_logger.debug(f"Table not found: {str(e)}")
-            return f"Error: Table not found - {str(e)}"
-        except Exception as e:
-            default_logger.debug(f"An unexpected error occurred: {str(e)}")
-            return f"An unexpected error occurred: {str(e)}"
+        return describe_schema_impl
 
-    @kernel_function
-    async def execute_query(self, query: str) -> list[dict[str, Any]] | str:
-        """Execute a SQL query; only allows SELECT queries."""
-        if not query.strip().lower().startswith("select"):
-            return "Error: Only SELECT queries are allowed."
+    def _create_execute_query_tool(self):
+        """Create an execute_query tool bound to this database instance."""
 
-        try:
-            async with self.engine.connect() as connection:
-                result = await connection.execute(text(query))
-                rows = result.mappings().all()
-                return make_json_serializable(rows)
-        except Exception as e:
-            default_logger.debug(f"Query execution failed: {str(e)}")
-            return f"Query execution failed: {str(e)}"
+        @tool
+        async def execute_query_impl(query: str) -> list[dict[str, Any]] | str:
+            """Execute a SQL query against the database; only SELECT queries are allowed.
+
+            Args:
+                query (str): The SQL query to execute. Only SELECT queries are allowed.
+            Returns:
+                A list of dictionaries representing the rows returned by the query,
+                or an error message if the query is not a valid SELECT query or fails.
+            """
+            if not query.strip().lower().startswith("select"):
+                return "Error: Only SELECT queries are allowed."
+
+            try:
+                async with self._engine.connect() as connection:
+                    result = await connection.execute(text(query))
+                    rows = result.mappings().all()
+                    return make_json_serializable(rows)
+            except Exception as e:
+                default_logger.debug(f"Query execution failed: {str(e)}")
+                return f"Query execution failed: {str(e)}"
+
+        return execute_query_impl
 
 
 def make_json_serializable(dict_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -163,7 +213,7 @@ def format_table_schema(table: Table) -> str:
     TODO: Add support for indexes if needed.
     """
 
-    schema_lines = [f"TABLE {table.schema}.{table.name} ("]
+    schema_lines = [f"TABLE [{table.schema}].[{table.name}] ("]
 
     # Format column definitions
     schema_lines.append("    COLUMNS")
