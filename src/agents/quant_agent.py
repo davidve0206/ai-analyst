@@ -3,8 +3,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.python_interpreter import repl_tool
-from src.agents.utils import render_system_prompt_template
-from src.configuration.constants import COMPANY_DESCRIPTION
+from src.agents.utils import PrompTypes, render_prompt_template
 from src.configuration.settings import TEMP_DIR
 
 RECURSION_LIMIT = 10
@@ -20,12 +19,12 @@ def get_quantitative_agent(models: AppChatModels) -> CompiledStateGraph:
     Returns:
         CompiledStateGraph: The compiled state graph for the agent.
     """
-    system_prompt = render_system_prompt_template(
+    system_prompt = render_prompt_template(
         "quantitative_analyst_agent_system_prompt.md",
         context={
             "temp_path": str(TEMP_DIR),
-            "company_description": COMPANY_DESCRIPTION,
         },
+        type=PrompTypes.SYSTEM,
     )
 
     return create_react_agent(

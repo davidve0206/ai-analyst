@@ -5,10 +5,17 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.db_agent import get_database_agent
 from src.agents.models import AppChatModels
+from src.agents.quant_agent import get_quantitative_agent
 from src.agents.tools.db import InternalDatabaseToolkit
-from src.agents.utils import extract_graph_response_content
+from src.agents.utils import (
+    PrompTypes,
+    extract_graph_response_content,
+    render_prompt_template,
+)
+from src.configuration.constants import DATA_PROVIDED
 from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
+from src.configuration.settings import DATA_DIR, TEMP_DIR, app_settings
 
 
 class ResearchGraphState(BaseModel):
@@ -25,11 +32,7 @@ class GraphNodeNames(Enum):
     SEND_EMAIL = "send_email"
 
 
-CALIFORNIA_MONTHLY_SALES_CACHE = "Here is the last three years of monthly total sales data (excluding taxes) for California, formatted as YYYY-MM:\n\n| Month-Year | Total Sales  |\n|------------|--------------|\n| 2025-05    | 200624.20    |\n| 2025-04    | 212986.75    |\n| 2025-03    | 232004.15    |\n| 2025-02    | 197168.70    |\n| 2025-01    | 231620.75    |\n| 2024-12    | 248809.15    |\n| 2024-11    | 169227.50    |\n| 2024-10    | 277312.45    |\n| 2024-09    | 210397.65    |\n| 2024-08    | 174239.60    |\n| 2024-07    | 294432.50    |\n| 2024-06    | 269011.10    |\n| 2024-05    | 186417.50    |\n| 2024-04    | 285375.45    |\n| 2024-03    | 211678.75    |\n| 2024-02    | 220957.65    |\n| 2024-01    | 227591.75    |\n| 2023-12    | 244497.65    |\n| 2023-11    | 184132.40    |\n| 2023-10    | 217520.45    |\n| 2023-09    | 200238.90    |\n| 2023-08    | 169368.60    |\n| 2023-07    | 298161.80    |\n| 2023-06    | 169257.70    |\n| 2023-05    | 262177.15    |\n| 2023-04    | 249891.10    |\n| 2023-03    | 219177.95    |\n| 2023-02    | 194381.50    |\n| 2023-01    | 192188.20    |\n| 2022-12    | 199803.00    |\n| 2022-11    | 220820.90    |\n| 2022-10    | 220462.45    |\n| 2022-09    | 232417.60    |\n| 2022-08    | 135010.70    |\n| 2022-07    | 172959.55    |\n\nThis data reflects the total sales (excluding taxes) for each month over the last three years."
-
-
 async def create_research_graph(
-    internal_db_toolkit: InternalDatabaseToolkit,
     models_client: AppChatModels,
 ) -> CompiledStateGraph[ResearchGraphState, ResearchGraphState, ResearchGraphState]:
     """
@@ -37,7 +40,9 @@ async def create_research_graph(
 
     To be invokes with a request of type SalesReportRequest.
     """
-    db_agent = get_database_agent(internal_db_toolkit, models_client)
+
+    # Agents to be used in the graph
+    quant_agent = get_quantitative_agent(models_client)
 
     async def get_sales_history(state: ResearchGraphState):
         """
@@ -48,11 +53,25 @@ async def create_research_graph(
             f"Retrieving sales history for {state.request.grouping} - {state.request.grouping_value}."
         )
 
-        """ query = f"Retrieve the last three years of {state.request.period} total sales data, excluding taxes, available in the database for the following {state.request.grouping}: {state.request.grouping_value}. Include the month and year in the response, formatted as YYYY-MM."
-        response = await db_agent.ainvoke({"messages": [("user", query)]})
+        task_prompt = render_prompt_template(
+            template_name="retrieve_sales_step_prompt.md",
+            context={
+                "date": app_settings.analysis_date,
+                "periodicity": state.request.period,
+                "grouping": state.request.grouping,
+                "grouping_value": state.request.grouping_value,
+                "input_location": str(DATA_DIR / DATA_PROVIDED.name),
+                "data_description": DATA_PROVIDED.description,
+                "output_location": str(
+                    TEMP_DIR / f"{state.request.grouping_value}_sales_history.csv"
+                ),
+            },
+            type=PrompTypes.HUMAN,
+        )
+
+        response = await quant_agent.ainvoke({"messages": [("user", task_prompt)]})
         response_content = extract_graph_response_content(response)
-        return {"sales_history": response_content} """
-        return {"sales_history": CALIFORNIA_MONTHLY_SALES_CACHE}
+        return {"sales_history": response_content}
 
     async def process_sales_data(state: ResearchGraphState) -> ResearchGraphState:
         """

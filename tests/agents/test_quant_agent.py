@@ -2,23 +2,9 @@ import pytest
 
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.models import AppChatModels
 from src.agents.utils import extract_graph_response_content
 
 from .helpers import california_monthly_sales_in_db, test_temp_dir
-
-
-@pytest.fixture(scope="function")
-def quantitative_agent(models_client: AppChatModels, monkeypatch):
-    """
-    Fixture to get the quantitative agent for testing, with a patched
-    temporary directory for file creation.
-    """
-    monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
-
-    from src.agents.quant_agent import get_quantitative_agent
-
-    return get_quantitative_agent(models_client)
 
 
 @pytest.mark.asyncio

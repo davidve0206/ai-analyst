@@ -1,3 +1,4 @@
+from datetime import date
 import matplotlib
 from pathlib import Path
 from pydantic_settings import BaseSettings
@@ -46,7 +47,17 @@ class Settings(BaseSettings):
     langsmith_api_key: SecretStr | None = None
     langsmith_project: str = "default"
 
+    # Run configuration
+    is_data_current: bool = False
+
     model_config = ConfigDict(extra="ignore")
+
+    @property
+    def analysis_date(self) -> date:
+        """Return the analysis date, which is today's date if data is current."""
+        if self.is_data_current:
+            return date.today()
+        return date(2023, 12, 1)
 
 
 CONFIG_FILE_PATH = BASE_DIR / ".env"

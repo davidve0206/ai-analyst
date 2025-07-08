@@ -1,14 +1,30 @@
-from langchain_core.prompts import SystemMessagePromptTemplate
-from langchain_core.messages import SystemMessage
+from enum import Enum
+
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.prompts import (
+    HumanMessagePromptTemplate,
+    SystemMessagePromptTemplate,
+)
+
 from src.configuration.settings import SRC_DIR
 
-# TODO: update this path to the correct location if this becomes the main prompt utility file
-PROMPTS_PATH = SRC_DIR / "agents_langgraph" / "prompts"
+PROMPTS_PATH = SRC_DIR / "agents" / "prompts"
 
 
-def render_system_prompt_template(
-    template_name: str, context: dict[str, str | int | float]
-) -> SystemMessage:
+class PrompTypes(Enum):
+    """
+    Enum for prompt types.
+    """
+
+    SYSTEM = "system"
+    HUMAN = "human"
+
+
+def render_prompt_template(
+    template_name: str,
+    context: dict[str, str | int | float],
+    type: PrompTypes = PrompTypes.SYSTEM,
+) -> SystemMessage | HumanMessage:
     """
     Render a system prompt template from the specified file.
 
@@ -20,10 +36,23 @@ def render_system_prompt_template(
     """
     template_path = PROMPTS_PATH / template_name
 
-    template = SystemMessagePromptTemplate.from_template_file(
-        template_path,
-        input_variables=[],  # input_variables is deprecated but still required for compatibility
-    )
+    if not template_path.exists():
+        raise FileNotFoundError(f"Template file {template_path} does not exist.")
+    if not template_path.is_file():
+        raise ValueError(f"Template path {template_path} is not a file.")
+
+    if type == PrompTypes.SYSTEM:
+        template = SystemMessagePromptTemplate.from_template_file(
+            template_path,
+            input_variables=[],  # input_variables is deprecated but still required for compatibility
+        )
+    elif type == PrompTypes.HUMAN:
+        template = HumanMessagePromptTemplate.from_template_file(
+            template_path,
+            input_variables=[],  # input_variables is deprecated but still required for compatibility
+        )
+    else:
+        raise ValueError(f"Unexpected promp type: {type}.")
     return template.format(**context)
 
 

@@ -10,9 +10,16 @@ financials_description = """Financial data of the company, including invoices, u
         
 Some of the key columns include:
 - ENTITY_CURRENCY: The currency in which the entity that made the sale operates.
+- CURRENCY: The currency in which the invoice is issued.
+- SOLD_TO_CITY: The city of the customer who made the purchase.
+- SOLD_TO_COUNTRY: The country of the customer who made the purchase.
+- INVOICE_MONTH: The month in which the invoice was issued.
+- INVOICE_YEAR: The year in which the invoice was issued.
 - SALES_FUNCTIONAL_CURRENCY: Sales amount, per invoice, in the currency of the entity.
 - GROSS_AMOUNT: The gross amount of the invoice, in EUR (the company's reporting currency).
 - SoldToID: The ID of the customer who made the purchase.
+
+To load to dataframe, use encoding="ISO-8859-1"
 """
 
 
@@ -21,9 +28,7 @@ class LocalDataSource(BaseModel):
     description: str
 
 
-DATA_PROVIDED: list[LocalDataSource] = [
-    LocalDataSource(
-        name="financials_final.csv",
-        description=financials_description,
-    ),
-]
+DATA_PROVIDED = LocalDataSource(
+    name="financials_final.csv",
+    description=financials_description,
+)
