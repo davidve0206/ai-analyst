@@ -49,9 +49,9 @@ def test_render_human_prompt_template(monkeypatch):
     )
 
 
-def test_create_prompt_parts_from_file_list():
+def test_create_prompt_blocks_from_file_list():
     # Import just for this test to avoid overriding monkeypatches on other tests
-    from src.agents.utils import create_prompt_parts_from_file_list
+    from src.agents.utils import create_content_blocks_from_file_list
 
     csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
     png_file_name = "sales_projection_spain_fixture.png"
@@ -59,9 +59,11 @@ def test_create_prompt_parts_from_file_list():
         test_temp_dir / csv_file_name,
         test_temp_dir / png_file_name,
     ]
-    parts = create_prompt_parts_from_file_list(file_list)
+    parts = create_content_blocks_from_file_list(file_list)
 
-    assert len(parts) == 3
+    assert (
+        len(parts) == 3
+    )  # 2 text parts + 1 image part (Because png has a part saying the name of the file)
     assert parts[0]["type"] == "text"
     assert csv_file_name in parts[0]["text"]
     assert parts[1]["type"] == "text"
@@ -70,3 +72,72 @@ def test_create_prompt_parts_from_file_list():
     assert parts[2]["source_type"] == "base64"
     assert parts[2]["mime_type"] == "image/png"
     assert parts[2]["data"]  # make sure data is not empty
+
+
+def test_create_multimodal_prompt_no_system():
+    # Import just for this test to avoid overriding monkeypatches on other tests
+    from src.agents.utils import create_multimodal_prompt
+
+    text_parts = "This is a test message."
+    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
+    png_file_name = "sales_projection_spain_fixture.png"
+    file_list = [
+        test_temp_dir / csv_file_name,
+        test_temp_dir / png_file_name,
+    ]
+
+    prompt = create_multimodal_prompt(text_parts, file_list)
+
+    assert len(prompt.messages) == 1
+    assert isinstance(prompt.messages[0], HumanMessage)
+    assert prompt.messages[0].content[0]["type"] == "text"
+    assert prompt.messages[0].content[0]["text"] == text_parts
+    assert (
+        len(prompt.messages[0].content) == 4
+    )  # 1 text part + 3 file parts (because png has a part saying the name of the file)
+
+
+def test_create_multimodal_prompt_with_text_list():
+    # Import just for this test to avoid overriding monkeypatches on other tests
+    from src.agents.utils import create_multimodal_prompt
+
+    text_parts = [
+        "This is the first part of the message.",
+        "This is the second part of the message.",
+    ]
+    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
+    png_file_name = "sales_projection_spain_fixture.png"
+    file_list = [
+        test_temp_dir / csv_file_name,
+        test_temp_dir / png_file_name,
+    ]
+
+    prompt = create_multimodal_prompt(text_parts, file_list)
+
+    assert len(prompt.messages) == 1
+    assert isinstance(prompt.messages[0], HumanMessage)
+    assert len(prompt.messages[0].content) == 5  # 2 text parts + 3 file parts
+
+
+def test_create_multimodal_prompt_with_system():
+    # Import just for this test to avoid overriding monkeypatches on other tests
+    from src.agents.utils import create_multimodal_prompt
+
+    text_parts = "This is a test message."
+    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
+    png_file_name = "sales_projection_spain_fixture.png"
+    file_list = [
+        test_temp_dir / csv_file_name,
+        test_temp_dir / png_file_name,
+    ]
+
+    system_message = SystemMessage(
+        content="You are a system that processes multimodal messages."
+    )
+
+    prompt = create_multimodal_prompt(text_parts, file_list, system_message)
+
+    assert len(prompt.messages) == 2
+    assert isinstance(prompt.messages[0], SystemMessage)
+    assert isinstance(prompt.messages[1], HumanMessage)
+    assert prompt.messages[1].content[0]["text"] == text_parts

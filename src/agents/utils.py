@@ -3,10 +3,16 @@ from enum import Enum
 from pathlib import Path
 
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages.content_blocks import (
+    BaseDataContentBlock,
+    PlainTextContentBlock,
+    Base64ContentBlock,
+)
 from langchain_core.prompts import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
 )
+from langchain_core.prompt_values import ChatPromptValue
 
 from src.configuration.settings import SRC_DIR
 
@@ -76,7 +82,9 @@ def extract_graph_response_content(response: dict) -> str:
     return last_message.content
 
 
-def create_prompt_parts_from_file_list(file_list: list[Path]) -> list[dict]:
+def create_content_blocks_from_file_list(
+    file_list: list[Path],
+) -> list[BaseDataContentBlock]:
     """
     Create a list of parts from a list of file names.
 
@@ -91,34 +99,70 @@ def create_prompt_parts_from_file_list(file_list: list[Path]) -> list[dict]:
         if file.is_file():
             if file.suffix.lower() == ".png":
                 prompt_parts.append(
-                    {
-                        "type": "text",
-                        "text": f"Contents of file {file.name}:",
-                    }
+                    PlainTextContentBlock(
+                        type="text", text=f"Contents of file {file.name}:"
+                    )
                 )
                 prompt_parts.append(
-                    {
-                        "type": "image",
-                        "source_type": "base64",
-                        "mime_type": "image/png",  # or image/png, etc.
-                        "data": base64.b64encode(file.read_bytes()).decode(
-                            "utf-8"
-                        ),  # Encode the file content to base64
-                    }
+                    Base64ContentBlock(
+                        type="image",
+                        source_type="base64",
+                        data=base64.b64encode(file.read_bytes()).decode("utf-8"),
+                        mime_type="image/png",
+                    )
                 )
             elif file.suffix.lower() == ".csv":
                 prompt_parts.append(
-                    {
-                        "type": "text",
-                        "text": f"Contents of file {file.name}: \n\n {file.read_text()}",
-                    }
+                    PlainTextContentBlock(
+                        type="text",
+                        text=f"Contents of file {file.name}: \n\n {file.read_text()}",
+                    )
                 )
         else:
             prompt_parts.append(
-                {
-                    "type": "text",
-                    "text": f"File {file.name} was not found.",
-                }
+                PlainTextContentBlock(
+                    type="text",
+                    text=f"File {file.name} was not found.",
+                )
             )
 
     return prompt_parts
+
+
+def create_multimodal_prompt(
+    text_parts: str | list[str],
+    file_list: list[Path],
+    system_message: SystemMessage | None = None,
+) -> ChatPromptValue:
+    """Creates a prompt with (optionally) a system message, and a single
+    user message that can contain text and files.
+
+    NOTE: This only works with an OpenAI model (because of LangChain's
+    implementation of the multimodal ContentBlock, which uses "image";
+    google's, at least, uses "media"). If you want to use a different
+    """
+
+    message_blocks = []
+    if isinstance(text_parts, str):
+        message_blocks.append(PlainTextContentBlock(type="text", text=text_parts))
+    elif isinstance(text_parts, list) and len(text_parts) > 0:
+        for part in text_parts:
+            message_blocks.append(PlainTextContentBlock(type="text", text=part))
+    else:
+        raise ValueError("text_parts must be a string or a non-empty list of strings.")
+
+    if file_list:
+        file_blocks = create_content_blocks_from_file_list(file_list)
+        message_blocks.extend(file_blocks)
+
+    messages = []
+    if system_message:
+        messages.append(system_message)
+
+    messages.append(
+        HumanMessage(
+            content=message_blocks,
+        )
+    )
+
+    return ChatPromptValue(messages=messages)
