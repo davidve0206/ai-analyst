@@ -95,7 +95,10 @@ async def create_research_graph(
         Generate the sales report based on the sales history.
         This is a placeholder for the actual report generation logic.
         """
-        # Fet the system prompt for the editor agent
+        # TODO: We might want to add a step to review the report and make changes
+        #       before sending it to the user.
+
+        # Get the system prompt for the editor agent
         system_message = render_prompt_template(
             template_name="editor_agent_system_prompt.md",
             context={},
