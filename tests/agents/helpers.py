@@ -1,4 +1,5 @@
 import os
+import re
 from src.configuration.settings import BASE_DIR
 
 
@@ -23,6 +24,22 @@ def assert_numeric_value_in_str(
     formatted_value = f"{expected_value:,.2f}"
     error_output = error_output or f"Expected {expected_value} not found in {result}"
     assert str_value in result or formatted_value in result, error_output
+
+
+def get_all_files_mentioned_in_response(response: str) -> list[str]:
+    """
+    Extract all file names mentioned in the response string.
+
+    Args:
+        response (str): The response string containing file names.
+
+    Returns:
+        list[str]: A list of file names extracted from the response.
+    """
+    # Use regex to find .png or .csv files mentioned in the response
+    file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
+    found_files: list[str] = re.findall(file_pattern, response)
+    return found_files
 
 
 california_monthly_sales_in_db = {

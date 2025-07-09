@@ -5,7 +5,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.quant_agent import get_quantitative_agent
-from src.agents.utils import (
+from src.agents.utils.prompt_utils import (
     PrompTypes,
     create_multimodal_prompt,
     extract_graph_response_content,
@@ -95,25 +95,19 @@ async def create_research_graph(
         Generate the sales report based on the sales history.
         This is a placeholder for the actual report generation logic.
         """
-        # First, we get the system prompt for the editor agent
+        # Fet the system prompt for the editor agent
         system_message = render_prompt_template(
             template_name="editor_agent_system_prompt.md",
             context={},
             type=PrompTypes.SYSTEM,
         )
 
-        # Then, we get the results from the previous steps
-        analysis_text = (
-            "Sales analysis for Spain: \n\n"
-            "Sales are decreasing in the last month, by 10% compared to the previous month."
-        )
-
-        # Then, we add the files from the TEMP_DIR as parts
+        # Then, retrieve the list of files from the TEMP_DIR
         temp_files = list(TEMP_DIR.glob("*"))
 
         # Finally, we create the message and send to the LLM
         prompt = create_multimodal_prompt(
-            text_parts=analysis_text,
+            text_parts=state.sales_analysis,
             file_list=temp_files,
             system_message=system_message,
         )

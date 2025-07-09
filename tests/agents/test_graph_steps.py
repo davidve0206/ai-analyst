@@ -1,11 +1,10 @@
-import re
 import pytest
 import pandas as pd
 
 from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
-from src.agents.utils import (
+from src.agents.utils.prompt_utils import (
     PrompTypes,
     create_multimodal_prompt,
     extract_graph_response_content,
@@ -14,7 +13,7 @@ from src.agents.utils import (
 from src.configuration.constants import DATA_PROVIDED
 from src.configuration.kpis import SalesReportRequest
 from src.configuration.settings import DATA_DIR, app_settings
-from .helpers import test_temp_dir
+from .helpers import get_all_files_mentioned_in_response, test_temp_dir
 
 
 @pytest.mark.asyncio
@@ -117,9 +116,7 @@ async def test_sales_analysis_step(
     response_content = extract_graph_response_content(response)
     print(response_content)
 
-    # Use regex to find .png or .csv files mentioned in the response_content
-    file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
-    found_files: list[str] = re.findall(file_pattern, response_content)
+    found_files = get_all_files_mentioned_in_response(response_content)
 
     print(f"Found files: {found_files}")
     assert found_files, "No output files were generated in the response."

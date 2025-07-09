@@ -2,9 +2,13 @@ import pytest
 
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.utils import extract_graph_response_content
+from src.agents.utils.prompt_utils import extract_graph_response_content
 
-from .helpers import california_monthly_sales_in_db, test_temp_dir
+from .helpers import (
+    california_monthly_sales_in_db,
+    get_all_files_mentioned_in_response,
+    test_temp_dir,
+)
 
 
 @pytest.mark.asyncio
@@ -18,7 +22,11 @@ async def test_task_with_intermediate_interpreter(
     
     2021: 300, 2022: 325, 2023: 350, 2024: 325, 2025: 400.
     
-    What is the average growth rate (CAGR)?"""
+    What is the compounded average growth rate (CAGR)?
+    
+    Calculate the CAGR but don't create any plots or graphs, just return the value as a string.
+    
+    Remember you have to print the result to be able to see it."""
     expected = (
         "7.46"  # %, but might include more decimal places so we check for substring
     )
@@ -47,16 +55,17 @@ async def test_file_creation(quantitative_agent: CompiledStateGraph):
     assert response is not None
     response_content = extract_graph_response_content(response)
 
-    temp_dir_files = test_temp_dir.glob("*")
-    files_created = [file for file in temp_dir_files if file.is_file()]
-    # Assert that there is at least one file created in the temp directory
-    assert len(files_created) > 0, "No files were created in the temp directory."
-    # Assert that the response contains the names of the files created
-    for file in files_created:
-        assert file.name in response_content, (
-            f"File {file.name} not found in response content."
-        )
-
-    # Clean up the temp directory after the test
-    for file in files_created:
-        file.unlink(missing_ok=True)
+    files_created = get_all_files_mentioned_in_response(response_content)
+    try:
+        # Assert that there is at least one file created in the temp directory
+        assert len(files_created) > 0, "No files were created in the temp directory."
+        # Assert that the file actually exists
+        for file_name in files_created:
+            file_path = test_temp_dir / file_name
+            assert file_path.exists(), f"File {file_name} does not exist at {file_path}"
+    finally:
+        # Clean up the temp directory after the test
+        for file in files_created:
+            file_path = test_temp_dir / file
+            if file_path.exists():
+                file_path.unlink(missing_ok=True)

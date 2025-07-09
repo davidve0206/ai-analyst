@@ -8,7 +8,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.db import InternalDatabaseToolkit
-from src.agents.utils import render_system_prompt_template
+from src.agents.utils.prompt_utils import render_system_prompt_template
 from src.configuration.constants import DATABASE_CATALOG
 
 RECURSION_LIMIT = 10

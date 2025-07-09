@@ -3,7 +3,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.python_interpreter import repl_tool
-from src.agents.utils import PrompTypes, render_prompt_template
+from src.agents.utils.prompt_utils import PrompTypes, render_prompt_template
 from src.configuration.settings import TEMP_DIR
 
 RECURSION_LIMIT = 10

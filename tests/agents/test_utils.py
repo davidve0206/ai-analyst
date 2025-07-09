@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.utils import PrompTypes
+from src.agents.utils.prompt_utils import PrompTypes
 from src.configuration.settings import BASE_DIR
 from .helpers import test_temp_dir
 
@@ -8,10 +8,10 @@ from .helpers import test_temp_dir
 def test_render_system_prompt_template(monkeypatch):
     # Patch PROMPTS_PATH to point to the test prompts directory
     test_prompts_path = BASE_DIR / "tests" / "agents" / "prompts"
-    monkeypatch.setattr("src.agents.utils.PROMPTS_PATH", test_prompts_path)
+    monkeypatch.setattr("src.agents.utils.prompt_utils.PROMPTS_PATH", test_prompts_path)
 
     # Import after patching
-    from src.agents.utils import render_prompt_template
+    from src.agents.utils.prompt_utils import render_prompt_template
 
     context = {"language": "spanish"}
     template_name = "test_render_prompt.md"
@@ -30,10 +30,10 @@ def test_render_system_prompt_template(monkeypatch):
 def test_render_human_prompt_template(monkeypatch):
     # Patch PROMPTS_PATH to point to the test prompts directory
     test_prompts_path = BASE_DIR / "tests" / "agents" / "prompts"
-    monkeypatch.setattr("src.agents.utils.PROMPTS_PATH", test_prompts_path)
+    monkeypatch.setattr("src.agents.utils.prompt_utils.PROMPTS_PATH", test_prompts_path)
 
     # Import after patching
-    from src.agents.utils import render_prompt_template
+    from src.agents.utils.prompt_utils import render_prompt_template
 
     context = {"language": "spanish"}
     template_name = "test_render_prompt.md"
@@ -51,7 +51,7 @@ def test_render_human_prompt_template(monkeypatch):
 
 def test_create_prompt_blocks_from_file_list():
     # Import just for this test to avoid overriding monkeypatches on other tests
-    from src.agents.utils import create_content_blocks_from_file_list
+    from src.agents.utils.prompt_utils import create_content_blocks_from_file_list
 
     csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
     png_file_name = "sales_projection_spain_fixture.png"
@@ -76,7 +76,7 @@ def test_create_prompt_blocks_from_file_list():
 
 def test_create_multimodal_prompt_no_system():
     # Import just for this test to avoid overriding monkeypatches on other tests
-    from src.agents.utils import create_multimodal_prompt
+    from src.agents.utils.prompt_utils import create_multimodal_prompt
 
     text_parts = "This is a test message."
     csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
@@ -99,7 +99,7 @@ def test_create_multimodal_prompt_no_system():
 
 def test_create_multimodal_prompt_with_text_list():
     # Import just for this test to avoid overriding monkeypatches on other tests
-    from src.agents.utils import create_multimodal_prompt
+    from src.agents.utils.prompt_utils import create_multimodal_prompt
 
     text_parts = [
         "This is the first part of the message.",
@@ -121,7 +121,7 @@ def test_create_multimodal_prompt_with_text_list():
 
 def test_create_multimodal_prompt_with_system():
     # Import just for this test to avoid overriding monkeypatches on other tests
-    from src.agents.utils import create_multimodal_prompt
+    from src.agents.utils.prompt_utils import create_multimodal_prompt
 
     text_parts = "This is a test message."
     csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
