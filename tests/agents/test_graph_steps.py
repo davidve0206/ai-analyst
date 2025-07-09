@@ -4,8 +4,10 @@ import pandas as pd
 
 from langgraph.graph.state import CompiledStateGraph
 
+from src.agents.models import AppChatModels
 from src.agents.utils import (
     PrompTypes,
+    create_multimodal_prompt,
     extract_graph_response_content,
     render_prompt_template,
 )
@@ -134,3 +136,46 @@ async def test_sales_analysis_step(
     for file in found_files:
         file_path = test_temp_dir / file
         file_path.unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio
+async def test_sales_report_generation(models_client: AppChatModels):
+    """Test that replicates the sales report generation step."""
+    # First, we get the system prompt for the editor agent
+    system_message = render_prompt_template(
+        template_name="editor_agent_system_prompt.md",
+        context={},
+        type=PrompTypes.SYSTEM,
+    )
+
+    # Then, we get the results from the previous steps
+    analysis_text = (
+        "Sales analysis for Spain: \n\n"
+        "Sales are decreasing in the last month, by 10% compared to the previous month."
+    )
+
+    # Then, we add the files from the TEMP_DIR as parts
+    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
+    png_file_name = "sales_projection_spain_fixture.png"
+    file_list = [
+        test_temp_dir / csv_file_name,
+        test_temp_dir / png_file_name,
+    ]
+
+    # Finally, we create the message and send to the LLM
+    prompt = create_multimodal_prompt(
+        text_parts=analysis_text,
+        file_list=file_list,
+        system_message=system_message,
+    )
+
+    result = await models_client.gpt_o4_mini.ainvoke(prompt)
+
+    assert result is not None, "No response received from the model."
+    assert hasattr(result, "content"), "Response does not contain content."
+    print(f"Generated report content: {result.content}")
+    assert f"({png_file_name})" in result.content, (
+        f"Expected output file {png_file_name} not mentioned in the report."
+    )
+    # TODO: consider adding an LLM as a judge to validate the report
+    # For now, we just check that the response contains the image file

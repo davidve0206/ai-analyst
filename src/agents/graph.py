@@ -3,12 +3,11 @@ from pydantic import BaseModel
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.db_agent import get_database_agent
 from src.agents.models import AppChatModels
 from src.agents.quant_agent import get_quantitative_agent
-from src.agents.tools.db import InternalDatabaseToolkit
 from src.agents.utils import (
     PrompTypes,
+    create_multimodal_prompt,
     extract_graph_response_content,
     render_prompt_template,
 )
@@ -26,7 +25,7 @@ class ResearchGraphState(BaseModel):
 
 
 class GraphNodeNames(Enum):
-    GET_SALES_HISTORY = "get_sales_history"
+    RETRIEVE_SALES_HISTORY = "retrieve_sales_history"
     PROCESS_SALES_DATA = "process_sales_data"
     GENERATE_REPORT = "generate_report"
     SEND_EMAIL = "send_email"
@@ -44,7 +43,7 @@ async def create_research_graph(
     # Agents to be used in the graph
     quant_agent = get_quantitative_agent(models_client)
 
-    async def get_sales_history(state: ResearchGraphState):
+    async def retrieve_sales_history(state: ResearchGraphState):
         """
         First LLM call, retrieve the sales history for the last 3 years
         from the database.
@@ -67,11 +66,11 @@ async def create_research_graph(
             type=PrompTypes.HUMAN,
         )
 
-        response = await quant_agent.ainvoke({"messages": [("user", task_prompt)]})
+        response = await quant_agent.ainvoke({"messages": [task_prompt]})
         response_content = extract_graph_response_content(response)
         return {"sales_history": response_content}
 
-    async def process_sales_data(state: ResearchGraphState) -> ResearchGraphState:
+    async def process_sales_data(state: ResearchGraphState):
         """
         Process the sales data retrieved from the database.
         This is a placeholder for the actual processing logic.
@@ -87,25 +86,48 @@ async def create_research_graph(
             type=PrompTypes.HUMAN,
         )
 
-        response = await quant_agent.ainvoke({"messages": [("user", task_prompt)]})
+        response = await quant_agent.ainvoke({"messages": [task_prompt]})
         response_content = extract_graph_response_content(response)
         return {"sales_analysis": response_content}
 
-    async def generate_report(state: ResearchGraphState) -> str:
+    async def generate_report(state: ResearchGraphState):
         """
         Generate the sales report based on the sales history.
         This is a placeholder for the actual report generation logic.
         """
-        # Here you would implement the logic to generate a report
-        # For now, we just return the sales history as a string
-        return {"report": state.sales_analysis}
+        # First, we get the system prompt for the editor agent
+        system_message = render_prompt_template(
+            template_name="editor_agent_system_prompt.md",
+            context={},
+            type=PrompTypes.SYSTEM,
+        )
+
+        # Then, we get the results from the previous steps
+        analysis_text = (
+            "Sales analysis for Spain: \n\n"
+            "Sales are decreasing in the last month, by 10% compared to the previous month."
+        )
+
+        # Then, we add the files from the TEMP_DIR as parts
+        temp_files = list(TEMP_DIR.glob("*"))
+
+        # Finally, we create the message and send to the LLM
+        prompt = create_multimodal_prompt(
+            text_parts=analysis_text,
+            file_list=temp_files,
+            system_message=system_message,
+        )
+
+        result = await models_client.gpt_o4_mini.ainvoke(prompt)
+
+        return {"report": result.content}
 
     graph = StateGraph(ResearchGraphState)
 
     # Add all noted nodes to the graph
     graph.add_node(
-        GraphNodeNames.GET_SALES_HISTORY.value,
-        get_sales_history,
+        GraphNodeNames.RETRIEVE_SALES_HISTORY.value,
+        retrieve_sales_history,
     )
     graph.add_node(
         GraphNodeNames.PROCESS_SALES_DATA.value,
@@ -117,9 +139,10 @@ async def create_research_graph(
     )
 
     # Add edges to connect the nodes
-    graph.add_edge(START, GraphNodeNames.GET_SALES_HISTORY.value)
+    graph.add_edge(START, GraphNodeNames.RETRIEVE_SALES_HISTORY.value)
     graph.add_edge(
-        GraphNodeNames.GET_SALES_HISTORY.value, GraphNodeNames.PROCESS_SALES_DATA.value
+        GraphNodeNames.RETRIEVE_SALES_HISTORY.value,
+        GraphNodeNames.PROCESS_SALES_DATA.value,
     )
     graph.add_edge(
         GraphNodeNames.PROCESS_SALES_DATA.value, GraphNodeNames.GENERATE_REPORT.value

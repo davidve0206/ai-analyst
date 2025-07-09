@@ -1,7 +1,8 @@
 from langsmith import traceable
+from langgraph.graph.state import CompiledStateGraph
+
 from src.agents.graph import create_research_graph
 from src.agents.models import default_models
-from src.agents.tools.db import InternalDatabaseToolkit
 from src.configuration.kpis import SalesReportRequest
 
 
@@ -11,15 +12,14 @@ async def main():
     Main function to run the database agent.
     This is a simple example of how to use the database agent.
     """
-    internal_db_toolkit = await InternalDatabaseToolkit.create()
 
-    research_graph = await create_research_graph(
-        internal_db_toolkit=internal_db_toolkit, models_client=default_models
+    research_graph: CompiledStateGraph = await create_research_graph(
+        models_client=default_models
     )
 
     test_request = SalesReportRequest(
-        grouping="state",
-        grouping_value="California",
+        grouping="country",
+        grouping_value="Spain",
         period="monthly",
     )
 

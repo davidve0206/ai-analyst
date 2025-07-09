@@ -51,6 +51,6 @@ class AppChatModels:
         # Sets a default model for places where we don't specify a model
         # Recommended to use a cheap but fast model, explicitly set a
         # different model in the agent if needed
-        self.default_model = self.gemini_2_0_flash 
+        self.default_model = self.gemini_2_0_flash
 
 default_models = AppChatModels()
