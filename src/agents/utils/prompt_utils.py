@@ -13,6 +13,7 @@ from langchain_core.prompts import (
     SystemMessagePromptTemplate,
 )
 from langchain_core.prompt_values import ChatPromptValue
+from openai import BaseModel
 
 from src.configuration.settings import SRC_DIR, TEMP_DIR
 
@@ -74,7 +75,7 @@ def render_prompt_template(
     return template.format(**context)
 
 
-def extract_graph_response_content(response: dict) -> str:
+def extract_graph_response_content(response: dict) -> str | dict | BaseModel:
     """
     Extract the content of the last message from a list of messages.
 
@@ -84,6 +85,10 @@ def extract_graph_response_content(response: dict) -> str:
     Returns:
         str: Content of the last message.
     """
+    if "structured_response" in response:
+        # If the response contains a structured response, return it directly.
+        return response["structured_response"]
+
     messages: list[dict] = response.get("messages", [])
     if not messages:
         return ""
@@ -140,8 +145,9 @@ def create_content_blocks_from_file_list(
 
 
 def create_multimodal_prompt(
-    text_parts: str | list[str],
-    file_list: list[Path],
+    text_parts: str | list[str] = [],
+    file_list: list[Path] = [],
+    human_message: HumanMessage | None = None,
     system_message: SystemMessage | None = None,
 ) -> ChatPromptValue:
     """Creates a prompt with (optionally) a system message, and a single
@@ -155,11 +161,11 @@ def create_multimodal_prompt(
     message_blocks = []
     if isinstance(text_parts, str):
         message_blocks.append(PlainTextContentBlock(type="text", text=text_parts))
-    elif isinstance(text_parts, list) and len(text_parts) > 0:
+    elif isinstance(text_parts, list):
         for part in text_parts:
             message_blocks.append(PlainTextContentBlock(type="text", text=part))
     else:
-        raise ValueError("text_parts must be a string or a non-empty list of strings.")
+        raise ValueError("text_parts must be a string or a list of strings.")
 
     if file_list:
         file_blocks = create_content_blocks_from_file_list(file_list)
@@ -168,6 +174,9 @@ def create_multimodal_prompt(
     messages = []
     if system_message:
         messages.append(system_message)
+
+    if human_message:
+        messages.append(human_message)
 
     messages.append(
         HumanMessage(

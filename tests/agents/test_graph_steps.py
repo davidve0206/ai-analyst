@@ -21,6 +21,7 @@ from .helpers import (
     sales_analysis_declining_yoy,
     sales_analysis_declining_trend,
     sales_analysis_no_special_case,
+    operational_values_expected,
 )
 
 
@@ -165,18 +166,63 @@ async def test_sales_analysis_step(
     print(f"Found files: {found_files}")
     assert found_files, "No output files were generated in the response."
 
-    # Check that the files mentioned exist in the temp directory
-    for file in found_files:
-        file_path = test_temp_dir / file
-        assert file_path.exists(), f"Expected output file {file} does not exist."
+    try:
+        # Check that the files mentioned exist in the temp directory
+        for file in found_files:
+            file_path = test_temp_dir / file
+            assert file_path.exists(), f"Expected output file {file} does not exist."
 
-    # TODO: consider adding an LLM as a judge to validate the analysis
-    # For now, we just check that the response contains some output files
+        # TODO: consider adding an LLM as a judge to validate the analysis
+        # For now, we just check that the response contains some output files
 
-    # Clean up the temp files
-    for file in found_files:
-        file_path = test_temp_dir / file
-        file_path.unlink(missing_ok=True)
+    finally:
+        # Clean up the temp files
+        for file in found_files:
+            file_path = test_temp_dir / file
+            file_path.unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio
+async def test_operational_data_retrieval_step(
+    default_request: SalesReportRequest,
+    patch_graph_environment,
+):
+    """Test that replicates the operational data retrieval step."""
+    """ NOTE: This test is flaky, it does not always pass """
+    from src.agents.graph import retrieve_operational_data, SalesResearchGraphState
+
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis="",
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
+    )
+
+    step_result = await retrieve_operational_data(test_state)
+    assert step_result is not None
+    assert "sales_operational_data" in step_result, (
+        "Step result does not contain 'sales_operational_data' key."
+    )
+    data = step_result["sales_operational_data"]
+
+    # TODO: if we improve this step to get a proper analysis of the operational data,
+    # we need to evaluate it gets the right data; for now, we just check that
+    # the response contains some output files
+    found_files = get_all_files_mentioned_in_response(data)
+    print(f"Found files: {found_files}")
+    assert found_files, "No output files were generated in the response."
+    try:
+        # Check that the files mentioned exist in the temp directory
+        for file in found_files:
+            file_path = test_temp_dir / file
+            assert file_path.exists(), f"Expected output file {file} does not exist."
+    finally:
+        for file in found_files:
+            file_path = test_temp_dir / file
+            file_path.unlink(missing_ok=True)
 
 
 @pytest.mark.asyncio

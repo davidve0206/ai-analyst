@@ -133,3 +133,58 @@ def test_create_multimodal_prompt_with_system():
     assert isinstance(prompt.messages[0], SystemMessage)
     assert isinstance(prompt.messages[1], HumanMessage)
     assert prompt.messages[1].content[0]["text"] == text_parts
+
+
+def test_multimodal_prompt_with_human_message():
+    # Import just for this test to avoid overriding monkeypatches on other tests
+    from src.agents.utils.prompt_utils import create_multimodal_prompt
+
+    text_parts = "This is a test message."
+    file_list = [
+        test_temp_dir / csv_file_name,
+        test_temp_dir / png_file_name,
+    ]
+
+    human_message = HumanMessage(
+        content="This is a human message that accompanies the multimodal prompt."
+    )
+
+    prompt = create_multimodal_prompt(
+        text_parts, file_list, human_message=human_message
+    )
+
+    assert len(prompt.messages) == 2
+    assert isinstance(prompt.messages[0], HumanMessage)
+    assert prompt.messages[0].content == human_message.content
+    assert isinstance(prompt.messages[1], HumanMessage)
+    assert prompt.messages[1].content[0]["text"] == text_parts
+
+
+def test_multimodal_prompt_with_system_and_human():
+    # Import just for this test to avoid overriding monkeypatches on other tests
+    from src.agents.utils.prompt_utils import create_multimodal_prompt
+
+    text_parts = "This is a test message."
+    file_list = [
+        test_temp_dir / csv_file_name,
+        test_temp_dir / png_file_name,
+    ]
+
+    system_message = SystemMessage(
+        content="You are a system that processes multimodal messages."
+    )
+    human_message = HumanMessage(
+        content="This is a human message that accompanies the multimodal prompt."
+    )
+
+    prompt = create_multimodal_prompt(
+        text_parts,
+        file_list,
+        human_message=human_message,
+        system_message=system_message,
+    )
+
+    assert len(prompt.messages) == 3
+    assert isinstance(prompt.messages[0], SystemMessage)
+    assert isinstance(prompt.messages[1], HumanMessage)
+    assert isinstance(prompt.messages[2], HumanMessage)

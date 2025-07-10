@@ -75,6 +75,9 @@ async def process_sales_data(state: SalesResearchGraphState):
     """
     Process the sales data retrieved from the database.
     """
+    default_logger.info(
+        f"Processing sales data for {state.request.grouping} - {state.request.grouping_value}."
+    )
     input_location = get_sales_history_location(state.request.grouping_value)
     task_prompt = render_prompt_template(
         template_name="analyse_sales_step_prompt.md",
@@ -93,7 +96,35 @@ async def process_sales_data(state: SalesResearchGraphState):
 
 async def retrieve_operational_data(state: SalesResearchGraphState):
     """Retrieve operational data for the sales history."""
-    pass
+    default_logger.info(
+        f"Retrieving operational data for {state.request.grouping} - {state.request.grouping_value}."
+    )
+    task_message = render_prompt_template(
+        template_name="retrieve_operational_data_step_prompt.md",
+        context={
+            "date": app_settings.analysis_date,
+            "periodicity": state.request.period,
+            "grouping": state.request.grouping,
+            "grouping_value": state.request.grouping_value,
+            "input_location": str(DATA_DIR / DATA_PROVIDED.name),
+            "data_description": DATA_PROVIDED.description,
+            "previous_output_location": str(DATA_DIR / DATA_PROVIDED.name),
+        },
+        type=PrompTypes.HUMAN,
+    )
+    prompt = create_multimodal_prompt(
+        file_list=[get_sales_history_location(state.request.grouping_value)],
+        human_message=task_message,
+    )
+
+    # NOTE: this requires a lot of recursion to get the operational data.
+    #       We set a recursion limit to avoid hitting the default limit.
+    #       This could be improved by passing the last working code to the agent
+    #       instead of starting from scratch each time.
+    #       Alternatively, we could use a more structured approach to retrieve the data.
+    response = await quant_agent.ainvoke(prompt, {"recursion_limit": 50})
+    response_content = extract_graph_response_content(response)
+    return {"sales_operational_data": response_content}
 
 
 async def review_special_cases(
@@ -119,9 +150,7 @@ async def review_special_cases(
     structured_response_model = models_client.default_model.with_structured_output(
         ReviewResponse
     )
-    response: ReviewResponse = await structured_response_model.ainvoke(
-        [task_prompt]
-    )
+    response: ReviewResponse = await structured_response_model.ainvoke([task_prompt])
     return {
         "is_special_case": response.is_special_case,
     }

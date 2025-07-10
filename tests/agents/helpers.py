@@ -83,6 +83,13 @@ california_monthly_sales_in_db = {
     "2025-05": 200624.20,
 }
 
+operational_values_expected = {
+    "VALENCIA": 2167665.7,  # Total sales for Valencia (City breakdown)
+    "COMMI-ES1-BTB": 1176778.68,  # Sales by item code
+    "17579": 1239757.23,  # Sales by client Id
+    "9100": 1234526.39,  # Sales by EU_ITEM_FAMILY
+}
+
 sales_analysis_declining_yoy = """### Analysis of Sales History Data for Spain
 
 #### Key Metrics
