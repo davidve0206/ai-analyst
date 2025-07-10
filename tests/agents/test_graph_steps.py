@@ -1,48 +1,92 @@
+"""
+This module contains high-level tests for the sales research graph steps.
+
+It does not intend to be a comprehensive test or evaluation suite, but
+rather to ensure that the graph steps can be executed and produce
+reasonable results when provided with the correct data and context.
+"""
+
+from pathlib import Path
 import pytest
 import pandas as pd
 
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.models import AppChatModels
-from src.agents.utils.prompt_utils import (
-    PrompTypes,
-    create_multimodal_prompt,
-    extract_graph_response_content,
-    render_prompt_template,
-)
-from src.configuration.constants import DATA_PROVIDED
 from src.configuration.kpis import SalesReportRequest
-from src.configuration.settings import DATA_DIR, app_settings
-from .helpers import get_all_files_mentioned_in_response, test_temp_dir
+from .helpers import (
+    get_all_files_mentioned_in_response,
+    test_temp_dir,
+    png_file_name,
+    csv_file_name,
+)
+
+
+@pytest.fixture()
+def patch_graph_environment(
+    monkeypatch: pytest.MonkeyPatch,
+    quantitative_agent: CompiledStateGraph,
+) -> None:
+    """
+    Fixture to patch the environment for the graph tests.
+    This is used to ensure that the TEMP_DIR is set correctly.
+    """
+    # Patch the TEMP_DIR and quant_agent
+    monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
+    monkeypatch.setattr("src.agents.graph.quant_agent", quantitative_agent)
+
+    # Patch the helper that returns fixture filenames for testing
+    def patched_get_sales_history_location(grouping_value: str) -> Path:
+        """Patched version that uses fixture filenames for testing."""
+        return test_temp_dir / f"{grouping_value}_sales_history_fixture.csv"
+
+    # Patch just the helper function in the graph module (since it's imported there)
+    monkeypatch.setattr(
+        "src.agents.graph.get_sales_history_location",
+        patched_get_sales_history_location,
+    )
+
+    # Patch the helper that retrieves all temp files
+    def patched_get_all_temp_files() -> list[Path]:
+        """Patched version that returns fixture filenames for testing."""
+        return [
+            test_temp_dir / csv_file_name,
+            test_temp_dir / png_file_name,
+        ]
+
+    monkeypatch.setattr(
+        "src.agents.graph.get_all_temp_files",
+        patched_get_all_temp_files,
+    )
 
 
 @pytest.mark.asyncio
 async def test_sales_retrieval_step(
     spain_sales_history_df: pd.DataFrame,
     default_request: SalesReportRequest,
-    quantitative_agent: CompiledStateGraph,
+    patch_graph_environment,
 ) -> None:
     """Test that replicates the sales retrieval step."""
-    expected_file_path = test_temp_dir / "sales_history.csv"
+    from src.agents.graph import retrieve_sales_history, SalesResearchGraphState
 
-    task_prompt = render_prompt_template(
-        template_name="retrieve_sales_step_prompt.md",
-        context={
-            "date": app_settings.analysis_date,
-            "periodicity": default_request.period,
-            "grouping": default_request.grouping,
-            "grouping_value": default_request.grouping_value,
-            "input_location": str(DATA_DIR / DATA_PROVIDED.name),
-            "data_description": DATA_PROVIDED.description,
-            "output_location": str(expected_file_path),
-        },
-        type=PrompTypes.HUMAN,
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="",
+        sales_analysis="",
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
+    )
+    expected_file_path = (
+        test_temp_dir / f"{default_request.grouping_value}_sales_history.csv"
     )
 
-    response = await quantitative_agent.ainvoke({"messages": [task_prompt]})
+    step_result = await retrieve_sales_history(test_state)
 
-    assert response is not None
-    print(response)
+    assert step_result is not None
+    assert "sales_history" in step_result, (
+        "Step result does not contain 'sales_history' key."
+    )
     assert expected_file_path.exists(), (
         f"Expected file {expected_file_path} was not created."
     )
@@ -87,35 +131,32 @@ async def test_sales_retrieval_step(
 
 @pytest.mark.asyncio
 async def test_sales_analysis_step(
-    spain_sales_history_df: pd.DataFrame,
     default_request: SalesReportRequest,
-    quantitative_agent: CompiledStateGraph,
+    patch_graph_environment,
 ) -> None:
     """Test that replicates the sales analysis step."""
+    from src.agents.graph import process_sales_data, SalesResearchGraphState
 
-    # Store the sales history as a file in the temp directory
-    sales_history_file = (
-        test_temp_dir
-        / f"sales_analysis_{default_request.grouping_value}_sales_history.csv"
-    )
-    spain_sales_history_df.to_csv(sales_history_file, index=False)
-
-    task_prompt = render_prompt_template(
-        template_name="analyse_sales_step_prompt.md",
-        context={
-            "grouping": default_request.grouping,
-            "grouping_value": default_request.grouping_value,
-            "input_location": str(sales_history_file),
-        },
-        type=PrompTypes.HUMAN,
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis="",
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
     )
 
-    response = await quantitative_agent.ainvoke({"messages": [task_prompt]})
-    assert response is not None
+    # Now call the actual process_sales_data function which will use our patched helper
+    step_result = await process_sales_data(test_state)
 
-    response_content = extract_graph_response_content(response)
-    print(response_content)
+    assert step_result is not None
+    assert "sales_analysis" in step_result, (
+        "Step result does not contain 'sales_analysis' key."
+    )
 
+    response_content = step_result["sales_analysis"]
+    print(response_content)  # Debugging output
     found_files = get_all_files_mentioned_in_response(response_content)
 
     print(f"Found files: {found_files}")
@@ -125,53 +166,42 @@ async def test_sales_analysis_step(
     for file in found_files:
         file_path = test_temp_dir / file
         assert file_path.exists(), f"Expected output file {file} does not exist."
+
     # TODO: consider adding an LLM as a judge to validate the analysis
     # For now, we just check that the response contains some output files
 
     # Clean up the temp files
-    sales_history_file.unlink(missing_ok=True)
     for file in found_files:
         file_path = test_temp_dir / file
         file_path.unlink(missing_ok=True)
 
 
 @pytest.mark.asyncio
-async def test_sales_report_generation(models_client: AppChatModels):
+async def test_sales_report_generation(
+    default_request: SalesReportRequest,
+    patch_graph_environment,
+):
     """Test that replicates the sales report generation step."""
-    # First, we get the system prompt for the editor agent
-    system_message = render_prompt_template(
-        template_name="editor_agent_system_prompt.md",
-        context={},
-        type=PrompTypes.SYSTEM,
+
+    from src.agents.graph import generate_report, SalesResearchGraphState
+
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis="Sales are decreasing in the last month, by 10% compared to the previous month.",
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
     )
 
-    # Then, we get the results from the previous steps
-    analysis_text = (
-        "Sales analysis for Spain: \n\n"
-        "Sales are decreasing in the last month, by 10% compared to the previous month."
-    )
+    step_result = await generate_report(test_state)
+    assert step_result is not None
+    assert "report" in step_result, "Step result does not contain 'report' key."
 
-    # Then, we add the files from the TEMP_DIR as parts
-    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
-    png_file_name = "sales_projection_spain_fixture.png"
-    file_list = [
-        test_temp_dir / csv_file_name,
-        test_temp_dir / png_file_name,
-    ]
-
-    # Finally, we create the message and send to the LLM
-    prompt = create_multimodal_prompt(
-        text_parts=analysis_text,
-        file_list=file_list,
-        system_message=system_message,
-    )
-
-    result = await models_client.gpt_o4_mini.ainvoke(prompt)
-
-    assert result is not None, "No response received from the model."
-    assert hasattr(result, "content"), "Response does not contain content."
-    print(f"Generated report content: {result.content}")
-    assert f"({png_file_name})" in result.content, (
+    response_content = step_result["report"]
+    print(f"Generated report content: {response_content}")
+    assert f"({png_file_name})" in response_content, (
         f"Expected output file {png_file_name} not mentioned in the report."
     )
     # TODO: consider adding an LLM as a judge to validate the report

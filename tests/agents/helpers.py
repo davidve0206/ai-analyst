@@ -6,6 +6,9 @@ from src.configuration.settings import BASE_DIR
 test_temp_dir = BASE_DIR / "tests" / "temp"
 os.makedirs(test_temp_dir, exist_ok=True)
 
+png_file_name = "sales_projection_spain_fixture.png"
+csv_file_name = "Spain_sales_history_fixture.csv"
+
 
 def assert_numeric_value_in_str(
     expected_value: int | float, result: str, error_output: None

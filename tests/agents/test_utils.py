@@ -2,7 +2,7 @@ from langchain_core.messages import HumanMessage, SystemMessage
 
 from src.agents.utils.prompt_utils import PrompTypes
 from src.configuration.settings import BASE_DIR
-from .helpers import test_temp_dir
+from .helpers import test_temp_dir, png_file_name, csv_file_name
 
 
 def test_render_system_prompt_template(monkeypatch):
@@ -53,8 +53,6 @@ def test_create_prompt_blocks_from_file_list():
     # Import just for this test to avoid overriding monkeypatches on other tests
     from src.agents.utils.prompt_utils import create_content_blocks_from_file_list
 
-    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
-    png_file_name = "sales_projection_spain_fixture.png"
     file_list = [
         test_temp_dir / csv_file_name,
         test_temp_dir / png_file_name,
@@ -79,8 +77,6 @@ def test_create_multimodal_prompt_no_system():
     from src.agents.utils.prompt_utils import create_multimodal_prompt
 
     text_parts = "This is a test message."
-    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
-    png_file_name = "sales_projection_spain_fixture.png"
     file_list = [
         test_temp_dir / csv_file_name,
         test_temp_dir / png_file_name,
@@ -105,8 +101,6 @@ def test_create_multimodal_prompt_with_text_list():
         "This is the first part of the message.",
         "This is the second part of the message.",
     ]
-    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
-    png_file_name = "sales_projection_spain_fixture.png"
     file_list = [
         test_temp_dir / csv_file_name,
         test_temp_dir / png_file_name,
@@ -124,8 +118,6 @@ def test_create_multimodal_prompt_with_system():
     from src.agents.utils.prompt_utils import create_multimodal_prompt
 
     text_parts = "This is a test message."
-    csv_file_name = "sales_analysis_Spain_sales_fixture.csv"
-    png_file_name = "sales_projection_spain_fixture.png"
     file_list = [
         test_temp_dir / csv_file_name,
         test_temp_dir / png_file_name,
