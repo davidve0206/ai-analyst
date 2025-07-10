@@ -18,6 +18,9 @@ from .helpers import (
     test_temp_dir,
     png_file_name,
     csv_file_name,
+    sales_analysis_declining_yoy,
+    sales_analysis_declining_trend,
+    sales_analysis_no_special_case,
 )
 
 
@@ -174,6 +177,90 @@ async def test_sales_analysis_step(
     for file in found_files:
         file_path = test_temp_dir / file
         file_path.unlink(missing_ok=True)
+
+
+@pytest.mark.asyncio
+async def test_review_special_cases_declining_yoy_sales(
+    default_request: SalesReportRequest,
+    patch_graph_environment,
+):
+    """Test that replicates the special case review step for declining YoY sales."""
+    from src.agents.graph import review_special_cases, SalesResearchGraphState
+
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis=sales_analysis_declining_yoy,
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
+    )
+
+    step_result = await review_special_cases(test_state)
+    assert step_result is not None
+    assert "is_special_case" in step_result, (
+        "Step result does not contain 'is_special_case' key."
+    )
+    assert step_result["is_special_case"] is True, (
+        "Expected the special case to be identified as True."
+    )
+
+
+@pytest.mark.asyncio
+async def test_review_special_cases_declining_trend_sales(
+    default_request: SalesReportRequest,
+    patch_graph_environment,
+):
+    """Test that replicates the special case review step for declining trend sales."""
+    from src.agents.graph import review_special_cases, SalesResearchGraphState
+
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis=sales_analysis_declining_trend,
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
+    )
+
+    step_result = await review_special_cases(test_state)
+    assert step_result is not None
+    assert "is_special_case" in step_result, (
+        "Step result does not contain 'is_special_case' key."
+    )
+    assert step_result["is_special_case"] is True, (
+        "Expected the special case to be identified as True."
+    )
+
+
+@pytest.mark.asyncio
+async def test_review_special_cases_no_special_case(
+    default_request: SalesReportRequest,
+    patch_graph_environment,
+):
+    """Test that replicates the special case review step for no special case."""
+    from src.agents.graph import review_special_cases, SalesResearchGraphState
+
+    test_state = SalesResearchGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis=sales_analysis_no_special_case,
+        sales_operational_data="",
+        is_special_case=False,
+        sales_in_depth_analysis="",
+        report="",
+    )
+
+    step_result = await review_special_cases(test_state)
+    assert step_result is not None
+    assert "is_special_case" in step_result, (
+        "Step result does not contain 'is_special_case' key."
+    )
+    assert step_result["is_special_case"] is False, (
+        "Expected the special case to be identified as False."
+    )
 
 
 @pytest.mark.asyncio

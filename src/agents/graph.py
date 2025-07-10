@@ -120,7 +120,7 @@ async def review_special_cases(
         ReviewResponse
     )
     response: ReviewResponse = await structured_response_model.ainvoke(
-        {"messages": [task_prompt]}
+        [task_prompt]
     )
     return {
         "is_special_case": response.is_special_case,
