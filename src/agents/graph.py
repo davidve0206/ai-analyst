@@ -1,5 +1,6 @@
 from enum import Enum
-from pydantic import BaseModel
+from typing import Literal
+from pydantic import BaseModel, Field
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 
@@ -14,26 +15,33 @@ from src.agents.utils.prompt_utils import (
 from src.configuration.constants import DATA_PROVIDED
 from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
-from src.configuration.settings import DATA_DIR, TEMP_DIR, app_settings
+from src.configuration.settings import BASE_DIR, DATA_DIR, TEMP_DIR, app_settings
 
 
-class ResearchGraphState(BaseModel):
+class SalesResearchGraphState(BaseModel):
     request: SalesReportRequest
     sales_history: str = ""
     sales_analysis: str = ""
+    sales_operational_data: str = ""
+    is_special_case: bool = False
+    sales_in_depth_analysis: str = ""
     report: str = ""
 
 
 class GraphNodeNames(Enum):
     RETRIEVE_SALES_HISTORY = "retrieve_sales_history"
     PROCESS_SALES_DATA = "process_sales_data"
+    RETRIEVE_OPERATIONAL_DATA = "retrieve_operational_data"
+    REVIEW_SPECIAL_CASE = "review_special_case"
+    PROCESS_SPECIAL_CASE = "process_special_case"
     GENERATE_REPORT = "generate_report"
-    SEND_EMAIL = "send_email"
 
 
 async def create_research_graph(
     models_client: AppChatModels,
-) -> CompiledStateGraph[ResearchGraphState, ResearchGraphState, ResearchGraphState]:
+) -> CompiledStateGraph[
+    SalesResearchGraphState, SalesResearchGraphState, SalesResearchGraphState
+]:
     """
     Create the state graph for the sales report generation.
 
@@ -43,7 +51,7 @@ async def create_research_graph(
     # Agents to be used in the graph
     quant_agent = get_quantitative_agent(models_client)
 
-    async def retrieve_sales_history(state: ResearchGraphState):
+    async def retrieve_sales_history(state: SalesResearchGraphState):
         """
         First LLM call, retrieve the sales history for the last 3 years
         from the database.
@@ -70,7 +78,7 @@ async def create_research_graph(
         response_content = extract_graph_response_content(response)
         return {"sales_history": response_content}
 
-    async def process_sales_data(state: ResearchGraphState):
+    async def process_sales_data(state: SalesResearchGraphState):
         """
         Process the sales data retrieved from the database.
         This is a placeholder for the actual processing logic.
@@ -90,7 +98,59 @@ async def create_research_graph(
         response_content = extract_graph_response_content(response)
         return {"sales_analysis": response_content}
 
-    async def generate_report(state: ResearchGraphState):
+    async def retrieve_operational_data(state: SalesResearchGraphState):
+        """Retrieve operational data for the sales history."""
+        pass
+
+    async def review_special_cases(
+        state: SalesResearchGraphState,
+    ):
+        """
+        Check whether there are any special cases to review in the sales data.
+        """
+        task_prompt = render_prompt_template(
+            "review_special_case_step_prompt.md",
+            context={
+                "sales_analysis": state.sales_analysis,
+            },
+            type=PrompTypes.HUMAN,
+        )
+
+        # Response format is a simple yes/no
+        class ReviewResponse(BaseModel):
+            is_special_case: bool = Field(
+                description="Whether there is a special case to review; answer with True or False."
+            )
+
+        structured_response_model = models_client.default_model.with_structured_output(
+            ReviewResponse
+        )
+        response: ReviewResponse = await structured_response_model.ainvoke(
+            {"messages": [task_prompt]}
+        )
+        return {
+            "is_special_case": response.is_special_case,
+        }
+
+    def special_case_gate(
+        state: SalesResearchGraphState,
+    ) -> Literal["generate_report", "process_special_case"]:
+        """
+        Gate to determine whether to process a special case or generate the report.
+        """
+        if state.is_special_case:
+            return GraphNodeNames.PROCESS_SPECIAL_CASE.value
+        else:
+            return GraphNodeNames.GENERATE_REPORT.value
+
+    async def process_special_case(state: SalesResearchGraphState):
+        """
+        If there is a special case, we will process it in depth.
+        This is a placeholder for the actual processing logic.
+        """
+        return {"sales_in_depth_analysis": state.sales_analysis}
+
+    async def generate_report(state: SalesResearchGraphState):
         """
         Generate the sales report based on the sales history.
         This is a placeholder for the actual report generation logic.
@@ -119,7 +179,7 @@ async def create_research_graph(
 
         return {"report": result.content}
 
-    graph = StateGraph(ResearchGraphState)
+    graph = StateGraph(SalesResearchGraphState)
 
     # Add all noted nodes to the graph
     graph.add_node(
@@ -129,6 +189,18 @@ async def create_research_graph(
     graph.add_node(
         GraphNodeNames.PROCESS_SALES_DATA.value,
         process_sales_data,
+    )
+    graph.add_node(
+        GraphNodeNames.RETRIEVE_OPERATIONAL_DATA.value,
+        retrieve_operational_data,
+    )
+    graph.add_node(
+        GraphNodeNames.REVIEW_SPECIAL_CASE.value,
+        review_special_cases,
+    )
+    graph.add_node(
+        GraphNodeNames.PROCESS_SPECIAL_CASE.value,
+        process_special_case,
     )
     graph.add_node(
         GraphNodeNames.GENERATE_REPORT.value,
@@ -142,10 +214,26 @@ async def create_research_graph(
         GraphNodeNames.PROCESS_SALES_DATA.value,
     )
     graph.add_edge(
-        GraphNodeNames.PROCESS_SALES_DATA.value, GraphNodeNames.GENERATE_REPORT.value
+        GraphNodeNames.PROCESS_SALES_DATA.value,
+        GraphNodeNames.RETRIEVE_OPERATIONAL_DATA.value,
+    )
+    graph.add_edge(
+        GraphNodeNames.RETRIEVE_OPERATIONAL_DATA.value,
+        GraphNodeNames.REVIEW_SPECIAL_CASE.value,
+    )
+    graph.add_conditional_edges(
+        GraphNodeNames.REVIEW_SPECIAL_CASE.value, special_case_gate
+    )
+    graph.add_edge(
+        GraphNodeNames.PROCESS_SPECIAL_CASE.value,
+        GraphNodeNames.GENERATE_REPORT.value,
     )
     graph.add_edge(GraphNodeNames.GENERATE_REPORT.value, END)
 
     chain = graph.compile()
+
+    chain.get_graph().draw_mermaid_png(
+        output_file_path=(BASE_DIR / "documentation" / "sales_research_graph.png")
+    )
 
     return chain
