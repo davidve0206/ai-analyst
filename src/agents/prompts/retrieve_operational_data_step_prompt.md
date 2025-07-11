@@ -1,0 +1,48 @@
+Today is {date}.
+
+You have access a file at {input_location}, which contains the following data:
+
+{data_description}
+
+You have already retrieved the last three years of {periodicity} total sales for the following {grouping}: {grouping_value}, which you stored at {previous_output_location} - use this table to check what is the most recent data you could find.
+
+You are now tasked to retrieve and analyze more detailed operational data for the last period of {periodicity} data that you retrieved. For this analysis, please create both the csv files with the data you retrieve and plots visualizing the results, and provide a summary of your findings.
+
+## Examples
+
+Example 1:
+
+If you have already retrieved sales by geography, and the most recent data you have is for January 2022:
+
+1. Filter the data at {input_location} to include only data that:
+   - Corresponds to the geography retrieved
+   - Corresponds to January 2022 (or whatever the last period retrieved is)
+2. Create a new Dataframe with sales grouped by smaller geography:
+   - For example, if you already retrieved country level data, group by state / province or city
+   - Order by highest sale total
+   - Plot the 5 to 10 highest values, groping all others as "other"
+3. Repeat for sales by product category, product name or product ID.
+4. Repeat for sales by client name or client ID.
+
+Example 2:
+
+If you have already retrieved sales by product or product ID, and the most recent data is July 2025:
+
+1. Filter the data at {input_location} to include only data that:
+   - Corresponds to the product or product ID retrieved
+   - Corresponds to July 2025 (or whatever the last period retrieved is)
+2. Create a new Dataframe with sales grouped by geography:
+   - For example, retrieve group data by country
+   - Order by highest sale total
+   - Plot the 5 to 10 highest values, groping all others as "other" ID.
+3. Repeat for sales by client name or client ID.
+
+## Notes
+
+Any breakdown should include the total sales and the percentage of total they represent.
+
+Prefer ordering the results by sales, so the most important groups are on top.
+
+Note that you should always first filter the data by {grouping} and by the last period available, before grouping by any other category.
+
+## Previous outputs

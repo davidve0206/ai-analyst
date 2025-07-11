@@ -16,9 +16,15 @@ dependencies = [
     "semantic-kernel[google]>=1.32.2",
     "markdown-pdf>=1.7",
     "matplotlib>=3.10.3",
+    "langgraph>=0.5.1",
+    "langsmith>=0.4.4",
+    "langchain[google-genai,openai]>=0.3.26",
+    "langchain-community>=0.3.27",
+    "langchain-experimental>=0.3.4",
 ]
 
 [dependency-groups]
 dev = [
+    "ipykernel>=6.29.5",
     "pytest>=8.4.0",
 ]

@@ -1,80 +1,56 @@
-from enum import Enum
-from semantic_kernel.connectors.ai.google.google_ai import (
-    GoogleAIChatCompletion,
-    GoogleAIChatPromptExecutionSettings,
-)
-from semantic_kernel.connectors.ai.function_choice_behavior import (
-    FunctionChoiceBehavior,
-)
-from semantic_kernel.connectors.ai.open_ai import AzureChatCompletion
-from semantic_kernel.connectors.ai.open_ai import OpenAIChatPromptExecutionSettings
+from langchain.chat_models import init_chat_model
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_openai import AzureChatOpenAI
 
 from src.configuration.settings import app_settings
 
 
-class ModelTypes(Enum):
-    GEMINI = "gemini"
-    AZURE_OPENAI = "azure_openai"
+API_VERSION_MAPPING = {"gpt-4o-mini": "2025-01-01-preview"}
 
 
-class GeminiModels(Enum):
-    GEMINI_1_5_PRO = "gemini-1.5-pro"  # NOTE: not available in the free tier
-    GEMINI_1_5_FLASH = "gemini-1.5-flash"
-    GEMINI_2_0_FLASH = "gemini-2.0-flash"
-    GEMINI_2_5_PRO = "gemini-2.5-pro"  # NOTE: not available in the free tier
-    GEMINI_2_5_FLASH = "gemini-2.5-flash"
-
-
-class AzureOpenAIModels(Enum):
-    GPT_4o_MINI = "gpt-4o-mini"
-
-
-# Mapping of Azure OpenAI models to their API versions.
-# This is fragile when using a preview model and could be set as configurable in the future.
-API_VERSION_MAPPING = {AzureOpenAIModels.GPT_4o_MINI: "2025-01-01-preview"}
-
-
-# Default function choice behavior; with additional attempts than default
-default_function_choice_behavior = FunctionChoiceBehavior(
-    enable_kernel_functions=True, maximum_auto_invoke_attempts=5, type_="auto"
-)
-
-
-def get_gemini_service(model: GeminiModels, service_id: str | None = None):
-    return GoogleAIChatCompletion(
-        gemini_model_id=model.value,
-        api_key=app_settings.gemini_api_key.get_secret_value(),
-        service_id=service_id,
-    )
-
-
-def get_gemini_default_execution_settings() -> GoogleAIChatPromptExecutionSettings:
-    execution_settings = GoogleAIChatPromptExecutionSettings()
-    execution_settings.function_choice_behavior = (
-        default_function_choice_behavior.Auto()
-    )
-    return execution_settings
-
-
-def get_azure_openai_service(
-    model: AzureOpenAIModels, service_id: str | None = None
-) -> AzureChatCompletion:
+class AppChatModels:
     """
-    Get an instance of the Google AI Gemini service with the specified model.
+    Class to initialize and manage chat models for the application.
+
+    Holds instances of chat models that can be used throughout the application.
     """
 
-    return AzureChatCompletion(
-        deployment_name=model.value,
-        api_key=app_settings.azure_openai_api_key.get_secret_value(),
-        endpoint=app_settings.azure_openai_endpoint,
-        api_version=API_VERSION_MAPPING[model],
-        service_id=service_id,
-    )
+    gemini_2_0_flash: ChatGoogleGenerativeAI
+    gemini_2_5_pro: ChatGoogleGenerativeAI
+    gpt_o4_mini: AzureChatOpenAI
+    default_model: ChatGoogleGenerativeAI | AzureChatOpenAI
 
+    def __init__(self):
+        DEFAULT_TEMPERATURE = 0.4  # We want consistent responses, but be careful about loops and repetition
+        DEFAULT_TOP_P = 1  # This just makes sure that we override the default value of any of the models
 
-def get_azure_openai_default_execution_settings() -> OpenAIChatPromptExecutionSettings:
-    execution_settings = OpenAIChatPromptExecutionSettings()
-    execution_settings.function_choice_behavior = (
-        default_function_choice_behavior.Auto()
-    )
-    return execution_settings
+        self.gemini_2_0_flash = init_chat_model(
+            "google_genai:gemini-2.0-flash",
+            api_key=app_settings.gemini_api_key,
+            temperature=DEFAULT_TEMPERATURE,
+            top_p=DEFAULT_TOP_P,
+        )
+
+        self.gemini_2_5_pro = init_chat_model(
+            "google_genai:gemini-2.5-pro",
+            api_key=app_settings.gemini_api_key,
+            temperature=DEFAULT_TEMPERATURE,
+            top_p=DEFAULT_TOP_P,
+        )
+
+        self.gpt_o4_mini = init_chat_model(
+            "azure_openai:gpt-4o-mini",
+            api_key=app_settings.azure_openai_api_key,
+            api_version="2025-01-01-preview",  # Consider making this configurable if needed
+            azure_endpoint=app_settings.azure_openai_endpoint,
+            azure_deployment="gpt-4o-mini",
+            temperature=DEFAULT_TEMPERATURE,
+            top_p=DEFAULT_TOP_P,
+        )
+
+        # Sets a default model for places where we don't specify a model
+        # Recommended to use a cheap but fast model, explicitly set a
+        # different model in the agent if needed
+        self.default_model = self.gemini_2_0_flash
+
+default_models = AppChatModels()

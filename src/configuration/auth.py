@@ -44,7 +44,7 @@ def get_azure_sql_access_token_bytes() -> bytes:
 
 # TODO: Review if this is the right place for the following functions.
 # The logic to putting it here is that this is closely related to azure authentication
-def get_db_connection_string() -> str:
+def get_db_connection_string(is_async: bool = True) -> str:
     """
     Generates the connection string for Azure SQL Database using the ClientSecretCredential.
     """
@@ -59,7 +59,8 @@ def get_db_connection_string() -> str:
     )
 
     encoded = urllib.parse.quote_plus(connection_string)
-    return f"mssql+aioodbc:///?odbc_connect={encoded}"
+    connector = "aioodbc" if is_async else "pyodbc"
+    return f"mssql+{connector}:///?odbc_connect={encoded}"
 
 
 def provide_azure_sql_token(dialect, conn_rec, cargs, cparams):

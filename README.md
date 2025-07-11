@@ -10,6 +10,8 @@ Frontend: [Streamlit](https://docs.streamlit.io/)
 
 There is two types of configuration; on one side, a `.env` file, for configuration that should not change between runs of the agent (e.g., API Keys), on the other, a `sqlite` database for configuration the user can change at will (e.g., the list of websites the model is allowed to use).
 
+The `.env` configuration is managed using `pydantic-setting`. Note that there is intentionally no functionality to include a different set of settings (for example, explicitly passing a settings object instead of just importing the default instance); this is because we need API keys for testing, and thus we need to use the same base environment.
+
 ### Authentication
 
 We will use Azure's own [identity management](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python#authenticate-with-defaultazurecredential&preserve-view=true) for authenticating. It's the user's decision to use environment variables, cli, or any of the methods Azure provides.

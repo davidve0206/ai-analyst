@@ -202,3 +202,5 @@ src/configuration/*.db
 
 # Temporary files
 outputs/temp/
+outputs/cache/
+data/
