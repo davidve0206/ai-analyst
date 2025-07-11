@@ -18,10 +18,10 @@ from .helpers import (
     test_temp_dir,
     png_file_name,
     csv_file_name,
+    sales_history_code_sample,
     sales_analysis_declining_yoy,
     sales_analysis_declining_trend,
     sales_analysis_no_special_case,
-    operational_values_expected,
 )
 
 
@@ -38,17 +38,6 @@ def patch_graph_environment(
     monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
     monkeypatch.setattr("src.agents.graph.quant_agent", quantitative_agent)
 
-    # Patch the helper that returns fixture filenames for testing
-    def patched_get_sales_history_location(grouping_value: str) -> Path:
-        """Patched version that uses fixture filenames for testing."""
-        return test_temp_dir / f"{grouping_value}_sales_history_fixture.csv"
-
-    # Patch just the helper function in the graph module (since it's imported there)
-    monkeypatch.setattr(
-        "src.agents.graph.get_sales_history_location",
-        patched_get_sales_history_location,
-    )
-
     # Patch the helper that retrieves all temp files
     def patched_get_all_temp_files() -> list[Path]:
         """Patched version that returns fixture filenames for testing."""
@@ -63,39 +52,85 @@ def patch_graph_environment(
     )
 
 
+@pytest.fixture()
+def patch_graph_environment_with_fixture_csv(
+    monkeypatch: pytest.MonkeyPatch,
+    patch_graph_environment: None,
+) -> None:
+    """
+    Fixture to patch the environment for the graph tests with a specific CSV fixture.
+    This is used to ensure that the sales history retrieval step uses a fixture file.
+    It patches the `get_sales_history_location` helper to return a fixture file path
+    based on the grouping value, which is used in the sales retrieval step.
+    """
+
+    # Patch the helper that returns fixture filenames for testing
+    def patched_get_sales_history_location(grouping_value: str) -> Path:
+        """Patched version that uses fixture filenames for testing."""
+        return test_temp_dir / f"{grouping_value}_sales_history_fixture.csv"
+
+    # Patch just the helper function in the graph module (since it's imported there)
+    monkeypatch.setattr(
+        "src.agents.graph.get_sales_history_location",
+        patched_get_sales_history_location,
+    )
+
+
+@pytest.fixture()
+def patch_graph_environment_with_temp_csv(
+    monkeypatch: pytest.MonkeyPatch,
+    patch_graph_environment: None,
+) -> None:
+    """
+    Fixture to patch the environment for the graph tests with a temporary CSV file.
+    This is used to ensure that the sales history retrieval step uses a temporary file
+    that can be created during the test.
+    """
+
+    # Patch the helper that returns fixture filenames for testing
+    def patched_get_sales_history_location(grouping_value: str) -> Path:
+        """Patched version that uses a temporary file for testing."""
+        return test_temp_dir / f"{grouping_value}_sales_history_temp.csv"
+
+    # Patch just the helper function in the graph module (since it's imported there)
+    monkeypatch.setattr(
+        "src.agents.graph.get_sales_history_location",
+        patched_get_sales_history_location,
+    )
+
+
 @pytest.mark.asyncio
 async def test_sales_retrieval_step(
     spain_sales_history_df: pd.DataFrame,
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_temp_csv: None,
 ) -> None:
     """Test that replicates the sales retrieval step."""
     from src.agents.graph import retrieve_sales_history, SalesResearchGraphState
 
     test_state = SalesResearchGraphState(
         request=default_request,
-        sales_history="",
-        sales_analysis="",
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
     )
     expected_file_path = (
-        test_temp_dir / f"{default_request.grouping_value}_sales_history.csv"
+        test_temp_dir / f"{default_request.grouping_value}_sales_history_temp.csv"
     )
 
     step_result = await retrieve_sales_history(test_state)
-
-    assert step_result is not None
-    assert "sales_history" in step_result, (
-        "Step result does not contain 'sales_history' key."
-    )
-    assert expected_file_path.exists(), (
-        f"Expected file {expected_file_path} was not created."
-    )
-
     try:
+        assert step_result is not None
+        assert "sales_history" in step_result, (
+            "Step result does not contain 'sales_history' key."
+        )
+        assert "sales_history_code" in step_result, (
+            "Step result does not contain 'sales_history_code' key."
+        )
+        assert step_result["sales_history_code"], (
+            "Expected sales history code to be non-empty."
+        )
+        assert expected_file_path.exists(), (
+            f"Expected file {expected_file_path} was not created."
+        )
+
         # Load the created file and check its content
         # The file should contain the sales history for Spain
         retrieved_sales_df = pd.read_csv(expected_file_path)
@@ -136,7 +171,7 @@ async def test_sales_retrieval_step(
 @pytest.mark.asyncio
 async def test_sales_analysis_step(
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_fixture_csv: None,
 ) -> None:
     """Test that replicates the sales analysis step."""
     from src.agents.graph import process_sales_data, SalesResearchGraphState
@@ -144,11 +179,6 @@ async def test_sales_analysis_step(
     test_state = SalesResearchGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
-        sales_analysis="",
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
     )
 
     # Now call the actual process_sales_data function which will use our patched helper
@@ -185,20 +215,15 @@ async def test_sales_analysis_step(
 @pytest.mark.asyncio
 async def test_operational_data_retrieval_step(
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the operational data retrieval step."""
-    """ NOTE: This test is flaky, it does not always pass """
     from src.agents.graph import retrieve_operational_data, SalesResearchGraphState
 
     test_state = SalesResearchGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
-        sales_analysis="",
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
+        sales_history_code=sales_history_code_sample,
     )
 
     step_result = await retrieve_operational_data(test_state)
@@ -228,7 +253,7 @@ async def test_operational_data_retrieval_step(
 @pytest.mark.asyncio
 async def test_review_special_cases_declining_yoy_sales(
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the special case review step for declining YoY sales."""
     from src.agents.graph import review_special_cases, SalesResearchGraphState
@@ -237,10 +262,6 @@ async def test_review_special_cases_declining_yoy_sales(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis=sales_analysis_declining_yoy,
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
     )
 
     step_result = await review_special_cases(test_state)
@@ -256,7 +277,7 @@ async def test_review_special_cases_declining_yoy_sales(
 @pytest.mark.asyncio
 async def test_review_special_cases_declining_trend_sales(
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the special case review step for declining trend sales."""
     from src.agents.graph import review_special_cases, SalesResearchGraphState
@@ -265,10 +286,6 @@ async def test_review_special_cases_declining_trend_sales(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis=sales_analysis_declining_trend,
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
     )
 
     step_result = await review_special_cases(test_state)
@@ -284,7 +301,7 @@ async def test_review_special_cases_declining_trend_sales(
 @pytest.mark.asyncio
 async def test_review_special_cases_no_special_case(
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the special case review step for no special case."""
     from src.agents.graph import review_special_cases, SalesResearchGraphState
@@ -293,10 +310,6 @@ async def test_review_special_cases_no_special_case(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis=sales_analysis_no_special_case,
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
     )
 
     step_result = await review_special_cases(test_state)
@@ -312,7 +325,7 @@ async def test_review_special_cases_no_special_case(
 @pytest.mark.asyncio
 async def test_sales_report_generation(
     default_request: SalesReportRequest,
-    patch_graph_environment,
+    patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the sales report generation step."""
 
@@ -322,10 +335,6 @@ async def test_sales_report_generation(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis="Sales are decreasing in the last month, by 10% compared to the previous month.",
-        sales_operational_data="",
-        is_special_case=False,
-        sales_in_depth_analysis="",
-        report="",
     )
 
     step_result = await generate_report(test_state)

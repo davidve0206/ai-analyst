@@ -147,8 +147,8 @@ def create_content_blocks_from_file_list(
 def create_multimodal_prompt(
     text_parts: str | list[str] = [],
     file_list: list[Path] = [],
-    human_message: HumanMessage | None = None,
     system_message: SystemMessage | None = None,
+    human_message: HumanMessage | None = None,
 ) -> ChatPromptValue:
     """Creates a prompt with (optionally) a system message, and a single
     user message that can contain text and files.
@@ -156,6 +156,15 @@ def create_multimodal_prompt(
     NOTE: This only works with an OpenAI model (because of LangChain's
     implementation of the multimodal ContentBlock, which uses "image";
     google's, at least, uses "media"). If you want to use a different
+
+    Args:
+        text_parts (str | list[str]): The text parts to include in the prompt,
+            always added before the file_list.
+        file_list (list[Path]): List of files to include in the prompt.
+        system_message (SystemMessage | None): Optional system message to include;
+            if provided, it will be added first to the messages.
+        human_message (HumanMessage | None): Optional human message to include;
+            if provided, it will be added after system_message but before the text parts.
     """
     print(file_list)
     message_blocks = []

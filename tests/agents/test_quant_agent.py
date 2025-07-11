@@ -24,7 +24,7 @@ async def test_task_with_intermediate_interpreter(
     
     What is the compounded average growth rate (CAGR)?
     
-    Calculate the CAGR but don't create any plots or graphs, just return the value as a string.
+    Calculate the CAGR but don't create any plots or graphs, just return the value as a string with two decimals.
     
     Remember you have to print the result to be able to see it."""
     expected = (
@@ -34,8 +34,10 @@ async def test_task_with_intermediate_interpreter(
     response = await quantitative_agent.ainvoke({"messages": [("user", query)]})
 
     assert response is not None
-    response_content = extract_graph_response_content(response)
-    assert expected in response_content
+    quant_agent_response = extract_graph_response_content(response)
+
+    assert expected in quant_agent_response.content
+    assert quant_agent_response.code != "", "Expected some code to be generated."
 
 
 @pytest.mark.asyncio
@@ -53,10 +55,11 @@ async def test_file_creation(quantitative_agent: CompiledStateGraph):
     response = await quantitative_agent.ainvoke({"messages": [("user", query)]})
 
     assert response is not None
-    response_content = extract_graph_response_content(response)
+    response = extract_graph_response_content(response)
 
-    files_created = get_all_files_mentioned_in_response(response_content)
+    files_created = get_all_files_mentioned_in_response(response.content)
     try:
+        assert response.code != "", "Expected some code to be generated."
         # Assert that there is at least one file created in the temp directory
         assert len(files_created) > 0, "No files were created in the temp directory."
         # Assert that the file actually exists

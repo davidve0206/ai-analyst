@@ -5,7 +5,7 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import default_models as models_client
-from src.agents.quant_agent import get_quantitative_agent
+from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
 from src.agents.utils.prompt_utils import (
     PrompTypes,
     create_multimodal_prompt,
@@ -23,8 +23,10 @@ from src.configuration.settings import BASE_DIR, DATA_DIR, app_settings
 class SalesResearchGraphState(BaseModel):
     request: SalesReportRequest
     sales_history: str = ""
+    sales_history_code: str = ""
     sales_analysis: str = ""
     sales_operational_data: str = ""
+    sales_operational_data_code: str = ""
     is_special_case: bool = False
     sales_in_depth_analysis: str = ""
     report: str = ""
@@ -37,10 +39,6 @@ class GraphNodeNames(Enum):
     REVIEW_SPECIAL_CASE = "review_special_case"
     PROCESS_SPECIAL_CASE = "process_special_case"
     GENERATE_REPORT = "generate_report"
-
-
-# Agents to be used in the graph
-quant_agent = get_quantitative_agent(models_client)
 
 
 async def retrieve_sales_history(state: SalesResearchGraphState):
@@ -66,9 +64,15 @@ async def retrieve_sales_history(state: SalesResearchGraphState):
         type=PrompTypes.HUMAN,
     )
 
+    quant_agent = get_quantitative_agent(models_client)
     response = await quant_agent.ainvoke({"messages": [task_prompt]})
-    response_content = extract_graph_response_content(response)
-    return {"sales_history": response_content}
+    quant_agent_response: QuantitativeAgentResponse = extract_graph_response_content(
+        response
+    )
+    return {
+        "sales_history": quant_agent_response.content,
+        "sales_history_code": quant_agent_response.code,
+    }
 
 
 async def process_sales_data(state: SalesResearchGraphState):
@@ -89,9 +93,12 @@ async def process_sales_data(state: SalesResearchGraphState):
         type=PrompTypes.HUMAN,
     )
 
+    quant_agent = get_quantitative_agent(models_client)
     response = await quant_agent.ainvoke({"messages": [task_prompt]})
-    response_content = extract_graph_response_content(response)
-    return {"sales_analysis": response_content}
+    quant_agent_response: QuantitativeAgentResponse = extract_graph_response_content(
+        response
+    )
+    return {"sales_analysis": quant_agent_response.content}
 
 
 async def retrieve_operational_data(state: SalesResearchGraphState):
@@ -113,18 +120,23 @@ async def retrieve_operational_data(state: SalesResearchGraphState):
         type=PrompTypes.HUMAN,
     )
     prompt = create_multimodal_prompt(
+        text_parts=f"The code you used to retrieve the sales history is:\n{state.sales_history_code}",
         file_list=[get_sales_history_location(state.request.grouping_value)],
         human_message=task_message,
     )
 
     # NOTE: this requires a lot of recursion to get the operational data.
     #       We set a recursion limit to avoid hitting the default limit.
-    #       This could be improved by passing the last working code to the agent
-    #       instead of starting from scratch each time.
     #       Alternatively, we could use a more structured approach to retrieve the data.
+    quant_agent = get_quantitative_agent(models_client)
     response = await quant_agent.ainvoke(prompt, {"recursion_limit": 50})
-    response_content = extract_graph_response_content(response)
-    return {"sales_operational_data": response_content}
+    quant_agent_response: QuantitativeAgentResponse = extract_graph_response_content(
+        response
+    )
+    return {
+        "sales_operational_data": quant_agent_response.content,
+        "sales_operational_data_code": quant_agent_response.code,
+    }
 
 
 async def review_special_cases(

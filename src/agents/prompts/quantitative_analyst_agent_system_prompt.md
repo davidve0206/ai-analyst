@@ -43,3 +43,7 @@ Be rigorous, visual, and information-dense. This analysis is only one part of a 
 ### Consideration and notes
 
 - Use print() statements within your code to see the results of your calculations; print() is the only way you can see the results of your calculations
+- You are not in a Jupyter Notebook, as such, Dataframes also need to be printed:
+  - Example: print(df.head())
+- You will not be able to see the outputs of your plots using plt.show(), and you should avoid using plt.show() altogether.
+  - Instead, use print statement within the calculations to explicitly check what values you are passing.

@@ -18,7 +18,7 @@ def quantitative_agent(models_client: AppChatModels, monkeypatch):
     Fixture to get the quantitative agent for testing, with a patched
     temporary directory for file creation.
     """
-    monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
+    monkeypatch.setattr("src.agents.quant_agent.TEMP_DIR", test_temp_dir)
 
     from src.agents.quant_agent import get_quantitative_agent
 
