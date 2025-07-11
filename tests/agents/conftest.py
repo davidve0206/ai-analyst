@@ -13,7 +13,7 @@ def models_client() -> AppChatModels:
 
 
 @pytest.fixture(scope="function")
-def quantitative_agent(models_client: AppChatModels, monkeypatch):
+def patch_get_quantitative_agent(models_client: AppChatModels, monkeypatch):
     """
     Fixture to get the quantitative agent for testing, with a patched
     temporary directory for file creation.

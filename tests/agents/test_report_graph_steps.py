@@ -34,9 +34,8 @@ def patch_graph_environment(
     Fixture to patch the environment for the graph tests.
     This is used to ensure that the TEMP_DIR is set correctly.
     """
-    # Patch the TEMP_DIR and quant_agent
+    # Patch the TEMP_DIR
     monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
-    monkeypatch.setattr("src.agents.graph.quant_agent", quantitative_agent)
 
     # Patch the helper that retrieves all temp files
     def patched_get_all_temp_files() -> list[Path]:
@@ -47,8 +46,18 @@ def patch_graph_environment(
         ]
 
     monkeypatch.setattr(
-        "src.agents.graph.get_all_temp_files",
+        "src.agents.report_graph.get_all_temp_files",
         patched_get_all_temp_files,
+    )
+
+    # Set get_quantitative_agent to return the patched agent (which uses the test TEMP_DIR)
+    def patched_get_quantitative_agent(models) -> CompiledStateGraph:
+        """Patched version that returns the quantitative agent for testing."""
+        return quantitative_agent
+
+    monkeypatch.setattr(
+        "src.agents.quant_agent.get_quantitative_agent",
+        patched_get_quantitative_agent,
     )
 
 
@@ -71,7 +80,7 @@ def patch_graph_environment_with_fixture_csv(
 
     # Patch just the helper function in the graph module (since it's imported there)
     monkeypatch.setattr(
-        "src.agents.graph.get_sales_history_location",
+        "src.agents.report_graph.get_sales_history_location",
         patched_get_sales_history_location,
     )
 
@@ -94,7 +103,7 @@ def patch_graph_environment_with_temp_csv(
 
     # Patch just the helper function in the graph module (since it's imported there)
     monkeypatch.setattr(
-        "src.agents.graph.get_sales_history_location",
+        "src.agents.report_graph.get_sales_history_location",
         patched_get_sales_history_location,
     )
 
@@ -106,9 +115,9 @@ async def test_sales_retrieval_step(
     patch_graph_environment_with_temp_csv: None,
 ) -> None:
     """Test that replicates the sales retrieval step."""
-    from src.agents.graph import retrieve_sales_history, SalesResearchGraphState
+    from src.agents.report_graph import retrieve_sales_history, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
     )
     expected_file_path = (
@@ -174,9 +183,9 @@ async def test_sales_analysis_step(
     patch_graph_environment_with_fixture_csv: None,
 ) -> None:
     """Test that replicates the sales analysis step."""
-    from src.agents.graph import process_sales_data, SalesResearchGraphState
+    from src.agents.report_graph import process_sales_data, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
     )
@@ -218,9 +227,9 @@ async def test_operational_data_retrieval_step(
     patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the operational data retrieval step."""
-    from src.agents.graph import retrieve_operational_data, SalesResearchGraphState
+    from src.agents.report_graph import retrieve_operational_data, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_history_code=sales_history_code_sample,
@@ -256,9 +265,9 @@ async def test_review_special_cases_declining_yoy_sales(
     patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the special case review step for declining YoY sales."""
-    from src.agents.graph import review_special_cases, SalesResearchGraphState
+    from src.agents.report_graph import review_special_cases, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis=sales_analysis_declining_yoy,
@@ -280,9 +289,9 @@ async def test_review_special_cases_declining_trend_sales(
     patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the special case review step for declining trend sales."""
-    from src.agents.graph import review_special_cases, SalesResearchGraphState
+    from src.agents.report_graph import review_special_cases, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis=sales_analysis_declining_trend,
@@ -304,9 +313,9 @@ async def test_review_special_cases_no_special_case(
     patch_graph_environment_with_fixture_csv: None,
 ):
     """Test that replicates the special case review step for no special case."""
-    from src.agents.graph import review_special_cases, SalesResearchGraphState
+    from src.agents.report_graph import review_special_cases, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis=sales_analysis_no_special_case,
@@ -329,9 +338,9 @@ async def test_sales_report_generation(
 ):
     """Test that replicates the sales report generation step."""
 
-    from src.agents.graph import generate_report, SalesResearchGraphState
+    from src.agents.report_graph import generate_report, SalesReportGraphState
 
-    test_state = SalesResearchGraphState(
+    test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
         sales_analysis="Sales are decreasing in the last month, by 10% compared to the previous month.",

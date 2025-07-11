@@ -20,7 +20,7 @@ from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR, DATA_DIR, app_settings
 
 
-class SalesResearchGraphState(BaseModel):
+class SalesReportGraphState(BaseModel):
     request: SalesReportRequest
     sales_history: str = ""
     sales_history_code: str = ""
@@ -41,7 +41,7 @@ class GraphNodeNames(Enum):
     GENERATE_REPORT = "generate_report"
 
 
-async def retrieve_sales_history(state: SalesResearchGraphState):
+async def retrieve_sales_history(state: SalesReportGraphState):
     """
     First LLM call, retrieve the sales history for the last 3 years
     from the database.
@@ -75,7 +75,7 @@ async def retrieve_sales_history(state: SalesResearchGraphState):
     }
 
 
-async def process_sales_data(state: SalesResearchGraphState):
+async def process_sales_data(state: SalesReportGraphState):
     """
     Process the sales data retrieved from the database.
     """
@@ -101,7 +101,7 @@ async def process_sales_data(state: SalesResearchGraphState):
     return {"sales_analysis": quant_agent_response.content}
 
 
-async def retrieve_operational_data(state: SalesResearchGraphState):
+async def retrieve_operational_data(state: SalesReportGraphState):
     """Retrieve operational data for the sales history."""
     default_logger.info(
         f"Retrieving operational data for {state.request.grouping} - {state.request.grouping_value}."
@@ -140,7 +140,7 @@ async def retrieve_operational_data(state: SalesResearchGraphState):
 
 
 async def review_special_cases(
-    state: SalesResearchGraphState,
+    state: SalesReportGraphState,
 ):
     """
     Check whether there are any special cases to review in the sales data.
@@ -169,7 +169,7 @@ async def review_special_cases(
 
 
 def special_case_gate(
-    state: SalesResearchGraphState,
+    state: SalesReportGraphState,
 ) -> Literal["generate_report", "process_special_case"]:
     """
     Gate to determine whether to process a special case or generate the report.
@@ -180,7 +180,7 @@ def special_case_gate(
         return GraphNodeNames.GENERATE_REPORT.value
 
 
-async def process_special_case(state: SalesResearchGraphState):
+async def process_special_case(state: SalesReportGraphState):
     """
     If there is a special case, we will process it in depth.
     This is a placeholder for the actual processing logic.
@@ -188,7 +188,7 @@ async def process_special_case(state: SalesResearchGraphState):
     return {"sales_in_depth_analysis": state.sales_analysis}
 
 
-async def generate_report(state: SalesResearchGraphState):
+async def generate_report(state: SalesReportGraphState):
     """
     Generate the sales report based on the sales history.
     This is a placeholder for the actual report generation logic.
@@ -217,7 +217,7 @@ async def generate_report(state: SalesResearchGraphState):
 async def create_research_graph(
     store_diagram: bool = False,
 ) -> CompiledStateGraph[
-    SalesResearchGraphState, SalesResearchGraphState, SalesResearchGraphState
+    SalesReportGraphState, SalesReportGraphState, SalesReportGraphState
 ]:
     """
     Create the state graph for the sales report generation.
@@ -225,7 +225,7 @@ async def create_research_graph(
     To be invokes with a request of type SalesReportRequest.
     """
 
-    graph = StateGraph(SalesResearchGraphState)
+    graph = StateGraph(SalesReportGraphState)
 
     # Add all noted nodes to the graph
     graph.add_node(
