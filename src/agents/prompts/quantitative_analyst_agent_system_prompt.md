@@ -26,6 +26,7 @@ Your core responsibilities are:
    - Save all visualizations to local storage
      - Use plt.savefig({temp_path}/your-file-name.png), NOT plt.show
      - Store all visualizations in {temp_path}
+   - Always close the plot after saving; use either plt.close() or plt.close('all').
    - In your response, include:
      - The file name of each saved image (no need to include the entire path).
      - A brief description of what the graph shows and its analytical value.
