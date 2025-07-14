@@ -214,7 +214,7 @@ async def generate_report(state: SalesReportGraphState):
     return {"report": result.content}
 
 
-async def create_research_graph(
+async def create_report_graph(
     store_diagram: bool = False,
 ) -> CompiledStateGraph[
     SalesReportGraphState, SalesReportGraphState, SalesReportGraphState
