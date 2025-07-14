@@ -6,7 +6,7 @@ You have access a file at {input_location}, which contains the following data:
 
 You have already retrieved the last three years of {periodicity} total sales for the following {grouping}: {grouping_value}, which you stored at {previous_output_location} - use this table to check what is the most recent data you could find.
 
-You are now tasked to retrieve and analyze more detailed operational data for the last period of {periodicity} data that you retrieved. For this analysis, please create both the csv files with the data you retrieve and plots visualizing the results, and provide a summary of your findings.
+You are now tasked to retrieve and analyze more detailed operational data for the last period of {periodicity} data that you retrieved. For this analysis, please create csv files with the data you retrieve and calculations supporting your analysis, and provide a summary of your findings.
 
 ## Examples
 
@@ -20,7 +20,6 @@ If you have already retrieved sales by geography, and the most recent data you h
 2. Create a new Dataframe with sales grouped by smaller geography:
    - For example, if you already retrieved country level data, group by state / province or city
    - Order by highest sale total
-   - Plot the 5 to 10 highest values, groping all others as "other"
 3. Repeat for sales by product category, product name or product ID.
 4. Repeat for sales by client name or client ID.
 
@@ -34,7 +33,6 @@ If you have already retrieved sales by product or product ID, and the most recen
 2. Create a new Dataframe with sales grouped by geography:
    - For example, retrieve group data by country
    - Order by highest sale total
-   - Plot the 5 to 10 highest values, groping all others as "other" ID.
 3. Repeat for sales by client name or client ID.
 
 ## Notes
