@@ -1,6 +1,6 @@
 from enum import Enum
 from typing import Literal
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 
@@ -8,20 +8,70 @@ from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR
 
 
+class BooleanProgressLedgerItem(BaseModel):
+    """A progress ledger item."""
+
+    reason: str
+    answer: bool
+
+
+class StringProgressLedgerItem(BaseModel):
+    """A progress ledger item with a string answer."""
+
+    reason: str
+    answer: str
+
+
+class ProgressLedger(BaseModel):
+    """To make progress on the request, please answer the following questions,
+    including necessary reasoning"""
+
+    is_request_satisfied: BooleanProgressLedgerItem = Field(
+        description="Is the request fully satisfied? (True if complete, or False if the original request has yet to be SUCCESSFULLY and FULLY addressed)",
+        default_factory=lambda: BooleanProgressLedgerItem(
+            reason="The request is not fully satisfied.",
+            answer=False,
+        ),
+    )
+    is_in_loop: BooleanProgressLedgerItem = Field(
+        description="Are we in a loop where we are repeating the same requests and/or getting the same responses as before? Loops can span multiple turns, and can include repeated actions like attempting to retrieve the same data without success.",
+        default_factory=lambda: BooleanProgressLedgerItem(
+            reason="The agent is not in a loop.",
+            answer=False,
+        ),
+    )
+    is_progress_being_made: BooleanProgressLedgerItem = Field(
+        description="Are we making forward progress? (True if just starting, or recent messages are adding value. False if recent messages show evidence of being stuck in a loop or if there is evidence of significant barriers to success such as the inability to read from a required file)",
+        default_factory=lambda: BooleanProgressLedgerItem(
+            reason="The agent is making progress.",
+            answer=True,
+        ),
+    )
+    next_speaker: StringProgressLedgerItem = Field(
+        description="Who should speak next? (select from: the names of the team members)",
+        default_factory=lambda: StringProgressLedgerItem(
+            reason="The next speaker is not determined yet.",
+            answer="",
+        ),
+    )
+    instruction_or_question: StringProgressLedgerItem = Field(
+        description="What instruction or question would you give this team member? (Phrase as if speaking directly to them, and include any specific information they may need)",
+        default_factory=lambda: StringProgressLedgerItem(
+            reason="No instruction or question provided yet.",
+            answer="",
+        ),
+    )
+
+
 class ResearchGraphState(BaseModel):
-    """
-    State model for the research Agent's graph.
-    """
-
-    task: str
-
-
-class InternalResearchGraphState(BaseModel):
     """
     Internal state model for the research Agent's graph.
     """
 
     task: str
+    task_output: str = ""
+    task_plan: str = ""
+    task_ledger: ProgressLedger = ProgressLedger()
     stall_count: int = 0
     stall_count_limit: int = 3
 
@@ -36,23 +86,6 @@ class InternalResearchGraphState(BaseModel):
         Increment the stall count by one.
         """
         self.stall_count += 1
-
-
-class ProgressLedgerItem(BaseModel):
-    """A progress ledger item."""
-
-    reason: str
-    answer: str | bool
-
-
-class ProgressLedger(BaseModel):
-    """A progress ledger."""
-
-    is_request_satisfied: ProgressLedgerItem
-    is_in_loop: ProgressLedgerItem
-    is_progress_being_made: ProgressLedgerItem
-    next_speaker: ProgressLedgerItem
-    instruction_or_question: ProgressLedgerItem
 
 
 class GraphNodeNames(Enum):
@@ -112,7 +145,14 @@ async def progress_ledger_gate(
     Placeholder for a gate function that checks the progress ledger.
     """
     default_logger.info(f"Checking progress ledger for task: {state.task}")
-    # Implementation goes here
+    if state.task_ledger.is_request_satisfied.answer:
+        return GraphNodeNames.SUMMARIZE_FINDINGS.value
+    elif state.task_ledger.is_progress_being_made.answer:
+        return GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value
+    elif state.stall_count >= state.stall_count_limit:
+        return GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value
+    else:
+        return GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value
 
 
 async def create_research_graph(
