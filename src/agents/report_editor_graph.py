@@ -1,9 +1,11 @@
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
+from langgraph.graph.message import add_messages
 from langgraph.types import Command
+
 from langchain_core.messages import AnyMessage, HumanMessage
 
 from src.agents.models import default_models as models_client
@@ -21,9 +23,31 @@ from src.configuration.settings import BASE_DIR
 
 
 class ReportEditorGraphState(BaseModel):
-    messages: list[AnyMessage]
+    messages: Annotated[list[AnyMessage], add_messages]
     report: str = ""
     next_speaker: str = ""
+    loop_count: int = 0
+    max_loops: int = 1  # If the same speaker is chosen this many times in a row, return
+    # Example: if the writing agent is chosen 2 times in a row (once first time, once repeated), we return the current report
+
+    @property
+    def current_report_message(self) -> HumanMessage:
+        """
+        Returns the last human message in the conversation.
+        """
+        return HumanMessage(f"This is the current report: \n\n {self.report}")
+
+    def reset_loop_count(self) -> None:
+        """
+        Resets the loop count to zero.
+        """
+        self.loop_count = 0
+
+    def increment_loop_count(self) -> None:
+        """
+        Increments the loop count by one.
+        """
+        self.loop_count += 1
 
 
 COMPLETE_VALUE = "report_complete"
@@ -45,10 +69,13 @@ async def supervisor(
 
     system_message = render_prompt_template(
         template_name="editing_supervisor_system_prompt.md",
-        context={},
+        context={
+            "writing_agent_name": GraphNodeNames.DOCUMENT_WRITING_AGENT.value,
+            "data_visualization_agent_name": GraphNodeNames.DATA_VISUALIZATION_AGENT.value,
+            "complete_value": COMPLETE_VALUE,
+        },
         type=PrompTypes.SYSTEM,
     )
-    llm = models_client.gpt_o4_mini
 
     next_speaker_options = [
         COMPLETE_VALUE,
@@ -61,29 +88,33 @@ async def supervisor(
 
         next_speaker: str = Field(
             description=f"The next speaker to handle the request. Choose from: {', '.join(next_speaker_options)}; if the report is complete, use '{COMPLETE_VALUE}'",
-            enum=next_speaker_options,
         )
         next_speaker_task: str = Field(
             description="The task to be performed by the next speaker. State the task as if you were talking directly to them.",
         )
 
-    messages = (
-        [system_message]
-        + state.messages
-        + HumanMessage(f"This is the current report: \n\n {state.report}")
-    )
-    response: Router = await llm.with_structured_output(Router).ainvoke(messages)
+    messages = [system_message] + state.messages + [state.current_report_message]
+    response: Router = await models_client.gpt_o4_mini.with_structured_output(
+        Router
+    ).ainvoke(messages)
 
     goto = response.next_speaker
-    if goto == COMPLETE_VALUE:
-        default_logger.info("Report editing process is complete.")
+
+    # Check if we are looping back to the same speaker
+    if goto == state.next_speaker:
+        state.increment_loop_count()
+    else:
+        state.reset_loop_count()
+
+    if state.loop_count >= state.max_loops or goto == COMPLETE_VALUE:
         goto = END
 
     return Command(
         goto=goto,
         update={
             "next_speaker": goto,
-            "messages": state.messages + HumanMessage(response.next_speaker_task),
+            "loop_count": state.loop_count,  # Explicitly update loop count in the shared state
+            "messages": [HumanMessage(response.next_speaker_task)],
         },
     )
 
@@ -102,9 +133,7 @@ async def data_visualization_agent(
     response = extract_graph_response_content(response)
     files = get_all_files_mentioned_in_response(response)
     img_paths = [
-        get_full_path_to_temp_file(file)
-        for file in files
-        if file.endswith(".png") or file.endswith(".jpg")
+        get_full_path_to_temp_file(file) for file in files if file.endswith(".png")
     ]
 
     # Create the updated message with the generated charts
@@ -115,7 +144,7 @@ async def data_visualization_agent(
 
     return Command(
         update={
-            "messages": state.messages + [message],
+            "messages": [message],
         },
         goto=GraphNodeNames.SUPERVISOR.value,
     )
@@ -131,18 +160,12 @@ async def document_writing_agent(
 
     # Get the system prompt for the editor agent
     system_message = render_prompt_template(
-        template_name="editor_agent_system_prompt.md",
+        template_name="editing_writer_system_prompt.md",
         context={},
         type=PrompTypes.SYSTEM,
     )
 
-    messages = [system_message] + state.messages
-
-    system_message = render_prompt_template(
-        template_name="editor_agent_system_prompt.md",
-        context={},
-        type=PrompTypes.SYSTEM,
-    )
+    messages = [system_message] + state.messages + [state.current_report_message]
 
     result = await models_client.gpt_o4_mini.ainvoke(messages)
     return Command(
