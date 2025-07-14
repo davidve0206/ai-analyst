@@ -280,9 +280,9 @@ async def create_report_graph(
 
     if store_diagram:
         # Store the graph diagram as a PNG file
-        default_logger.info("Storing the sales research graph diagram as a PNG file.")
+        default_logger.info("Storing the sales report graph diagram as a PNG file.")
         chain.get_graph().draw_mermaid_png(
-            output_file_path=(BASE_DIR / "documentation" / "sales_research_graph.png")
+            output_file_path=(BASE_DIR / "documentation" / "sales_report_graph.png")
         )
 
     return chain
