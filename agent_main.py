@@ -1,7 +1,7 @@
 from langsmith import traceable
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.graph import create_research_graph
+from src.agents.report_graph import create_report_graph
 from src.agents.utils.email_service import MailingService
 from src.agents.utils.output_utils import (
     convert_markdown_to_pdf,
@@ -22,7 +22,7 @@ async def main():
     This is a simple example of how to use the database agent.
     """
 
-    research_graph: CompiledStateGraph = await create_research_graph()
+    research_graph: CompiledStateGraph = await create_report_graph()
 
     test_request = SalesReportRequest(
         grouping="country",

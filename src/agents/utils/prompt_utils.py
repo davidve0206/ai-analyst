@@ -30,6 +30,11 @@ def get_all_temp_files() -> list[Path]:
     return list(TEMP_DIR.glob("*"))
 
 
+def get_full_path_to_temp_file(file_name: str) -> Path:
+    """Get the full path to a temporary file."""
+    return TEMP_DIR / file_name
+
+
 class PrompTypes(Enum):
     """
     Enum for prompt types.
@@ -144,6 +149,30 @@ def create_content_blocks_from_file_list(
     return prompt_parts
 
 
+def create_human_message_from_parts(
+    text_parts: str | list[str] = [], file_list: list[Path] = []
+) -> HumanMessage:
+    """
+    Create a human message from text parts and files.
+    Args:
+        text_parts (str | list[str]): The text parts to include in the message.
+        file_list (list[Path]): List of files to include in the message."""
+    message_blocks = []
+    if isinstance(text_parts, str):
+        message_blocks.append(PlainTextContentBlock(type="text", text=text_parts))
+    elif isinstance(text_parts, list):
+        for part in text_parts:
+            message_blocks.append(PlainTextContentBlock(type="text", text=part))
+    else:
+        raise ValueError("text_parts must be a string or a list of strings.")
+
+    if file_list:
+        file_blocks = create_content_blocks_from_file_list(file_list)
+        message_blocks.extend(file_blocks)
+
+    return HumanMessage(content=message_blocks)
+
+
 def create_multimodal_prompt(
     text_parts: str | list[str] = [],
     file_list: list[Path] = [],
@@ -166,19 +195,9 @@ def create_multimodal_prompt(
         human_message (HumanMessage | None): Optional human message to include;
             if provided, it will be added after system_message but before the text parts.
     """
-    print(file_list)
-    message_blocks = []
-    if isinstance(text_parts, str):
-        message_blocks.append(PlainTextContentBlock(type="text", text=text_parts))
-    elif isinstance(text_parts, list):
-        for part in text_parts:
-            message_blocks.append(PlainTextContentBlock(type="text", text=part))
-    else:
-        raise ValueError("text_parts must be a string or a list of strings.")
-
-    if file_list:
-        file_blocks = create_content_blocks_from_file_list(file_list)
-        message_blocks.extend(file_blocks)
+    message_from_parts = create_human_message_from_parts(
+        text_parts=text_parts, file_list=file_list
+    )
 
     messages = []
     if system_message:
@@ -187,10 +206,6 @@ def create_multimodal_prompt(
     if human_message:
         messages.append(human_message)
 
-    messages.append(
-        HumanMessage(
-            content=message_blocks,
-        )
-    )
+    messages.append(message_from_parts)
 
     return ChatPromptValue(messages=messages)

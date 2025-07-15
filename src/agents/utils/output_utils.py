@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -71,3 +72,19 @@ def clean_temp_folder() -> None:
         elif item.is_dir():
             # Optionally, remove directories as well
             item.rmdir()  # This will only work if the directory is empty
+
+
+def get_all_files_mentioned_in_response(response: str) -> list[str]:
+    """
+    Extract all file names mentioned in the response string.
+
+    Args:
+        response (str): The response string containing file names.
+
+    Returns:
+        list[str]: A list of file names extracted from the response.
+    """
+    # Use regex to find .png or .csv files mentioned in the response
+    file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
+    found_files: list[str] = re.findall(file_pattern, response)
+    return found_files

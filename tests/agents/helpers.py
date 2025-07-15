@@ -29,22 +29,6 @@ def assert_numeric_value_in_str(
     assert str_value in result or formatted_value in result, error_output
 
 
-def get_all_files_mentioned_in_response(response: str) -> list[str]:
-    """
-    Extract all file names mentioned in the response string.
-
-    Args:
-        response (str): The response string containing file names.
-
-    Returns:
-        list[str]: A list of file names extracted from the response.
-    """
-    # Use regex to find .png or .csv files mentioned in the response
-    file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
-    found_files: list[str] = re.findall(file_pattern, response)
-    return found_files
-
-
 california_monthly_sales_in_db = {
     "2022-07": 172959.55,
     "2022-08": 135010.70,

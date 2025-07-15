@@ -2,11 +2,11 @@ import pytest
 
 from langgraph.graph.state import CompiledStateGraph
 
+from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import extract_graph_response_content
 
 from .helpers import (
     california_monthly_sales_in_db,
-    get_all_files_mentioned_in_response,
     test_temp_dir,
 )
 
@@ -62,6 +62,10 @@ async def test_file_creation(quantitative_agent: CompiledStateGraph):
         assert response.code != "", "Expected some code to be generated."
         # Assert that there is at least one file created in the temp directory
         assert len(files_created) > 0, "No files were created in the temp directory."
+        # Assert all files are csv files
+        assert all(file.endswith(".csv") for file in files_created), (
+            "Not all created files are CSV files."
+        )
         # Assert that the file actually exists
         for file_name in files_created:
             file_path = test_temp_dir / file_name

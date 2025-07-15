@@ -7,8 +7,6 @@ from src.agents.tools.python_interpreter import create_python_repl_tool
 from src.agents.utils.prompt_utils import PrompTypes, render_prompt_template
 from src.configuration.settings import TEMP_DIR
 
-RECURSION_LIMIT = 10
-
 
 class QuantitativeAgentResponse(BaseModel):
     """
