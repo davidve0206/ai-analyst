@@ -32,6 +32,7 @@ class SalesReportGraphState(BaseModel):
     sales_operational_data: str = ""
     sales_operational_data_code: str = ""
     is_special_case: bool = False
+    special_case_reason: str = ""
     sales_in_depth_analysis: str = ""
     report: str = ""
 
@@ -162,6 +163,9 @@ async def review_special_cases(
         is_special_case: bool = Field(
             description="Whether there is a special case to review; answer with True or False."
         )
+        special_case_reason: str = Field(
+            description="Reason for the special case, providing context or explanation."
+        )
 
     structured_response_model = models_client.default_model.with_structured_output(
         ReviewResponse
@@ -169,6 +173,7 @@ async def review_special_cases(
     response: ReviewResponse = await structured_response_model.ainvoke([task_prompt])
     return {
         "is_special_case": response.is_special_case,
+        "special_case_reason": response.special_case_reason,
     }
 
 

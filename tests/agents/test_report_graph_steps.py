@@ -268,6 +268,12 @@ async def test_review_special_cases_declining_yoy_sales(
     assert step_result["is_special_case"] is True, (
         "Expected the special case to be identified as True."
     )
+    assert "special_case_reason" in step_result, (
+        "Step result does not contain 'special_case_reason' key."
+    )
+    assert step_result["special_case_reason"], (
+        "Expected the special case reason to be non-empty."
+    )
 
 
 @pytest.mark.asyncio
@@ -291,6 +297,12 @@ async def test_review_special_cases_declining_trend_sales(
     )
     assert step_result["is_special_case"] is True, (
         "Expected the special case to be identified as True."
+    )
+    assert "special_case_reason" in step_result, (
+        "Step result does not contain 'special_case_reason' key."
+    )
+    assert step_result["special_case_reason"], (
+        "Expected the special case reason to be non-empty."
     )
 
 
