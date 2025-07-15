@@ -6,11 +6,15 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import default_models as models_client
 from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
+from src.agents.report_editor_graph import (
+    ReportEditorGraphState,
+    create_report_editor_graph,
+)
 from src.agents.utils.prompt_utils import (
     PrompTypes,
+    create_human_message_from_parts,
     create_multimodal_prompt,
     extract_graph_response_content,
-    get_all_temp_files,
     get_sales_history_location,
     render_prompt_template,
 )
@@ -190,28 +194,31 @@ async def process_special_case(state: SalesReportGraphState):
 
 async def generate_report(state: SalesReportGraphState):
     """
-    Generate the sales report based on the sales history.
-    This is a placeholder for the actual report generation logic.
+    Generate the sales report based on the sales history,
+    using the report_editor_graph.
     """
-    # TODO: We might want to add a step to review the report and make changes
-    #       before sending it to the user.
+    # Get the graph that edits the report
+    editor_graph = await create_report_editor_graph()
 
-    # Get the system prompt for the editor agent
-    system_message = render_prompt_template(
-        template_name="editor_agent_system_prompt.md",
-        context={},
-        type=PrompTypes.SYSTEM,
+    # We assume that all files are mentioned in the outputs
+    # so no need to explicitly include files.
+    text_parts = [
+        state.sales_history,
+        state.sales_analysis,
+        state.sales_operational_data,
+        state.sales_in_depth_analysis,
+    ]
+
+    result = await editor_graph.ainvoke(
+        ReportEditorGraphState(
+            messages=[
+                create_human_message_from_parts(
+                    text_parts=text_parts,
+                )
+            ],
+        )
     )
-
-    # Finally, we create the message and send to the LLM
-    prompt = create_multimodal_prompt(
-        text_parts=state.sales_analysis,
-        file_list=get_all_temp_files(),
-        system_message=system_message,
-    )
-
-    result = await models_client.gpt_o4_mini.ainvoke(prompt)
-    return {"report": result.content}
+    return {"report": result["report"]}
 
 
 async def create_report_graph(

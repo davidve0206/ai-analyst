@@ -126,9 +126,11 @@ async def data_visualization_agent(
     Node to generate charts based on the report request.
     """
     default_logger.info("Generating charts for the report.")
+
     # Call the data visualization agent to generate charts
     agent = get_data_visualization_agent(models_client)
     response = await agent.ainvoke({"messages": state.messages})
+    
     # Extract the content and files from the response
     response = extract_graph_response_content(response)
     files = get_all_files_mentioned_in_response(response)

@@ -16,7 +16,6 @@ from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.configuration.kpis import SalesReportRequest
 from .helpers import (
     test_temp_dir,
-    png_file_name,
     csv_file_name,
     sales_history_code_sample,
     sales_analysis_declining_yoy,
@@ -34,21 +33,9 @@ def patch_graph_environment(
     Fixture to patch the environment for the graph tests.
     This is used to ensure that the TEMP_DIR is set correctly.
     """
-    # Patch the TEMP_DIR
+    # Patch the TEMP_DIR - ensure its patched wherever it's used
     monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
-
-    # Patch the helper that retrieves all temp files
-    def patched_get_all_temp_files() -> list[Path]:
-        """Patched version that returns fixture filenames for testing."""
-        return [
-            test_temp_dir / csv_file_name,
-            test_temp_dir / png_file_name,
-        ]
-
-    monkeypatch.setattr(
-        "src.agents.report_graph.get_all_temp_files",
-        patched_get_all_temp_files,
-    )
+    monkeypatch.setattr("src.agents.utils.prompt_utils.TEMP_DIR", test_temp_dir)
 
     # Set get_quantitative_agent to return the patched agent (which uses the test TEMP_DIR)
     def patched_get_quantitative_agent(models) -> CompiledStateGraph:
@@ -342,8 +329,8 @@ async def test_sales_report_generation(
 
     test_state = SalesReportGraphState(
         request=default_request,
-        sales_history="The data has been retrieved successfully.",
-        sales_analysis="Sales are decreasing in the last month, by 10% compared to the previous month.",
+        sales_history=f"The data has been retrieved successfully and can be found at {csv_file_name}.",
+        sales_analysis="Sales are decreasing in the last month, by 10% compared to the previous year.",
     )
 
     step_result = await generate_report(test_state)
@@ -352,8 +339,16 @@ async def test_sales_report_generation(
 
     response_content = step_result["report"]
     print(f"Generated report content: {response_content}")
-    assert f"({png_file_name})" in response_content, (
-        f"Expected output file {png_file_name} not mentioned in the report."
-    )
+    files_mentioned = get_all_files_mentioned_in_response(response_content)
+    pngs_mentioned = [f for f in files_mentioned if f.endswith(".png")]
+    try:
+        assert pngs_mentioned, (
+            "Expected at least one PNG file to be mentioned in the report."
+        )
+    finally:
+        # Clean up the temp files
+        for file in files_mentioned:
+            file_path = test_temp_dir / file
+            file_path.unlink(missing_ok=True)
     # TODO: consider adding an LLM as a judge to validate the report
     # For now, we just check that the response contains the image file
