@@ -15,6 +15,7 @@ from src.agents.utils.prompt_utils import (
     PrompTypes,
     create_human_message_from_parts,
     extract_graph_response_content,
+    get_all_temp_files,
     get_full_path_to_temp_file,
     render_prompt_template,
 )
@@ -27,27 +28,22 @@ class ReportEditorGraphState(BaseModel):
     report: str = ""
     next_speaker: str = ""
     loop_count: int = 0
-    max_loops: int = 1  # If the same speaker is chosen this many times in a row, return
-    # Example: if the writing agent is chosen 2 times in a row (once first time, once repeated), we return the current report
+    max_writer_loops: int = 3  # End if the writer is repeated this many times in a row
+    # Example: if the writing agent is chosen 3 times in a row (once first time, two repeated), we return the current report
+    max_visualization_loops: int = 10  # Similar logic for visualization agent
+    # This is much higher as we expect the visualization agent to be called multiple times for different charts
 
     @property
     def current_report_message(self) -> HumanMessage:
         """
         Returns the last human message in the conversation.
         """
-        return HumanMessage(f"This is the current report: \n\n {self.report}")
+        temp_file_list = get_all_temp_files()
+        temp_file_str = [file.name for file in temp_file_list]
 
-    def reset_loop_count(self) -> None:
-        """
-        Resets the loop count to zero.
-        """
-        self.loop_count = 0
-
-    def increment_loop_count(self) -> None:
-        """
-        Increments the loop count by one.
-        """
-        self.loop_count += 1
+        return HumanMessage(
+            f"This is the current report: \n\n {self.report} \n The following files are available: {', '.join(temp_file_str)} \n Last speaker: {self.next_speaker} \n Loop count: {self.loop_count}",
+        )
 
 
 COMPLETE_VALUE = "report_complete"
@@ -84,13 +80,20 @@ async def supervisor(
     ]
 
     class Router(BaseModel):
-        """Next speaker and task routing model."""
+        """Next speaker and task routing model.
 
+        Always fill the reasoning field with a brief explanation of why the next speaker was chosen.
+        Including the necessary changes to the report that trigger this choice.
+        """
+
+        reasoning: str = Field(
+            description="Reasoning for the next speaker choice. Explain why this speaker is chosen based on the current report state.",
+        )
         next_speaker: str = Field(
             description=f"The next speaker to handle the request. Choose from: {', '.join(next_speaker_options)}; if the report is complete, use '{COMPLETE_VALUE}'",
         )
         next_speaker_task: str = Field(
-            description="The task to be performed by the next speaker. State the task as if you were talking directly to them.",
+            description="The task to be performed by the next speaker. State the task as if you were talking directly to them, with as much detail as necessary.",
         )
 
     messages = [system_message] + state.messages + [state.current_report_message]
@@ -101,19 +104,27 @@ async def supervisor(
     goto = response.next_speaker
 
     # Check if we are looping back to the same speaker
+    new_loop_count = state.loop_count
     if goto == state.next_speaker:
-        state.increment_loop_count()
+        new_loop_count += 1
     else:
-        state.reset_loop_count()
+        new_loop_count = 0
 
-    if state.loop_count >= state.max_loops or goto == COMPLETE_VALUE:
+    # Determine the max loops based on which agent is being chosen
+    max_loops = 0
+    if goto == GraphNodeNames.DOCUMENT_WRITING_AGENT.value:
+        max_loops = state.max_writer_loops
+    elif goto == GraphNodeNames.DATA_VISUALIZATION_AGENT.value:
+        max_loops = state.max_visualization_loops
+
+    if new_loop_count >= max_loops or goto == COMPLETE_VALUE:
         goto = END
 
     return Command(
         goto=goto,
         update={
             "next_speaker": goto,
-            "loop_count": state.loop_count,  # Explicitly update loop count in the shared state
+            "loop_count": new_loop_count,
             "messages": [HumanMessage(response.next_speaker_task)],
         },
     )
@@ -130,7 +141,7 @@ async def data_visualization_agent(
     # Call the data visualization agent to generate charts
     agent = get_data_visualization_agent(models_client)
     response = await agent.ainvoke({"messages": state.messages})
-    
+
     # Extract the content and files from the response
     response = extract_graph_response_content(response)
     files = get_all_files_mentioned_in_response(response)

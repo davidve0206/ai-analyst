@@ -115,20 +115,20 @@ async def test_report_editor_workflow(
 
 
 @pytest.mark.asyncio
-async def test_loop_avoidance_logic(
+async def test_writer_loop_avoidance_logic(
     base_report_request: ReportEditorGraphState,
     patch_editor_graph_environment: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     """
-    Test that the loop avoidance logic prevents infinite loops.
-    This test forces the LLM to always choose the same agent and verifies
-    that the real supervisor logic terminates the graph after max_loops iterations.
+    Test that the loop avoidance logic prevents infinite loops for the document writer.
+    This test forces the LLM to always choose the document writing agent and verifies
+    that the real supervisor logic terminates the graph after max_writer_loops iterations.
     """
     from unittest.mock import AsyncMock
 
-    # Set max_loops to 2 for faster testing
-    base_report_request.max_loops = 2
+    # Set max_writer_loops to 2 for faster testing
+    base_report_request.max_writer_loops = 2
 
     # Track how many times document_writing_agent is called
     document_agent_call_count = 0
@@ -152,7 +152,7 @@ async def test_loop_avoidance_logic(
         mock_document_writing_agent,
     )
 
-    # Mock the LLM to always return the same agent choice to force a loop
+    # Mock the LLM to always return the document writing agent choice to force a loop
     class MockRouter:
         def __init__(self):
             self.next_speaker = "document_writing_agent"
@@ -181,25 +181,118 @@ async def test_loop_avoidance_logic(
     # Verify that the loop was terminated by the supervisor logic
     assert "report" in result
 
-    # The document agent should be called exactly max_loops times:
+    # The document agent should be called exactly max_writer_loops times:
     # - First call (loop_count = 0, next_speaker = "")
     # - Second call (loop_count = 1, same speaker chosen again)
-    # - Third supervisor call detects loop_count would be >= max_loops and terminates
-    expected_calls = base_report_request.max_loops
+    # - Third supervisor call detects loop_count would be >= max_writer_loops and terminates
+    expected_calls = base_report_request.max_writer_loops
     assert document_agent_call_count == expected_calls, (
         f"Expected document_writing_agent to be called {expected_calls} times, "
         f"but it was called {document_agent_call_count} times"
     )
 
     # Verify the final state shows the loop was detected
-    assert result["loop_count"] >= base_report_request.max_loops
+    assert result["loop_count"] >= base_report_request.max_writer_loops
 
     # Verify the LLM was called the expected number of times
     # Should be called once per supervisor invocation
     # The supervisor is called: initial + per loop iteration + final termination check
     assert (
-        mock_structured_output.ainvoke.call_count >= base_report_request.max_loops + 1
+        mock_structured_output.ainvoke.call_count
+        >= base_report_request.max_writer_loops + 1
     ), (
-        f"Expected at least {base_report_request.max_loops + 1} LLM calls, "
+        f"Expected at least {base_report_request.max_writer_loops + 1} LLM calls, "
+        f"but got {mock_structured_output.ainvoke.call_count}"
+    )
+
+
+@pytest.mark.asyncio
+async def test_visualization_loop_avoidance_logic(
+    base_report_request: ReportEditorGraphState,
+    patch_editor_graph_environment: None,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """
+    Test that the loop avoidance logic prevents infinite loops for the document writer.
+    This test forces the LLM to always choose the document writing agent and verifies
+    that the real supervisor logic terminates the graph after max_writer_loops iterations.
+    """
+    from unittest.mock import AsyncMock
+
+    # Set max_writer_loops to 4 for faster testing
+    base_report_request.max_visualization_loops = 4
+
+    # Track how many times data_visualization_agent is called
+    visualization_agent_call_count = 0
+
+    # Mock the data_visualization_agent to count calls and return quickly
+    async def mock_data_visualization_agent(state):
+        nonlocal visualization_agent_call_count
+        visualization_agent_call_count += 1
+
+        from langgraph.types import Command
+
+        return Command(
+            update={
+                "messages": [f"Document iteration {visualization_agent_call_count}"],
+            },
+            goto="supervisor",
+        )
+
+    monkeypatch.setattr(
+        "src.agents.report_editor_graph.data_visualization_agent",
+        mock_data_visualization_agent,
+    )
+
+    # Mock the LLM to always return the document writing agent choice to force a loop
+    class MockRouter:
+        def __init__(self):
+            self.next_speaker = "data_visualization_agent"
+            self.next_speaker_task = "Keep visualizing the document"
+
+    # Create a proper mock for the LLM chain
+    from unittest.mock import MagicMock
+
+    mock_structured_output = AsyncMock()
+    mock_structured_output.ainvoke = AsyncMock(return_value=MockRouter())
+
+    mock_model = MagicMock()
+    mock_model.with_structured_output.return_value = mock_structured_output
+
+    # Patch the specific model attribute in models_client
+    monkeypatch.setattr(
+        "src.agents.report_editor_graph.models_client.gpt_o4_mini", mock_model
+    )
+
+    # Create the report editor graph
+    graph = await create_report_editor_graph()
+
+    # Run the graph
+    result = await graph.ainvoke(base_report_request)
+
+    # Verify that the loop was terminated by the supervisor logic
+    assert "report" in result
+
+    # The document agent should be called exactly max_writer_loops times:
+    # - First call (loop_count = 0, next_speaker = "")
+    # - Second call (loop_count = 1, same speaker chosen again)
+    # - Third supervisor call detects loop_count would be >= max_writer_loops and terminates
+    expected_calls = base_report_request.max_visualization_loops
+    assert visualization_agent_call_count == expected_calls, (
+        f"Expected data_visualization_agent to be called {expected_calls} times, "
+        f"but it was called {visualization_agent_call_count} times"
+    )
+
+    # Verify the final state shows the loop was detected
+    assert result["loop_count"] >= base_report_request.max_visualization_loops
+
+    # Verify the LLM was called the expected number of times
+    # Should be called once per supervisor invocation
+    # The supervisor is called: initial + per loop iteration + final termination check
+    assert (
+        mock_structured_output.ainvoke.call_count
+        >= base_report_request.max_writer_loops + 1
+    ), (
+        f"Expected at least {base_report_request.max_writer_loops + 1} LLM calls, "
         f"but got {mock_structured_output.ainvoke.call_count}"
     )
