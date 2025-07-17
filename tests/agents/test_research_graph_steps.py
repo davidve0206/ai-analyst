@@ -7,6 +7,8 @@ from src.agents.research_graph import (
     ResearchGraphState,
     create_or_update_task_ledger,
     create_or_update_task_plan,
+    update_progress_ledger,
+    ProgressLedger,
 )
 from src.agents.utils.prompt_utils import PrompTypes
 
@@ -19,6 +21,25 @@ def base_research_request() -> ResearchGraphState:
     return ResearchGraphState(
         task="Analyze the impact of AI on financial markets.",
     )
+
+
+test_plan = """
+•	Gather Background Information
+    •	Summarize key ways AI is currently used in financial markets (e.g., algorithmic trading, risk modeling, fraud detection)
+    •	Identify notable AI-driven developments or trends
+•	Call quantitative_analysis_agent
+    •	Task: Analyze historical market data to identify correlations or trends that may be linked to increased AI adoption
+    •	Suggested metrics: volatility, liquidity, trading frequency, market efficiency
+    •	Suggested datasets: major stock indices, algorithmic trading volume, AI adoption rates by financial firms
+•	Interpret Results
+    •	Review and summarize the agent’s findings
+    •	Highlight any statistically significant trends or anomalies
+•	Draw Conclusions
+    •	Discuss implications of AI’s impact based on evidence
+    •	Address limitations or assumptions in the analysis
+•	Prepare Final Output
+    •	Format findings into a clear, structured report or presentation
+"""
 
 
 @pytest.mark.asyncio
@@ -180,3 +201,40 @@ async def test_create_or_update_task_plan_result_is_not_empty(
     #       Consider alternatives such as LLM as a judge
     result = await create_or_update_task_plan(base_research_request)
     assert result.get("task_plan", "") != ""
+
+
+@pytest.mark.asyncio
+async def test_update_progress_ledger(
+    base_research_request: ResearchGraphState,
+):
+    """
+    Test that the return type is ProgressLedger and validate all fields.
+
+    TODO: Consider creating a set of scenarios to test the progress ledger
+    based on different states of the ResearchGraphState.
+    """
+    base_research_request.task_plan = test_plan
+    result = await update_progress_ledger(base_research_request)
+
+    progress_ledger = result["progress_ledger"]
+
+    # Check is_request_satisfied
+    assert isinstance(progress_ledger, ProgressLedger)
+    assert progress_ledger.is_request_satisfied.reason != ""
+    assert progress_ledger.is_request_satisfied.answer is False
+
+    # Check is_in_loop
+    assert progress_ledger.is_in_loop.reason != ""
+    assert progress_ledger.is_in_loop.answer is False
+
+    # Check is_progress_being_made
+    assert progress_ledger.is_progress_being_made.reason != ""
+    # At this point, the value of is_progress_being_made is irrelevant
+
+    # Check next_speaker
+    assert progress_ledger.next_speaker.reason != ""
+    assert progress_ledger.next_speaker.answer != ""
+
+    # Check instruction_or_question
+    assert progress_ledger.instruction_or_question.reason != ""
+    assert progress_ledger.instruction_or_question.answer != ""

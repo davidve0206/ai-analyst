@@ -45,35 +45,35 @@ class ProgressLedger(BaseModel):
     is_request_satisfied: BooleanProgressLedgerItem = Field(
         description="Is the request fully satisfied? (True if complete, or False if the original request has yet to be SUCCESSFULLY and FULLY addressed)",
         default_factory=lambda: BooleanProgressLedgerItem(
-            reason="The request is not fully satisfied.",
+            reason="",
             answer=False,
         ),
     )
     is_in_loop: BooleanProgressLedgerItem = Field(
         description="Are we in a loop where we are repeating the same requests and/or getting the same responses as before? Loops can span multiple turns, and can include repeated actions like attempting to retrieve the same data without success.",
         default_factory=lambda: BooleanProgressLedgerItem(
-            reason="The agent is not in a loop.",
+            reason="",
             answer=False,
         ),
     )
     is_progress_being_made: BooleanProgressLedgerItem = Field(
         description="Are we making forward progress? (True if just starting, or recent messages are adding value. False if recent messages show evidence of being stuck in a loop or if there is evidence of significant barriers to success such as the inability to read from a required file)",
         default_factory=lambda: BooleanProgressLedgerItem(
-            reason="The agent is making progress.",
+            reason="",
             answer=True,
         ),
     )
     next_speaker: StringProgressLedgerItem = Field(
         description="Who should speak next? (select from: the names of the team members)",
         default_factory=lambda: StringProgressLedgerItem(
-            reason="The next speaker is not determined yet.",
+            reason="",
             answer="",
         ),
     )
     instruction_or_question: StringProgressLedgerItem = Field(
         description="What instruction or question would you give this team member? (Phrase as if speaking directly to them, and include any specific information they may need)",
         default_factory=lambda: StringProgressLedgerItem(
-            reason="No instruction or question provided yet.",
+            reason="",
             answer="",
         ),
     )
@@ -90,10 +90,13 @@ class ResearchGraphState(BaseModel):
     task_plan: str = ""
     stall_count: int = 0
     stall_count_limit: int = 3
+    reset_count: int = 0
+    reset_count_limit: int = 3
     messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
     quant_agent_context: Annotated[list[AnyMessage], add_messages] = Field(
         default_factory=list
     )
+    progress_ledger: ProgressLedger = ProgressLedger()
 
 
 class GraphNodeNames(Enum):
@@ -143,7 +146,7 @@ DEFAULT_TEAM = Team(
     members=[
         TeamMember(
             name=GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
-            role="Can load files, run code, and perform quantitative analysis.",
+            role="Can load files, run code, and perform quantitative analysis. Only has access to files mentioned in the task, not to the general internet.",
         ),
     ]
 )
@@ -212,7 +215,23 @@ async def update_progress_ledger(state: ResearchGraphState):
     Placeholder for a function that updates the progress ledger.
     """
     default_logger.info(f"Updating progress ledger for task: {state.task}")
-    # Implementation goes here
+    task_prompt = render_prompt_template(
+        "magentic_one/progress_ledger_prompt.md",
+        context={
+            "task": state.task,
+            "team": DEFAULT_TEAM.members_string,
+            "team_names": DEFAULT_TEAM.member_names,
+        },
+        type=PrompTypes.HUMAN,
+    )
+
+    structured_response_model = models_client.default_model.with_structured_output(
+        ProgressLedger
+    )
+    response: ProgressLedger = await structured_response_model.ainvoke([task_prompt])
+    return {
+        "progress_ledger": response,
+    }
 
 
 async def handover_to_team_member(
