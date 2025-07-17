@@ -88,25 +88,12 @@ class ResearchGraphState(BaseModel):
     task_output: str = ""
     task_facts: str = ""
     task_plan: str = ""
-    task_ledger: ProgressLedger = ProgressLedger()
     stall_count: int = 0
     stall_count_limit: int = 3
     messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
     quant_agent_context: Annotated[list[AnyMessage], add_messages] = Field(
         default_factory=list
     )
-
-    def reset_stall_count(self):
-        """
-        Reset the stall count to zero.
-        """
-        self.stall_count = 0
-
-    def increment_stall_count(self):
-        """
-        Increment the stall count by one.
-        """
-        self.stall_count += 1
 
 
 class GraphNodeNames(Enum):
@@ -170,7 +157,6 @@ async def create_or_update_task_ledger(state: ResearchGraphState):
     default_logger.info(f"Creating or updating ledger for task: {state.task}")
 
     task_prompt: HumanMessage
-    task_prompt: HumanMessage
     if not state.task_facts:
         task_prompt = render_prompt_template(
             template_name="magentic_one/task_ledger_facts_prompt.md",
@@ -188,15 +174,37 @@ async def create_or_update_task_ledger(state: ResearchGraphState):
     response = await models_client.default_model.ainvoke(messages)
     return {
         "task_facts": response.content,
+        "messages": [response],
     }
 
 
 async def create_or_update_task_plan(state: ResearchGraphState):
     """
-    Placeholder for a function that creates or updates a task plan.
+    Function that creates or updates a task plan and sets the stall count to zero.
+    This function is called when the task is first created or when the task plan is updated.
     """
-    default_logger.info(f"Creating or updating task plan for: {state.task}")
-    # Implementation goes here
+    default_logger.info(f"Creating or updating task plan for task: {state.task}")
+
+    if not state.task_plan:
+        task_plan_prompt = render_prompt_template(
+            template_name="magentic_one/task_ledger_plan_prompt.md",
+            context={"team": DEFAULT_TEAM.members_string},
+            type=PrompTypes.HUMAN,
+        )
+    else:
+        task_plan_prompt = render_prompt_template(
+            template_name="magentic_one/task_ledger_plan_update_prompt.md",
+            context={"team": DEFAULT_TEAM.members_string},
+            type=PrompTypes.HUMAN,
+        )
+
+    messages = state.messages + [task_plan_prompt]
+    response = await models_client.default_model.ainvoke(messages)
+    return {
+        "task_plan": response.content,
+        "messages": [response],
+        "stall_count": 0,  # Reset stall count when task plan is created or updated
+    }
 
 
 async def update_progress_ledger(state: ResearchGraphState):
