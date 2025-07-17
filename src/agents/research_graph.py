@@ -1,14 +1,18 @@
 from enum import Enum
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
-from langgraph.types import Command
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
-from langchain_core.messages import AnyMessage, HumanMessage
+from langchain_core.messages import AnyMessage, HumanMessage, AIMessage
 
 from src.agents.models import default_models as models_client
-from src.agents.utils.prompt_utils import PrompTypes, render_prompt_template
+from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
+from src.agents.utils.prompt_utils import (
+    PrompTypes,
+    extract_graph_response_content,
+    render_prompt_template,
+)
 from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR
 
@@ -84,18 +88,20 @@ class ResearchGraphState(BaseModel):
     Internal state model for the research Agent's graph.
     """
 
+    task_id: str
     task: str
     task_output: str = ""
     task_facts: str = ""
     task_plan: str = ""
+    task_output: str = ""
     stall_count: int = 0
     stall_count_limit: int = 3
     reset_count: int = 0
     reset_count_limit: int = 3
     messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
-    quant_agent_context: Annotated[list[AnyMessage], add_messages] = Field(
+    quant_agent_context: list[AnyMessage] = Field(
         default_factory=list
-    )
+    )  # Note this doesn't auto add messages, this gives me more fine-grained control
     progress_ledger: ProgressLedger = ProgressLedger()
 
 
@@ -103,7 +109,6 @@ class GraphNodeNames(Enum):
     CREATE_OR_UPDATE_TASK_LEDGER = "create_or_update_task_ledger"
     CREATE_OR_UPDATE_TASK_PLAN = "create_or_update_task_plan"
     UPDATE_PROGRESS_LEDGER = "update_progress_ledger"
-    HANDOVER_TO_TEAM_MEMBER = "handover_to_team_member"
     QUANTITATIVE_ANALYSIS_AGENT = "quantitative_analysis_agent"
     SUMMARIZE_FINDINGS = "summarize_findings"
 
@@ -157,7 +162,7 @@ async def create_or_update_task_ledger(state: ResearchGraphState):
     Function to create or update the task ledger.
     This function is called when the task is first created or when the task facts are updated.
     """
-    default_logger.info(f"Creating or updating ledger for task: {state.task}")
+    default_logger.info(f"Creating or updating ledger for task: {state.task_id}")
 
     task_prompt: HumanMessage
     if not state.task_facts:
@@ -186,7 +191,7 @@ async def create_or_update_task_plan(state: ResearchGraphState):
     Function that creates or updates a task plan and sets the stall count to zero.
     This function is called when the task is first created or when the task plan is updated.
     """
-    default_logger.info(f"Creating or updating task plan for task: {state.task}")
+    default_logger.info(f"Creating or updating task plan for task: {state.task_id}")
 
     if not state.task_plan:
         task_plan_prompt = render_prompt_template(
@@ -214,7 +219,7 @@ async def update_progress_ledger(state: ResearchGraphState):
     """
     Placeholder for a function that updates the progress ledger.
     """
-    default_logger.info(f"Updating progress ledger for task: {state.task}")
+    default_logger.info(f"Updating progress ledger for task: {state.task_id}")
     task_prompt = render_prompt_template(
         "magentic_one/progress_ledger_prompt.md",
         context={
@@ -234,41 +239,49 @@ async def update_progress_ledger(state: ResearchGraphState):
     }
 
 
-async def handover_to_team_member(
-    state: ResearchGraphState,
-) -> Command[Literal["update_progress_ledger"]]:
-    """
-    Placeholder for a function that hands over the task to a team member.
-    """
-    default_logger.info(f"Handover task: {state.task} to team member")
-    # Implementation goes here
-
-
 async def quantitative_analysis_agent(state: ResearchGraphState):
     """
-    Placeholder for a function that performs quantitative analysis.
+    Function that performs quantitative analysis.
+
+    The context of the quant agent only includes the messages that
+    have been sent to it and its own responses, while the conversation
+    history excludes the quant agent's code.
     """
-    default_logger.info(f"Performing quantitative analysis for task: {state.task}")
-    # Implementation goes here
+    default_logger.info(f"Performing quantitative analysis for task: {state.task_id}")
+
+    #
+    agent = get_quantitative_agent(models_client)
+    updated_context = state.quant_agent_context + [
+        HumanMessage(state.progress_ledger.instruction_or_question.answer)
+    ]
+    response = await agent.ainvoke({"messages": updated_context})
+
+    # Extract the content and files from the response
+    response: QuantitativeAgentResponse = extract_graph_response_content(response)
+    updated_context.append(AIMessage(response.model_dump_json()))
+
+    return {
+        "quant_agent_context": updated_context,
+        "messages": [AIMessage(response.content)],
+    }
 
 
 async def summarize_findings(state: ResearchGraphState):
     """
-    Placeholder for a function that summarizes findings.
+    Summarize findings to return to the user.
     """
-    default_logger.info(f"Summarizing findings for task: {state.task}")
-    # Implementation goes here
+    default_logger.info(f"Summarizing findings for task: {state.task_id}")
 
 
 async def progress_ledger_gate(
     state: ResearchGraphState,
 ) -> Literal[
-    "create_or_update_task_ledger", "summarize_findings", "handover_to_team_member"
+    "create_or_update_task_ledger", "summarize_findings", "quantitative_analysis_agent"
 ]:
     """
     Placeholder for a gate function that checks the progress ledger.
     """
-    default_logger.info(f"Checking progress ledger for task: {state.task}")
+    default_logger.info(f"Checking progress ledger for task: {state.task_id}")
     if (
         state.progress_ledger.is_request_satisfied.answer
         or state.reset_count >= state.reset_count_limit
@@ -280,7 +293,7 @@ async def progress_ledger_gate(
     ):
         return GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value
     else:
-        return GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value
+        return state.progress_ledger.next_speaker.answer
 
 
 async def create_research_graph(
@@ -299,10 +312,6 @@ async def create_research_graph(
     graph.add_node(
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
         update_progress_ledger,
-    )
-    graph.add_node(
-        GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value,
-        handover_to_team_member,
     )
     graph.add_node(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
@@ -326,7 +335,7 @@ async def create_research_graph(
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value, progress_ledger_gate
     )
     graph.add_edge(
-        GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value,
+        GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
     )
     graph.add_edge(

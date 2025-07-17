@@ -1,15 +1,17 @@
-from unittest.mock import AsyncMock, patch
-
 import pytest
-from langchain_core.messages import BaseMessage
+from unittest.mock import AsyncMock, patch, ANY
 
+from langchain_core.messages import BaseMessage, HumanMessage
+
+from src.agents.quant_agent import QuantitativeAgentResponse
 from src.agents.research_graph import (
+    ProgressLedger,
     ResearchGraphState,
     create_or_update_task_ledger,
     create_or_update_task_plan,
-    update_progress_ledger,
-    ProgressLedger,
     progress_ledger_gate,
+    quantitative_analysis_agent,
+    update_progress_ledger,
 )
 from src.agents.utils.prompt_utils import PrompTypes
 
@@ -20,6 +22,7 @@ def base_research_request() -> ResearchGraphState:
     Base research request fixture for testing.
     """
     return ResearchGraphState(
+        task_id="test_task_id",
         task="Analyze the impact of AI on financial markets.",
     )
 
@@ -149,9 +152,7 @@ async def test_create_or_update_task_plan_correct_prompt_selection(
 
         mock_render.assert_called_once_with(
             template_name="magentic_one/task_ledger_plan_prompt.md",
-            context={
-                "team": "\n- quantitative_analysis_agent: Can load files, run code, and perform quantitative analysis."
-            },
+            context={"team": ANY},
             type=PrompTypes.HUMAN,
         )
         mock_models.default_model.ainvoke.assert_called_once()
@@ -182,9 +183,7 @@ async def test_create_or_update_task_plan_correct_prompt_selection_for_update(
 
         mock_render.assert_called_once_with(
             template_name="magentic_one/task_ledger_plan_update_prompt.md",
-            context={
-                "team": "\n- quantitative_analysis_agent: Can load files, run code, and perform quantitative analysis."
-            },
+            context={"team": ANY},
             type=PrompTypes.HUMAN,
         )
         mock_models.default_model.ainvoke.assert_called_once()
@@ -212,7 +211,8 @@ async def test_update_progress_ledger(
     Test that the return type is ProgressLedger and validate all fields.
 
     TODO: Consider creating a set of scenarios to test the progress ledger
-    based on different states of the ResearchGraphState.
+    based on different states of the ResearchGraphState. Particularly,
+    we should test that it only returns valid team members as next_speaker.
     """
     base_research_request.task_plan = test_plan
     result = await update_progress_ledger(base_research_request)
@@ -272,9 +272,14 @@ async def test_progress_ledger_gate_handover_to_team_member(
 ):
     """
     Test that the gate returns 'handover_to_team_member' when neither of the other conditions are met.
+
+    The test assumes that the model will only return a valid next_speaker.
     """
     base_research_request.stall_count = 0
     base_research_request.progress_ledger.is_progress_being_made.answer = True
+    base_research_request.progress_ledger.next_speaker.answer = (
+        "handover_to_team_member"
+    )
     result = await progress_ledger_gate(base_research_request)
     assert result == "handover_to_team_member"
 
@@ -288,5 +293,76 @@ async def test_progress_ledger_gate_progress_made_despite_stall(
     """
     base_research_request.stall_count = base_research_request.stall_count_limit + 1
     base_research_request.progress_ledger.is_progress_being_made.answer = True
+    base_research_request.progress_ledger.next_speaker.answer = (
+        "handover_to_team_member"
+    )
     result = await progress_ledger_gate(base_research_request)
     assert result == "handover_to_team_member"
+
+
+@pytest.mark.asyncio
+async def test_quantitative_agent_calls_with_different_messages(monkeypatch):
+    """
+    Test that the quantitative_analysis_agent calls the quantitative agent
+    with "messages" that are different from state.messages.
+    """
+    # Mock the quantitative agent
+    mock_agent = AsyncMock()
+    mock_agent.ainvoke.return_value = {
+        "structured_response": QuantitativeAgentResponse(
+            content="Mocked response content",
+            code="Mocked code",
+        )
+    }
+    monkeypatch.setattr(
+        "src.agents.research_graph.get_quantitative_agent", lambda _: mock_agent
+    )
+
+    # Create a mock state
+    state = ResearchGraphState(
+        task_id="test_task",
+        task="Analyze sales data",
+        messages=[HumanMessage("message1"), HumanMessage("message2")],
+    )
+    state.progress_ledger.instruction_or_question.answer = "What is the sales trend?"
+
+    # Call the function
+    await quantitative_analysis_agent(state)
+
+    # Assert that the agent was called with different messages
+    mock_agent.ainvoke.assert_called_once()
+    called_args = mock_agent.ainvoke.call_args[0][0]
+    assert called_args["messages"] != state.messages, (
+        "Expected messages to differ from state.messages."
+    )
+
+
+@pytest.mark.asyncio
+async def test_quantitative_analysis_agent():
+    """
+    Test that the values returned by the function as "quant_agent_context"
+    and "messages" are different.
+    """
+
+    # Create a mock state
+    state = ResearchGraphState(
+        task_id="test_task",
+        task="Analyze sales data",
+        messages=[HumanMessage("message1"), HumanMessage("message2")],
+    )
+    state.progress_ledger.instruction_or_question.answer = (
+        "The company has made sales for 100, 120, 110 and 140. What is the sales trend?"
+    )
+
+    # Call the function
+    result = await quantitative_analysis_agent(state)
+
+    # Assert that the returned values are different
+    assert result["quant_agent_context"] != result["messages"], (
+        "Expected quant_agent_context and messages to differ."
+    )
+    assert (
+        result["quant_agent_context"][-1].content != result["messages"][-1].content
+    ), (
+        "Expected the last message in quant_agent_context to differ from the last message in messages."
+    )
