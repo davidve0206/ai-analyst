@@ -1,11 +1,19 @@
 from enum import Enum
-from typing import Literal
+from typing import Annotated, Literal
 from pydantic import BaseModel, Field
+from langgraph.types import Command
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
+from langgraph.graph.message import add_messages
+from langchain_core.messages import AnyMessage, HumanMessage
 
+from src.agents.models import default_models as models_client
+from src.agents.utils.prompt_utils import PrompTypes, render_prompt_template
 from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR
+
+# TODO: This file is a bit convoluted and could be refactored.
+#       Think about separating the graph logic from class definitions.
 
 
 class BooleanProgressLedgerItem(BaseModel):
@@ -78,10 +86,15 @@ class ResearchGraphState(BaseModel):
 
     task: str
     task_output: str = ""
+    task_facts: str = ""
     task_plan: str = ""
     task_ledger: ProgressLedger = ProgressLedger()
     stall_count: int = 0
     stall_count_limit: int = 3
+    messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
+    quant_agent_context: Annotated[list[AnyMessage], add_messages] = Field(
+        default_factory=list
+    )
 
     def reset_stall_count(self):
         """
@@ -101,15 +114,81 @@ class GraphNodeNames(Enum):
     CREATE_OR_UPDATE_TASK_PLAN = "create_or_update_task_plan"
     UPDATE_PROGRESS_LEDGER = "update_progress_ledger"
     HANDOVER_TO_TEAM_MEMBER = "handover_to_team_member"
+    QUANTITATIVE_ANALYSIS_AGENT = "quantitative_analysis_agent"
     SUMMARIZE_FINDINGS = "summarize_findings"
+
+
+class TeamMember(BaseModel):
+    """
+    Represents a team member in the research graph.
+    """
+
+    name: str  # Note: this should be the value of the GraphNodeNames enum (e.g. "quantitative_analysis_agent")
+    role: str
+
+
+class Team(BaseModel):
+    members: list[TeamMember]
+
+    @property
+    def member_names(self) -> list[str]:
+        """
+        Returns a list of names of the team members.
+        """
+        return [member.name for member in self.members]
+
+    @property
+    def member_strings(self) -> list[str]:
+        """
+        Returns a list of strings representing the team members.
+        """
+        return [f"{member.name}: {member.role}" for member in self.members]
+
+    @property
+    def members_string(self) -> str:
+        """
+        Returns a string representation of the team members.
+        """
+        return "\n- " + "\n- ".join(self.member_strings)
+
+
+DEFAULT_TEAM = Team(
+    members=[
+        TeamMember(
+            name=GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
+            role="Can load files, run code, and perform quantitative analysis.",
+        ),
+    ]
+)
 
 
 async def create_or_update_task_ledger(state: ResearchGraphState):
     """
-    Placeholder for a function that creates or updates a ledger.
+    Function to create or update the task ledger.
+    This function is called when the task is first created or when the task facts are updated.
     """
     default_logger.info(f"Creating or updating ledger for task: {state.task}")
-    # Implementation goes here
+
+    task_prompt: HumanMessage
+    task_prompt: HumanMessage
+    if not state.task_facts:
+        task_prompt = render_prompt_template(
+            template_name="magentic_one/task_ledger_facts_prompt.md",
+            context={"task": state.task},
+            type=PrompTypes.HUMAN,
+        )
+    else:
+        task_prompt = render_prompt_template(
+            template_name="magentic_one/task_ledger_facts_update_prompt.md",
+            context={"task": state.task, "old_facts": state.task_facts},
+            type=PrompTypes.HUMAN,
+        )
+
+    messages = state.messages + [task_prompt]
+    response = await models_client.default_model.ainvoke(messages)
+    return {
+        "task_facts": response.content,
+    }
 
 
 async def create_or_update_task_plan(state: ResearchGraphState):
@@ -128,11 +207,21 @@ async def update_progress_ledger(state: ResearchGraphState):
     # Implementation goes here
 
 
-async def handover_to_team_member(state: ResearchGraphState):
+async def handover_to_team_member(
+    state: ResearchGraphState,
+) -> Command[Literal["update_progress_ledger"]]:
     """
     Placeholder for a function that hands over the task to a team member.
     """
     default_logger.info(f"Handover task: {state.task} to team member")
+    # Implementation goes here
+
+
+async def quantitative_analysis_agent(state: ResearchGraphState):
+    """
+    Placeholder for a function that performs quantitative analysis.
+    """
+    default_logger.info(f"Performing quantitative analysis for task: {state.task}")
     # Implementation goes here
 
 
@@ -183,6 +272,10 @@ async def create_research_graph(
     graph.add_node(
         GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value,
         handover_to_team_member,
+    )
+    graph.add_node(
+        GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
+        quantitative_analysis_agent,
     )
     graph.add_node(
         GraphNodeNames.SUMMARIZE_FINDINGS.value,
