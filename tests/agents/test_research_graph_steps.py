@@ -12,6 +12,7 @@ from src.agents.research_graph import (
     progress_ledger_gate,
     quantitative_analysis_agent,
     update_progress_ledger,
+    summarize_findings,
 )
 from src.agents.utils.prompt_utils import PrompTypes
 
@@ -366,3 +367,80 @@ async def test_quantitative_analysis_agent():
     ), (
         "Expected the last message in quant_agent_context to differ from the last message in messages."
     )
+
+
+@pytest.mark.asyncio
+async def test_summarize_findings_with_csv_context():
+    """
+    Test that the summarize_findings function correctly processes a context
+    containing a message with a CSV file and mentions the file and the 10% figure.
+    """
+    # Create a mock state
+    state = ResearchGraphState(
+        task_id="test_task",
+        task="Analyze the impact of AI on financial markets.",
+        messages=[
+            HumanMessage(
+                "The file 'market_analysis.csv' contains marked data showing that AI increased the market value by 10%."
+            )
+        ],
+    )
+
+    # Call the function
+    result = await summarize_findings(state)
+
+    # Assert that the task_output is not empty
+    assert result["task_output"] != "", "Expected task_output to be non-empty."
+
+    # Assert that the task_output mentions the file
+    assert "market_analysis.csv" in result["task_output"], (
+        "Expected task_output to mention the file."
+    )
+
+    # Assert that the task_output mentions the 10% figure
+    assert "10%" in result["task_output"], (
+        "Expected task_output to mention the 10% figure."
+    )
+
+
+@pytest.mark.asyncio
+async def test_summarize_findings_with_extended_context():
+    """
+    Test that the summarize_findings function correctly processes a context
+    containing multiple messages, including a CSV file, a facts request, and a plan.
+    """
+    # Create a mock state
+    state = ResearchGraphState(
+        task_id="test_task",
+        task="Analyze the impact of AI on financial markets.",
+        messages=[
+            HumanMessage(
+                "GIVEN OR VERIFIED FACTS:\n- AI adoption rates have increased by 20% in the last 5 years.\nFACTS TO LOOK UP:\n- Historical market data for AI-driven companies.\nFACTS TO DERIVE:\n- Correlation between AI adoption and market value growth."
+            ),
+            HumanMessage(
+                "PLAN:\n- Gather historical market data.\n- Analyze correlations between AI adoption and market trends.\n- Summarize findings in a structured report."
+            ),
+            HumanMessage(
+                "The file 'market_analysis.csv' contains marked data showing that AI increased the market value by 10%."
+            ),
+        ],
+    )
+
+    # Call the function
+    result = await summarize_findings(state)
+
+    # Assert that the task_output is not empty
+    assert result["task_output"] != "", "Expected task_output to be non-empty."
+
+    # Assert that the task_output mentions the file
+    assert "market_analysis.csv" in result["task_output"], (
+        "Expected task_output to mention the file."
+    )
+
+    # Assert that the task_output mentions the 10% figure
+    assert "10%" in result["task_output"], (
+        "Expected task_output to mention the 10% figure."
+    )
+
+    # Assert that the task_output mentions facts
+    assert "20%" in result["task_output"], "Expected task_output to mention the facts."

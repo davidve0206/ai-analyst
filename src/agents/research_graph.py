@@ -217,7 +217,7 @@ async def create_or_update_task_plan(state: ResearchGraphState):
 
 async def update_progress_ledger(state: ResearchGraphState):
     """
-    Placeholder for a function that updates the progress ledger.
+    Function that updates the progress ledger.
     """
     default_logger.info(f"Updating progress ledger for task: {state.task_id}")
     task_prompt = render_prompt_template(
@@ -271,6 +271,20 @@ async def summarize_findings(state: ResearchGraphState):
     Summarize findings to return to the user.
     """
     default_logger.info(f"Summarizing findings for task: {state.task_id}")
+
+    summary_message = render_prompt_template(
+        template_name="magentic_one/summarize_findings_prompt.md",
+        context={
+            "task": state.task,
+        },
+        type=PrompTypes.HUMAN,
+    )
+    summary_context = state.messages + [summary_message]
+
+    response = await models_client.default_model.ainvoke(summary_context)
+    return {
+        "task_output": response.content,
+    }
 
 
 async def progress_ledger_gate(
