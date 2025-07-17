@@ -11,15 +11,23 @@ from src.configuration.settings import BASE_DIR
 class BooleanProgressLedgerItem(BaseModel):
     """A progress ledger item."""
 
-    reason: str
-    answer: bool
+    reason: str = Field(
+        description="Reason for the answer, providing context or explanation."
+    )
+    answer: bool = Field(
+        description="The answer to the question, which should be a boolean value."
+    )
 
 
 class StringProgressLedgerItem(BaseModel):
     """A progress ledger item with a string answer."""
 
-    reason: str
-    answer: str
+    reason: str = Field(
+        description="Reason for the answer, providing context or explanation."
+    )
+    answer: str = Field(
+        description="The answer to the question, which should be a string."
+    )
 
 
 class ProgressLedger(BaseModel):
