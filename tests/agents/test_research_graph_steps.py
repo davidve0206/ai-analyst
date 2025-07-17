@@ -9,6 +9,7 @@ from src.agents.research_graph import (
     create_or_update_task_plan,
     update_progress_ledger,
     ProgressLedger,
+    progress_ledger_gate,
 )
 from src.agents.utils.prompt_utils import PrompTypes
 
@@ -238,3 +239,54 @@ async def test_update_progress_ledger(
     # Check instruction_or_question
     assert progress_ledger.instruction_or_question.reason != ""
     assert progress_ledger.instruction_or_question.answer != ""
+
+
+@pytest.mark.asyncio
+async def test_progress_ledger_gate_summarize_findings(
+    base_research_request: ResearchGraphState,
+):
+    """
+    Test that the gate returns 'summarize_findings' when the request is satisfied.
+    """
+    base_research_request.progress_ledger.is_request_satisfied.answer = True
+    result = await progress_ledger_gate(base_research_request)
+    assert result == "summarize_findings"
+
+
+@pytest.mark.asyncio
+async def test_progress_ledger_gate_create_or_update_task_ledger(
+    base_research_request: ResearchGraphState,
+):
+    """
+    Test that the gate returns 'create_or_update_task_ledger' when stall count exceeds limit and no progress is being made.
+    """
+    base_research_request.stall_count = base_research_request.stall_count_limit + 1
+    base_research_request.progress_ledger.is_progress_being_made.answer = False
+    result = await progress_ledger_gate(base_research_request)
+    assert result == "create_or_update_task_ledger"
+
+
+@pytest.mark.asyncio
+async def test_progress_ledger_gate_handover_to_team_member(
+    base_research_request: ResearchGraphState,
+):
+    """
+    Test that the gate returns 'handover_to_team_member' when neither of the other conditions are met.
+    """
+    base_research_request.stall_count = 0
+    base_research_request.progress_ledger.is_progress_being_made.answer = True
+    result = await progress_ledger_gate(base_research_request)
+    assert result == "handover_to_team_member"
+
+
+@pytest.mark.asyncio
+async def test_progress_ledger_gate_progress_made_despite_stall(
+    base_research_request: ResearchGraphState,
+):
+    """
+    Test that the gate returns 'handover_to_team_member' when stall count exceeds limit but progress is being made.
+    """
+    base_research_request.stall_count = base_research_request.stall_count_limit + 1
+    base_research_request.progress_ledger.is_progress_being_made.answer = True
+    result = await progress_ledger_gate(base_research_request)
+    assert result == "handover_to_team_member"

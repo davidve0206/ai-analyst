@@ -269,11 +269,15 @@ async def progress_ledger_gate(
     Placeholder for a gate function that checks the progress ledger.
     """
     default_logger.info(f"Checking progress ledger for task: {state.task}")
-    if state.task_ledger.is_request_satisfied.answer:
+    if (
+        state.progress_ledger.is_request_satisfied.answer
+        or state.reset_count >= state.reset_count_limit
+    ):
         return GraphNodeNames.SUMMARIZE_FINDINGS.value
-    elif state.task_ledger.is_progress_being_made.answer:
-        return GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value
-    elif state.stall_count >= state.stall_count_limit:
+    elif (
+        state.stall_count >= state.stall_count_limit
+        and not state.progress_ledger.is_progress_being_made.answer
+    ):
         return GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value
     else:
         return GraphNodeNames.HANDOVER_TO_TEAM_MEMBER.value
