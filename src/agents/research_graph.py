@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
+from langgraph.types import Command
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
@@ -47,7 +48,7 @@ class ProgressLedger(BaseModel):
     including necessary reasoning"""
 
     is_request_satisfied: BooleanProgressLedgerItem = Field(
-        description="Is the request fully satisfied? (True if complete, or False if the original request has yet to be SUCCESSFULLY and FULLY addressed)",
+        description="Is the request fully satisfied? (True if complete or if there is NOT ENOUGH INFORMATION to proceed, False if the original request has yet to be SUCCESSFULLY addressed)",
         default_factory=lambda: BooleanProgressLedgerItem(
             reason="",
             answer=False,
@@ -109,6 +110,7 @@ class GraphNodeNames(Enum):
     CREATE_OR_UPDATE_TASK_LEDGER = "create_or_update_task_ledger"
     CREATE_OR_UPDATE_TASK_PLAN = "create_or_update_task_plan"
     UPDATE_PROGRESS_LEDGER = "update_progress_ledger"
+    EVALUATE_PROGRESS_LEDGER = "evaluate_progress_ledger"
     QUANTITATIVE_ANALYSIS_AGENT = "quantitative_analysis_agent"
     SUMMARIZE_FINDINGS = "summarize_findings"
 
@@ -220,7 +222,7 @@ async def update_progress_ledger(state: ResearchGraphState):
     Function that updates the progress ledger.
     """
     default_logger.info(f"Updating progress ledger for task: {state.task_id}")
-    task_prompt = render_prompt_template(
+    task_message = render_prompt_template(
         "magentic_one/progress_ledger_prompt.md",
         context={
             "task": state.task,
@@ -229,11 +231,15 @@ async def update_progress_ledger(state: ResearchGraphState):
         },
         type=PrompTypes.HUMAN,
     )
+    progress_ledger_context = state.messages + [task_message]
 
     structured_response_model = models_client.default_model.with_structured_output(
         ProgressLedger
     )
-    response: ProgressLedger = await structured_response_model.ainvoke([task_prompt])
+    response: ProgressLedger = await structured_response_model.ainvoke(
+        progress_ledger_context
+    )
+
     return {
         "progress_ledger": response,
     }
@@ -287,27 +293,47 @@ async def summarize_findings(state: ResearchGraphState):
     }
 
 
-async def progress_ledger_gate(
+async def evaluate_progress_ledger(
     state: ResearchGraphState,
-) -> Literal[
-    "create_or_update_task_ledger", "summarize_findings", "quantitative_analysis_agent"
+) -> Command[
+    Literal[
+        "create_or_update_task_ledger",
+        "summarize_findings",
+        "quantitative_analysis_agent",
+    ]
 ]:
     """
     Placeholder for a gate function that checks the progress ledger.
     """
     default_logger.info(f"Checking progress ledger for task: {state.task_id}")
+
+    # Before anything else, update the stall count
+    if state.progress_ledger.is_in_loop.answer:
+        state.stall_count += 1
+
+    # Then, determine the next step based on the progress ledger
     if (
         state.progress_ledger.is_request_satisfied.answer
         or state.reset_count >= state.reset_count_limit
     ):
-        return GraphNodeNames.SUMMARIZE_FINDINGS.value
+        goto = GraphNodeNames.SUMMARIZE_FINDINGS.value
     elif (
         state.stall_count >= state.stall_count_limit
         and not state.progress_ledger.is_progress_being_made.answer
     ):
-        return GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value
+        goto = GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value
+        state.reset_count += 1  # Count the reset
     else:
-        return state.progress_ledger.next_speaker.answer
+        goto = state.progress_ledger.next_speaker.answer
+
+    return Command(
+        goto=goto,
+        update={
+            "next_speaker": goto,
+            "stall_count": state.stall_count,
+            "reset_count": state.reset_count,
+        },
+    )
 
 
 async def create_research_graph(
@@ -328,6 +354,10 @@ async def create_research_graph(
         update_progress_ledger,
     )
     graph.add_node(
+        GraphNodeNames.EVALUATE_PROGRESS_LEDGER.value,
+        evaluate_progress_ledger,
+    )
+    graph.add_node(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
         quantitative_analysis_agent,
     )
@@ -345,8 +375,9 @@ async def create_research_graph(
         GraphNodeNames.CREATE_OR_UPDATE_TASK_PLAN.value,
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
     )
-    graph.add_conditional_edges(
-        GraphNodeNames.UPDATE_PROGRESS_LEDGER.value, progress_ledger_gate
+    graph.add_edge(
+        GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
+        GraphNodeNames.EVALUATE_PROGRESS_LEDGER.value,
     )
     graph.add_edge(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,

@@ -14,3 +14,4 @@ Based on the information gathered, provide the final answer to the original requ
   - If data is insufficient or ambiguous, clearly state assumptions made.
 - The file name of all saved files (no need to include the entire path).
 - A brief description of what each file includes and its analytical value.
+- A clear summary of the limitations of the analysis, for example missing data.
