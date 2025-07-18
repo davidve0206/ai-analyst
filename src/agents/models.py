@@ -1,6 +1,7 @@
 from langchain.chat_models import init_chat_model
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_openai import AzureChatOpenAI
+from langchain_core.rate_limiters import InMemoryRateLimiter
 
 from src.configuration.settings import app_settings
 
@@ -38,6 +39,11 @@ class AppChatModels:
             top_p=DEFAULT_TOP_P,
         )
 
+        azure_rate_limiter = InMemoryRateLimiter(
+            requests_per_second=12,  # Slightly under max RPM (1K/min = ~16.6/sec)
+            check_every_n_seconds=0.1,  # Check every 100 ms
+            max_bucket_size=10,  # Allow small bursts
+        )
         self.gpt_o4_mini = init_chat_model(
             "azure_openai:gpt-4o-mini",
             api_key=app_settings.azure_openai_api_key,
@@ -46,11 +52,14 @@ class AppChatModels:
             azure_deployment="gpt-4o-mini",
             temperature=DEFAULT_TEMPERATURE,
             top_p=DEFAULT_TOP_P,
+            request_timeout=45,  # Set a reasonable timeout for requests
+            rate_limiter=azure_rate_limiter,
         )
 
         # Sets a default model for places where we don't specify a model
         # Recommended to use a cheap but fast model, explicitly set a
         # different model in the agent if needed
-        self.default_model = self.gemini_2_0_flash
+        self.default_model = self.gpt_o4_mini
+
 
 default_models = AppChatModels()
