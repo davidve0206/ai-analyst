@@ -26,6 +26,10 @@ class SalesReportRequest(BaseModel):
     def name(self) -> str:
         return f"Sales Report - {self.grouping} - {self.grouping_value}"
 
+    @property
+    def task_id(self) -> str:
+        return f"sales_report_{self.grouping}_{self.grouping_value}"
+
 
 def add_kpi_request(session_maker: sessionmaker, kpi: KpiRequest):
     session = session_maker()

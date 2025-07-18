@@ -10,6 +10,7 @@ from src.agents.report_editor_graph import (
     ReportEditorGraphState,
     create_report_editor_graph,
 )
+from src.agents.research_graph import ResearchGraphState, create_research_graph
 from src.agents.utils.prompt_utils import (
     PrompTypes,
     create_human_message_from_parts,
@@ -192,9 +193,42 @@ def special_case_gate(
 async def process_special_case(state: SalesReportGraphState):
     """
     If there is a special case, we will process it in depth.
-    This is a placeholder for the actual processing logic.
     """
-    return {"sales_in_depth_analysis": state.sales_analysis}
+    # Get the graph that processes the special case
+    researcher_graph = await create_research_graph()
+
+    task_prompt = render_prompt_template(
+        "research_task_prompt.md",
+        context={
+            "date": app_settings.analysis_date,
+            "grouping": state.request.grouping,
+            "grouping_value": state.request.grouping_value,
+            "special_case_reason": state.special_case_reason,
+            "input_location": str(DATA_DIR / DATA_PROVIDED.name),
+            "data_description": DATA_PROVIDED.description,
+            "sales_history": state.sales_history,
+            "sales_analysis": state.sales_analysis,
+            "sales_operational_data": state.sales_operational_data,
+        },
+        type=PrompTypes.HUMAN,
+    )
+    quant_agent_message = create_human_message_from_parts(
+        text_parts=[
+            "The following code was used to retrieve the sales history:\n",
+            state.sales_history_code,
+        ],
+        file_list=[get_sales_history_location(state.request.grouping_value)],
+    )
+
+    result = await researcher_graph.ainvoke(
+        ResearchGraphState(
+            task_id=state.request.task_id,
+            task=task_prompt.content,
+            quant_agent_context=[quant_agent_message],
+        ), {"recursion_limit": 10000}
+    )
+
+    return {"sales_in_depth_analysis": result["task_output"]}
 
 
 async def generate_report(state: SalesReportGraphState):

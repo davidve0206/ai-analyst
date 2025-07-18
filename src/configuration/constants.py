@@ -6,7 +6,7 @@ This file is mean to be modified by the user to reflect their own company and da
 
 from pydantic import BaseModel
 
-financials_description = """Financial data of the company, including invoices, units and costs.
+financials_description = """Detailed per-invoice data of the company.
         
 Some of the key columns include:
 - ENTITY_CURRENCY: The currency in which the entity that made the sale operates.
