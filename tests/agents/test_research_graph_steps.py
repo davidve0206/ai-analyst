@@ -474,6 +474,8 @@ async def test_summarize_findings_with_extended_context():
 async def test_run_research_graph(monkeypatch):
     """
     Test that runs the entire research graph.
+
+    TODO: This test sometimes fails due to the quant agent looping forever.
     """
     monkeypatch.setattr("src.agents.quant_agent.TEMP_DIR", test_temp_dir)
 

@@ -55,14 +55,14 @@ class ProgressLedger(BaseModel):
         ),
     )
     is_in_loop: BooleanProgressLedgerItem = Field(
-        description="Are we in a loop where we are repeating the same requests and/or getting the same responses as before? Loops can span multiple turns, and can include repeated actions like attempting to retrieve the same data without success.",
+        description="Are we in a loop where we are repeating very similar requests and/or getting very similar responses as before? Loops can span multiple turns, and can include repeated actions like requesting the same or very similar information in a row.",
         default_factory=lambda: BooleanProgressLedgerItem(
             reason="",
             answer=False,
         ),
     )
     is_progress_being_made: BooleanProgressLedgerItem = Field(
-        description="Are we making forward progress? (True if just starting, or recent messages are adding value. False if recent messages show evidence of being stuck in a loop or if there is evidence of significant barriers to success such as the inability to read from a required file)",
+        description="Are we making significant forward progress? (True if just starting, or recent messages are adding significant value. False if recent messages show evidence of being stuck in a loop or if there is evidence of significant barriers to success such as the inability to read from a required file. Be very strict, the analysis should be making significant progress, not just adding small bits of information.)",
         default_factory=lambda: BooleanProgressLedgerItem(
             reason="",
             answer=True,
@@ -153,7 +153,7 @@ DEFAULT_TEAM = Team(
     members=[
         TeamMember(
             name=GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
-            role="Can load files, run code, and perform quantitative analysis. Only has access to files mentioned in the task, not to the general internet.",
+            role="Can load files, run code, and perform quantitative analysis. Only has access to files mentioned in the task, not to the general internet. Should not perform any complex statistical analysis; only simple regression analysis is allowed.",
         ),
     ]
 )
@@ -264,7 +264,7 @@ async def quantitative_analysis_agent(state: ResearchGraphState):
 
     # Extract the content and files from the response
     response: QuantitativeAgentResponse = extract_graph_response_content(response)
-    updated_context.append(AIMessage(response.model_dump_json()))
+    updated_context.append(AIMessage(response.content))
 
     return {
         "quant_agent_context": updated_context,
@@ -308,7 +308,10 @@ async def evaluate_progress_ledger(
     default_logger.info(f"Checking progress ledger for task: {state.task_id}")
 
     # Before anything else, update the stall count
-    if state.progress_ledger.is_in_loop.answer:
+    if (
+        state.progress_ledger.is_in_loop.answer
+        or not state.progress_ledger.is_progress_being_made.answer
+    ):
         state.stall_count += 1
 
     # Then, determine the next step based on the progress ledger
