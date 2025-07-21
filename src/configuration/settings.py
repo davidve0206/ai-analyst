@@ -12,6 +12,7 @@ STORAGE_DIR = OUTPUTS_DIR / "storage"
 CACHE_DIR = OUTPUTS_DIR / "cache"
 LOG_DIR = BASE_DIR / "logs"
 DATA_DIR = BASE_DIR / "data"
+DOCUMENTATION_DIR = BASE_DIR / "documentation"
 
 
 class Settings(BaseSettings):

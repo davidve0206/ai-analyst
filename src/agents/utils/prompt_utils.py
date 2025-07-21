@@ -11,9 +11,11 @@ from langchain_core.messages.content_blocks import (
 from langchain_core.prompts import (
     HumanMessagePromptTemplate,
     SystemMessagePromptTemplate,
+    AIMessagePromptTemplate,
 )
 from langchain_core.prompt_values import ChatPromptValue
 from openai import BaseModel
+from pydantic import ConfigDict, Field
 
 from src.configuration.settings import SRC_DIR, TEMP_DIR
 
@@ -42,6 +44,7 @@ class MessageTypes(Enum):
 
     SYSTEM = "system"
     HUMAN = "human"
+    AI = "ai"
 
 
 def render_prompt_template(
@@ -72,6 +75,11 @@ def render_prompt_template(
         )
     elif type == MessageTypes.HUMAN:
         template = HumanMessagePromptTemplate.from_template_file(
+            template_path,
+            input_variables=[],  # input_variables is deprecated but still required for compatibility
+        )
+    elif type == MessageTypes.AI:
+        template = AIMessagePromptTemplate.from_template_file(
             template_path,
             input_variables=[],  # input_variables is deprecated but still required for compatibility
         )

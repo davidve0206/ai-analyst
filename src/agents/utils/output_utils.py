@@ -3,8 +3,13 @@ from datetime import datetime
 from pathlib import Path
 
 from markdown_pdf import MarkdownPdf, Section
+from langgraph.graph.state import CompiledStateGraph
 
-from src.configuration.settings import STORAGE_DIR, TEMP_DIR
+from src.configuration.settings import (
+    DOCUMENTATION_DIR,
+    STORAGE_DIR,
+    TEMP_DIR,
+)
 
 
 def store_response_with_timestamp(
@@ -88,3 +93,13 @@ def get_all_files_mentioned_in_response(response: str) -> list[str]:
     file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
     found_files: list[str] = re.findall(file_pattern, response)
     return found_files
+
+
+def store_graph_as_png(graph: CompiledStateGraph, file_name: str) -> Path:
+    """
+    Store the graph as a PNG file.
+    """
+    file_path = DOCUMENTATION_DIR / f"{file_name}.png"
+    graph.get_graph().draw_mermaid_png(output_file_path=file_path)
+
+    return file_path
