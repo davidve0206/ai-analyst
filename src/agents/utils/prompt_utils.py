@@ -158,7 +158,7 @@ def create_content_blocks_from_file_list(
 
 
 def create_human_message_from_parts(
-    text_parts: str | list[str] = [], file_list: list[Path] = []
+    text_parts: str | list[str] | None = None, file_list: list[Path] | None = None
 ) -> HumanMessage:
     """
     Create a human message from text parts and files.
@@ -171,6 +171,8 @@ def create_human_message_from_parts(
     elif isinstance(text_parts, list):
         for part in text_parts:
             message_blocks.append(PlainTextContentBlock(type="text", text=part))
+    elif text_parts is None:
+        pass
     else:
         raise ValueError("text_parts must be a string or a list of strings.")
 
@@ -182,8 +184,8 @@ def create_human_message_from_parts(
 
 
 def create_multimodal_prompt(
-    text_parts: str | list[str] = [],
-    file_list: list[Path] = [],
+    text_parts: str | list[str] | None = None,
+    file_list: list[Path] | None = None,
     system_message: SystemMessage | None = None,
     human_message: HumanMessage | None = None,
 ) -> ChatPromptValue:
