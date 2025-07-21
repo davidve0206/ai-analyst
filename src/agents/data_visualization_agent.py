@@ -17,7 +17,7 @@ def get_data_visualization_agent(models: AppChatModels) -> CompiledStateGraph:
     Returns:
         CompiledStateGraph: The compiled state graph for the agent.
     """
-    system_prompt = render_prompt_template(
+    system_message = render_prompt_template(
         "data_visualization_agent_system_prompt.md",
         context={
             "temp_path": str(TEMP_DIR),
@@ -28,5 +28,5 @@ def get_data_visualization_agent(models: AppChatModels) -> CompiledStateGraph:
     return create_react_agent(
         model=models.gpt_o4_mini,
         tools=[create_python_repl_tool()],
-        prompt=system_prompt,
+        prompt=system_message,
     )
