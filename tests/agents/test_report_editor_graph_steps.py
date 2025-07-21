@@ -84,10 +84,10 @@ async def test_report_editor_workflow(
     Ensures we get a report and that it contains at least one plot.
     """
     # Create the report editor graph
-    graph = await create_report_editor_graph()
+    workflow = await create_report_editor_graph()
 
     # Run the graph
-    result = await graph.ainvoke(base_report_request)
+    result = await workflow.ainvoke(base_report_request)
     assert "report" in result
 
     output_report = result["report"]
@@ -173,10 +173,10 @@ async def test_writer_loop_avoidance_logic(
     )
 
     # Create the report editor graph
-    graph = await create_report_editor_graph()
+    workflow = await create_report_editor_graph()
 
     # Run the graph
-    result = await graph.ainvoke(base_report_request)
+    result = await workflow.ainvoke(base_report_request)
 
     # Verify that the loop was terminated by the supervisor logic
     assert "report" in result
@@ -265,10 +265,10 @@ async def test_visualization_loop_avoidance_logic(
     )
 
     # Create the report editor graph
-    graph = await create_report_editor_graph()
+    workflow = await create_report_editor_graph()
 
     # Run the graph
-    result = await graph.ainvoke(base_report_request)
+    result = await workflow.ainvoke(base_report_request)
 
     # Verify that the loop was terminated by the supervisor logic
     assert "report" in result

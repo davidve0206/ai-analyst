@@ -195,20 +195,22 @@ async def create_report_editor_graph(store_diagram: bool = False) -> CompiledSta
     """
     default_logger.info("Creating the report editor graph.")
 
-    graph = StateGraph(ReportEditorGraphState)
+    workflow = StateGraph(ReportEditorGraphState)
 
     # Define the nodes in the graph
-    graph.add_node(GraphNodeNames.SUPERVISOR.value, supervisor)
-    graph.add_node(
+    workflow.add_node(GraphNodeNames.SUPERVISOR.value, supervisor)
+    workflow.add_node(
         GraphNodeNames.DATA_VISUALIZATION_AGENT.value, data_visualization_agent
     )
-    graph.add_node(GraphNodeNames.DOCUMENT_WRITING_AGENT.value, document_writing_agent)
+    workflow.add_node(
+        GraphNodeNames.DOCUMENT_WRITING_AGENT.value, document_writing_agent
+    )
 
     # Define the transitions between nodes
-    graph.add_edge(START, GraphNodeNames.SUPERVISOR.value)
+    workflow.add_edge(START, GraphNodeNames.SUPERVISOR.value)
 
     # Compile the state graph
-    chain = graph.compile()
+    chain = workflow.compile()
     default_logger.info("Report editor graph created successfully.")
 
     if store_diagram:

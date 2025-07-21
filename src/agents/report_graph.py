@@ -195,7 +195,7 @@ async def process_special_case(state: SalesReportGraphState):
     If there is a special case, we will process it in depth.
     """
     # Get the graph that processes the special case
-    researcher_graph = await create_research_graph()
+    researcher_workflow = await create_research_graph()
 
     task_prompt = render_prompt_template(
         "research_task_prompt.md",
@@ -220,12 +220,13 @@ async def process_special_case(state: SalesReportGraphState):
         file_list=[get_sales_history_location(state.request.grouping_value)],
     )
 
-    result = await researcher_graph.ainvoke(
+    result = await researcher_workflow.ainvoke(
         ResearchGraphState(
             task_id=state.request.task_id,
             task=task_prompt.content,
             quant_agent_context=[quant_agent_message],
-        ), {"recursion_limit": 10000}
+        ),
+        {"recursion_limit": 10000},
     )
 
     return {"sales_in_depth_analysis": result["task_output"]}
@@ -237,7 +238,7 @@ async def generate_report(state: SalesReportGraphState):
     using the report_editor_graph.
     """
     # Get the graph that edits the report
-    editor_graph = await create_report_editor_graph()
+    editor_workflow = await create_report_editor_graph()
 
     # We assume that all files are mentioned in the outputs
     # so no need to explicitly include files.
@@ -248,7 +249,7 @@ async def generate_report(state: SalesReportGraphState):
         state.sales_in_depth_analysis,
     ]
 
-    result = await editor_graph.ainvoke(
+    result = await editor_workflow.ainvoke(
         ReportEditorGraphState(
             messages=[
                 create_human_message_from_parts(
@@ -271,58 +272,58 @@ async def create_report_graph(
     To be invokes with a request of type SalesReportRequest.
     """
 
-    graph = StateGraph(SalesReportGraphState)
+    workflow = StateGraph(SalesReportGraphState)
 
     # Add all noted nodes to the graph
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.RETRIEVE_SALES_HISTORY.value,
         retrieve_sales_history,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.PROCESS_SALES_DATA.value,
         process_sales_data,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.RETRIEVE_OPERATIONAL_DATA.value,
         retrieve_operational_data,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.REVIEW_SPECIAL_CASE.value,
         review_special_cases,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.PROCESS_SPECIAL_CASE.value,
         process_special_case,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.GENERATE_REPORT.value,
         generate_report,
     )
 
     # Add edges to connect the nodes
-    graph.add_edge(START, GraphNodeNames.RETRIEVE_SALES_HISTORY.value)
-    graph.add_edge(
+    workflow.add_edge(START, GraphNodeNames.RETRIEVE_SALES_HISTORY.value)
+    workflow.add_edge(
         GraphNodeNames.RETRIEVE_SALES_HISTORY.value,
         GraphNodeNames.PROCESS_SALES_DATA.value,
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.PROCESS_SALES_DATA.value,
         GraphNodeNames.RETRIEVE_OPERATIONAL_DATA.value,
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.RETRIEVE_OPERATIONAL_DATA.value,
         GraphNodeNames.REVIEW_SPECIAL_CASE.value,
     )
-    graph.add_conditional_edges(
+    workflow.add_conditional_edges(
         GraphNodeNames.REVIEW_SPECIAL_CASE.value, special_case_gate
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.PROCESS_SPECIAL_CASE.value,
         GraphNodeNames.GENERATE_REPORT.value,
     )
-    graph.add_edge(GraphNodeNames.GENERATE_REPORT.value, END)
+    workflow.add_edge(GraphNodeNames.GENERATE_REPORT.value, END)
 
-    chain = graph.compile()
+    chain = workflow.compile()
 
     if store_diagram:
         # Store the graph diagram as a PNG file

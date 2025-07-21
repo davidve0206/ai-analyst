@@ -480,7 +480,7 @@ async def test_run_research_graph(monkeypatch):
     monkeypatch.setattr("src.agents.quant_agent.TEMP_DIR", test_temp_dir)
 
     # Create a research graph
-    graph = await create_research_graph(store_diagram=False)
+    workflow = await create_research_graph(store_diagram=False)
 
     # Define the task with detailed context
     task_context = (
@@ -499,7 +499,7 @@ async def test_run_research_graph(monkeypatch):
     )
 
     # Run the graph
-    result = await graph.ainvoke(state, {"recursion_limit": 50})
+    result = await workflow.ainvoke(state, {"recursion_limit": 50})
 
     # Assert the task_output is not empty
     assert "task_output" in result

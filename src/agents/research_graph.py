@@ -342,56 +342,56 @@ async def evaluate_progress_ledger(
 async def create_research_graph(
     store_diagram: bool = False,
 ) -> CompiledStateGraph[ResearchGraphState]:
-    graph = StateGraph(ResearchGraphState)
+    workflow = StateGraph(ResearchGraphState)
 
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value,
         create_or_update_task_ledger,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.CREATE_OR_UPDATE_TASK_PLAN.value,
         create_or_update_task_plan,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
         update_progress_ledger,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.EVALUATE_PROGRESS_LEDGER.value,
         evaluate_progress_ledger,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
         quantitative_analysis_agent,
     )
-    graph.add_node(
+    workflow.add_node(
         GraphNodeNames.SUMMARIZE_FINDINGS.value,
         summarize_findings,
     )
 
-    graph.add_edge(START, GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value)
-    graph.add_edge(
+    workflow.add_edge(START, GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value)
+    workflow.add_edge(
         GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value,
         GraphNodeNames.CREATE_OR_UPDATE_TASK_PLAN.value,
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.CREATE_OR_UPDATE_TASK_PLAN.value,
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
         GraphNodeNames.EVALUATE_PROGRESS_LEDGER.value,
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
     )
-    graph.add_edge(
+    workflow.add_edge(
         GraphNodeNames.SUMMARIZE_FINDINGS.value,
         END,
     )
 
-    chain = graph.compile()
+    chain = workflow.compile()
     print(chain)
     if store_diagram:
         # Store the graph diagram as a PNG file
