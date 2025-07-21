@@ -41,7 +41,7 @@ def get_database_agent(
     )
 
     return create_react_agent(
-        model=models.gpt_o4_mini, tools=db_toolkit.get_tools(), prompt=system_message
+        model=models.default_model, tools=db_toolkit.get_tools(), prompt=system_message
     )
 
     """ limited_agent = agent.with_config(

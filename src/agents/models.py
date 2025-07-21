@@ -19,7 +19,7 @@ class AppChatModels:
     gemini_2_0_flash: ChatGoogleGenerativeAI
     gemini_2_5_pro: ChatGoogleGenerativeAI
     gpt_o4_mini: AzureChatOpenAI
-    default_model: ChatGoogleGenerativeAI | AzureChatOpenAI
+    default_model: AzureChatOpenAI  # Default model has to use an Open model, as the multimodal prompt from LangChain uses the OpenAI standard.
 
     def __init__(self):
         DEFAULT_TEMPERATURE = 0.4  # We want consistent responses, but be careful about loops and repetition
@@ -56,9 +56,7 @@ class AppChatModels:
             rate_limiter=azure_rate_limiter,
         )
 
-        # Sets a default model for places where we don't specify a model
-        # Recommended to use a cheap but fast model, explicitly set a
-        # different model in the agent if needed
+        # Sets a default model; this allow us to change the model used by the agents without changing the code
         self.default_model = self.gpt_o4_mini
 
 

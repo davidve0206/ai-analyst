@@ -44,7 +44,7 @@ def get_quantitative_agent(models: AppChatModels) -> CompiledStateGraph:
     )
 
     return create_react_agent(
-        model=models.gpt_o4_mini,
+        model=models.default_model,
         tools=[create_python_repl_tool()],
         prompt=system_message,
         response_format=QuantitativeAgentResponse,

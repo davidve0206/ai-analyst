@@ -26,7 +26,7 @@ def get_data_visualization_agent(models: AppChatModels) -> CompiledStateGraph:
     )
 
     return create_react_agent(
-        model=models.gpt_o4_mini,
+        model=models.default_model,
         tools=[create_python_repl_tool()],
         prompt=system_message,
     )
