@@ -42,10 +42,19 @@ def convert_markdown_to_pdf(markdown_path: Path) -> Path:
     with open(markdown_path, "r") as file:
         markdown_content = file.read()
 
+    # Set the styling for the PDF
+    css = (
+        "body {font-family: 'Helvetica', 'Arial', sans-serif;}"
+        "h1, h2, h3 {color: #0A2347;}"
+        "p, li {line-height: 1.5;}"
+    )
+
     # By default, no table of content is generated in the PDF.
     pdf = MarkdownPdf(toc_level=0)
     pdf_path = markdown_path.with_suffix(".pdf")
-    pdf.add_section(Section(text=markdown_content, toc=False, root=str(TEMP_DIR)))
+    pdf.add_section(
+        Section(text=markdown_content, toc=False, root=str(TEMP_DIR)), user_css=css
+    )
     pdf.save(pdf_path)
 
     return pdf_path
