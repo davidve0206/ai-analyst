@@ -3,7 +3,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.python_interpreter import create_python_repl_tool
-from src.agents.utils.prompt_utils import PrompTypes, render_prompt_template
+from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
 from src.configuration.settings import TEMP_DIR
 
 
@@ -22,7 +22,7 @@ def get_data_visualization_agent(models: AppChatModels) -> CompiledStateGraph:
         context={
             "temp_path": str(TEMP_DIR),
         },
-        type=PrompTypes.SYSTEM,
+        type=MessageTypes.SYSTEM,
     )
 
     return create_react_agent(

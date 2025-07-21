@@ -8,7 +8,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.db import InternalDatabaseToolkit
-from src.agents.utils.prompt_utils import PrompTypes, render_prompt_template
+from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
 from src.configuration.constants import DATABASE_CATALOG
 
 RECURSION_LIMIT = 10
@@ -37,7 +37,7 @@ def get_database_agent(
             "tables": db_toolkit.table_names,
             "catalog": DATABASE_CATALOG,
         },
-        type=PrompTypes.SYSTEM,
+        type=MessageTypes.SYSTEM,
     )
 
     return create_react_agent(

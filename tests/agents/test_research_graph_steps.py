@@ -18,7 +18,7 @@ from src.agents.research_graph import (
     GraphNodeNames,
 )
 from src.agents.utils.output_utils import get_all_files_mentioned_in_response
-from src.agents.utils.prompt_utils import PrompTypes
+from src.agents.utils.prompt_utils import MessageTypes
 from tests.agents.helpers import test_temp_dir
 
 
@@ -75,7 +75,7 @@ async def test_create_or_update_task_ledger_correct_prompt_selection(
         mock_render.assert_called_once_with(
             template_name="magentic_one/task_ledger_facts_prompt.md",
             context={"task": base_research_request.task},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
         mock_models.default_model.ainvoke.assert_called_once()
         assert result is not None
@@ -114,7 +114,7 @@ async def test_create_or_update_task_ledger_correct_prompt_selection_for_update(
                 "task": base_research_request.task,
                 "old_facts": base_research_request.task_facts,
             },
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
         mock_models.default_model.ainvoke.assert_called_once()
         assert result is not None
@@ -159,7 +159,7 @@ async def test_create_or_update_task_plan_correct_prompt_selection(
         mock_render.assert_called_once_with(
             template_name="magentic_one/task_ledger_plan_prompt.md",
             context={"team": ANY},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
         mock_models.default_model.ainvoke.assert_called_once()
         assert result is not None
@@ -190,7 +190,7 @@ async def test_create_or_update_task_plan_correct_prompt_selection_for_update(
         mock_render.assert_called_once_with(
             template_name="magentic_one/task_ledger_plan_update_prompt.md",
             context={"team": ANY},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
         mock_models.default_model.ainvoke.assert_called_once()
         assert result is not None

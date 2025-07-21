@@ -35,7 +35,7 @@ def get_full_path_to_temp_file(file_name: str) -> Path:
     return TEMP_DIR / file_name
 
 
-class PrompTypes(Enum):
+class MessageTypes(Enum):
     """
     Enum for prompt types.
     """
@@ -47,7 +47,7 @@ class PrompTypes(Enum):
 def render_prompt_template(
     template_name: str,
     context: dict[str, str | int | float],
-    type: PrompTypes = PrompTypes.SYSTEM,
+    type: MessageTypes = MessageTypes.SYSTEM,
 ) -> SystemMessage | HumanMessage:
     """
     Render a system prompt template from the specified file.
@@ -65,12 +65,12 @@ def render_prompt_template(
     if not template_path.is_file():
         raise ValueError(f"Template path {template_path} is not a file.")
 
-    if type == PrompTypes.SYSTEM:
+    if type == MessageTypes.SYSTEM:
         template = SystemMessagePromptTemplate.from_template_file(
             template_path,
             input_variables=[],  # input_variables is deprecated but still required for compatibility
         )
-    elif type == PrompTypes.HUMAN:
+    elif type == MessageTypes.HUMAN:
         template = HumanMessagePromptTemplate.from_template_file(
             template_path,
             input_variables=[],  # input_variables is deprecated but still required for compatibility

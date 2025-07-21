@@ -12,7 +12,7 @@ from src.agents.models import default_models as models_client
 from src.agents.data_visualization_agent import get_data_visualization_agent
 from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import (
-    PrompTypes,
+    MessageTypes,
     create_human_message_from_parts,
     extract_graph_response_content,
     get_all_temp_files,
@@ -70,7 +70,7 @@ async def supervisor(
             "data_visualization_agent_name": GraphNodeNames.DATA_VISUALIZATION_AGENT.value,
             "complete_value": COMPLETE_VALUE,
         },
-        type=PrompTypes.SYSTEM,
+        type=MessageTypes.SYSTEM,
     )
 
     next_speaker_options = [
@@ -175,7 +175,7 @@ async def document_writing_agent(
     system_message = render_prompt_template(
         template_name="editing_writer_system_prompt.md",
         context={},
-        type=PrompTypes.SYSTEM,
+        type=MessageTypes.SYSTEM,
     )
 
     messages = [system_message] + state.messages + [state.current_report_message]

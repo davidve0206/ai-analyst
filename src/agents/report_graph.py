@@ -12,7 +12,7 @@ from src.agents.report_editor_graph import (
 )
 from src.agents.research_graph import ResearchGraphState, create_research_graph
 from src.agents.utils.prompt_utils import (
-    PrompTypes,
+    MessageTypes,
     create_human_message_from_parts,
     create_multimodal_prompt,
     extract_graph_response_content,
@@ -67,7 +67,7 @@ async def retrieve_sales_history(state: SalesReportGraphState):
             "data_description": DATA_PROVIDED.description,
             "output_location": str(output_location),
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
 
     quant_agent = get_quantitative_agent(models_client)
@@ -96,7 +96,7 @@ async def process_sales_data(state: SalesReportGraphState):
             "grouping_value": state.request.grouping_value,
             "input_location": str(input_location),
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
 
     quant_agent = get_quantitative_agent(models_client)
@@ -123,7 +123,7 @@ async def retrieve_operational_data(state: SalesReportGraphState):
             "data_description": DATA_PROVIDED.description,
             "previous_output_location": str(DATA_DIR / DATA_PROVIDED.name),
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
     prompt = create_multimodal_prompt(
         text_parts=f"The code you used to retrieve the sales history is:\n{state.sales_history_code}",
@@ -156,7 +156,7 @@ async def review_special_cases(
         context={
             "sales_analysis": state.sales_analysis,
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
 
     # Response format is a simple yes/no
@@ -210,7 +210,7 @@ async def process_special_case(state: SalesReportGraphState):
             "sales_analysis": state.sales_analysis,
             "sales_operational_data": state.sales_operational_data,
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
     quant_agent_message = create_human_message_from_parts(
         text_parts=[

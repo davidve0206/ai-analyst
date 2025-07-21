@@ -10,7 +10,7 @@ from langchain_core.messages import AnyMessage, HumanMessage, AIMessage
 from src.agents.models import default_models as models_client
 from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
 from src.agents.utils.prompt_utils import (
-    PrompTypes,
+    MessageTypes,
     extract_graph_response_content,
     render_prompt_template,
 )
@@ -171,13 +171,13 @@ async def create_or_update_task_ledger(state: ResearchGraphState):
         task_prompt = render_prompt_template(
             template_name="magentic_one/task_ledger_facts_prompt.md",
             context={"task": state.task},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
     else:
         task_prompt = render_prompt_template(
             template_name="magentic_one/task_ledger_facts_update_prompt.md",
             context={"task": state.task, "old_facts": state.task_facts},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
 
     messages = state.messages + [task_prompt]
@@ -199,13 +199,13 @@ async def create_or_update_task_plan(state: ResearchGraphState):
         task_plan_prompt = render_prompt_template(
             template_name="magentic_one/task_ledger_plan_prompt.md",
             context={"team": DEFAULT_TEAM.members_string},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
     else:
         task_plan_prompt = render_prompt_template(
             template_name="magentic_one/task_ledger_plan_update_prompt.md",
             context={"team": DEFAULT_TEAM.members_string},
-            type=PrompTypes.HUMAN,
+            type=MessageTypes.HUMAN,
         )
 
     messages = state.messages + [task_plan_prompt]
@@ -229,7 +229,7 @@ async def update_progress_ledger(state: ResearchGraphState):
             "team": DEFAULT_TEAM.members_string,
             "team_names": DEFAULT_TEAM.member_names,
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
     progress_ledger_context = state.messages + [task_message]
 
@@ -283,7 +283,7 @@ async def summarize_findings(state: ResearchGraphState):
         context={
             "task": state.task,
         },
-        type=PrompTypes.HUMAN,
+        type=MessageTypes.HUMAN,
     )
     summary_context = state.messages + [summary_message]
 
