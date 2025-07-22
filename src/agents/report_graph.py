@@ -20,9 +20,10 @@ from src.agents.utils.prompt_utils import (
     extract_graph_response_content,
     render_prompt_template,
 )
+from src.configuration.constants import INTERNAL_DATA
 from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
-from src.configuration.settings import BASE_DIR, DATA_DIR, app_settings
+from src.configuration.settings import BASE_DIR, app_settings
 
 
 class SalesReportGraphState(BaseModel):
@@ -30,7 +31,6 @@ class SalesReportGraphState(BaseModel):
     sales_history: str = ""
     sales_analysis: str = ""
     sales_operational_data: str = ""
-    sales_operational_data_code: str = ""
     is_special_case: bool = False
     special_case_reason: str = ""
     sales_in_depth_analysis: str = ""
@@ -109,6 +109,7 @@ async def retrieve_operational_data(state: SalesReportGraphState):
     default_logger.info(
         f"Retrieving operational data for {state.request.grouping} - {state.request.grouping_value}."
     )
+    sales_history_location = get_sales_history_location(state.request)
     task_message = render_prompt_template(
         template_name="retrieve_operational_data_step_prompt.md",
         context={
@@ -116,27 +117,27 @@ async def retrieve_operational_data(state: SalesReportGraphState):
             "periodicity": state.request.period,
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
-            "input_location": str(DATA_DIR / DATA_PROVIDED.name),
-            "data_description": DATA_PROVIDED.description,
-            "previous_output_location": str(DATA_DIR / DATA_PROVIDED.name),
+            "previous_output_location": str(sales_history_location),
+            "input_location": str(INTERNAL_DATA.path),
         },
         type=MessageTypes.HUMAN,
     )
     prompt = create_multimodal_prompt(
-        text_parts=f"The code you used to retrieve the sales history is:\n{state.sales_history_code}",
-        file_list=[get_sales_history_location(state.request.grouping_value)],
+        text_parts=f"Output the operational data for the sales history of {state.request.grouping_value}.\n\n{task_message.content}",
+        file_list=[get_sales_history_location(state.request)],
         human_message=task_message,
     )
 
-    # NOTE: this requires a lot of recursion to get the operational data.
-    #       We set a recursion limit to avoid hitting the default limit.
-    #       Alternatively, we could use a more structured approach to retrieve the data.
-    quant_agent = get_quantitative_agent(models_client)
-    response = await quant_agent.ainvoke(prompt, {"recursion_limit": 50})
+    internal_data_agent = get_internal_data_agent(
+        models=models_client, request=state.request
+    )
+    # Increase max iterations to allow for more complex data retrieval
+    internal_data_agent.update_max_iterations(50)
+
+    response = await internal_data_agent.ainvoke(messages=prompt.to_messages())
     quant_agent_response = extract_graph_response_content(response)
     return {
-        "sales_operational_data": quant_agent_response.content,
-        "sales_operational_data_code": quant_agent_response.code,
+        "sales_operational_data": quant_agent_response,
     }
 
 
@@ -199,8 +200,8 @@ async def process_special_case(state: SalesReportGraphState):
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
             "special_case_reason": state.special_case_reason,
-            "input_location": str(DATA_DIR / DATA_PROVIDED.name),
-            "data_description": DATA_PROVIDED.description,
+            "input_location": str(INTERNAL_DATA.path),
+            "data_description": INTERNAL_DATA.description,
             "sales_history": state.sales_history,
             "sales_analysis": state.sales_analysis,
             "sales_operational_data": state.sales_operational_data,
