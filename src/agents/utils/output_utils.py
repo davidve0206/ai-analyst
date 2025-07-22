@@ -5,11 +5,29 @@ from pathlib import Path
 from markdown_pdf import MarkdownPdf, Section
 from langgraph.graph.state import CompiledStateGraph
 
+from src.configuration.kpis import SalesReportRequest
 from src.configuration.settings import (
     DOCUMENTATION_DIR,
     STORAGE_DIR,
     TEMP_DIR,
 )
+
+
+def get_request_temp_dir(request: SalesReportRequest) -> Path:
+    """
+    Get the temporary directory for a specific sales report request.
+    """
+    path = TEMP_DIR / f"{request.task_id}"
+    path.mkdir(parents=True, exist_ok=True)
+
+    return path
+
+
+def get_sales_history_location(request: SalesReportRequest) -> Path:
+    """Helper function to get the input location for sales history data."""
+    temp_dir = get_request_temp_dir(request)
+    grouping_value = request.grouping_value.replace(" ", "_").lower()
+    return temp_dir / f"{grouping_value}_sales_history.csv"
 
 
 def store_response_with_timestamp(

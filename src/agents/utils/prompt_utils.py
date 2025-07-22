@@ -15,16 +15,10 @@ from langchain_core.prompts import (
 )
 from langchain_core.prompt_values import ChatPromptValue
 from openai import BaseModel
-from pydantic import ConfigDict, Field
 
 from src.configuration.settings import SRC_DIR, TEMP_DIR
 
 PROMPTS_PATH = SRC_DIR / "agents" / "prompts"
-
-
-def get_sales_history_location(grouping_value: str) -> Path:
-    """Helper function to get the input location for sales history data."""
-    return TEMP_DIR / f"{grouping_value}_sales_history.csv"
 
 
 def get_all_temp_files() -> list[Path]:
