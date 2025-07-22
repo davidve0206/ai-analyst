@@ -4,12 +4,11 @@ Test file for the code agent with review implementation.
 
 import pytest
 
-from langgraph.graph.state import CompiledStateGraph
 from langchain_core.messages import HumanMessage
 
 from src.agents.code_agent_with_review import (
     CodeAgentState,
-    create_code_agent_with_review,
+    PreConfiguredCodeAgent,
     is_invalid_code_tool_message,
 )
 from src.agents.models import AppChatModels
@@ -17,15 +16,21 @@ from src.agents.utils.prompt_utils import extract_graph_response_content
 
 
 @pytest.fixture(scope="function")
-def code_agent_with_review(models_client: AppChatModels):
+def code_agent_with_review(models_client: AppChatModels) -> PreConfiguredCodeAgent:
     """
     Fixture to get the code agent with review for testing.
     """
-    return create_code_agent_with_review(models_client)
+    return PreConfiguredCodeAgent(
+        preset_state=CodeAgentState(),
+        models=models_client,
+        name="test_code_agent_with_review",
+    )
 
 
 @pytest.mark.asyncio
-async def test_complex_data_analysis_task(code_agent_with_review: CompiledStateGraph):
+async def test_complex_data_analysis_task(
+    code_agent_with_review: PreConfiguredCodeAgent,
+):
     """
     Test the code agent with review on a complex data analysis task that requires
     multiple steps and is likely to trigger various graph nodes including:
@@ -81,9 +86,7 @@ Make sure to use proper financial formulas and validate each step. This is a com
 
     # Run the agent
     response = await code_agent_with_review.ainvoke(
-        CodeAgentState(
-            messages=[HumanMessage(content=query)],
-        )
+        messages=[HumanMessage(content=query)]
     )
 
     assert response is not None, "Agent should return a response"

@@ -10,6 +10,7 @@ infinite loop or execute harmful code.
 """
 
 from enum import Enum
+from pathlib import Path
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
@@ -22,6 +23,7 @@ from langchain_core.messages import AnyMessage, SystemMessage, ToolMessage
 
 from src.agents.models import AppChatModels
 from src.agents.tools.python_interpreter import create_python_repl_tool
+from src.agents.utils.output_utils import store_graph_as_png
 from src.agents.utils.prompt_utils import (
     MessageTypes,
     render_prompt_template,
@@ -215,11 +217,109 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
         GraphNodeNames.AGENT.value,
     )
 
-    compiled_workflow = workflow.compile()
-    recursion_limitted_workflow = compiled_workflow.with_config(
-        recursion_limit=100,
-    )  # NOTE: This could be set arbitratily high as it is controlled by the
-    # agent's max_iterations and max_errors, but we set it to 100 to avoid
-    # hitting any recursion limits during testing
+    return workflow.compile()
 
-    return recursion_limitted_workflow
+
+class PreConfiguredCodeAgent:
+    """
+    A preconfigured code agent that wraps the code agent with review functionality.
+
+    This class provides a convenient interface for using the code agent with review
+    capabilities, allowing for preset configuration and easy invocation.
+    """
+
+    _agent: CompiledStateGraph
+    _preset_state: CodeAgentState
+    _nodes_count: int = 2
+
+    def __init__(
+        self,
+        preset_state: CodeAgentState,
+        models: AppChatModels,
+        name: str = "pre_configured_code_agent",
+    ):
+        """
+        Initialize the preconfigured code agent.
+
+        Args:
+            preset_state (CodeAgentState): The preset state configuration for the agent
+            models (AppChatModels): The models to use for the agent
+        """
+        self._agent = create_code_agent_with_review(models)
+        self._preset_state = preset_state
+        self._nodes_count = len(self._agent.nodes)
+        self._name = name
+
+    def store_graph_as_png(self) -> Path:
+        return store_graph_as_png(graph=self._agent, file_name=self._name)
+
+    def update_system_prompt(self, system_prompt: SystemMessage | None) -> None:
+        """
+        Update the system prompt in the preset state.
+
+        Args:
+            system_prompt (SystemMessage | None): The new system prompt
+        """
+        self._preset_state.system_prompt = system_prompt
+
+    def update_max_iterations(self, max_iterations: int) -> None:
+        """
+        Update the maximum number of iterations in the preset state.
+
+        Args:
+            max_iterations (int): The new maximum number of iterations
+        """
+        self._preset_state.max_iterations = max_iterations
+
+    def update_max_errors(self, max_errors: int) -> None:
+        """
+        Update the maximum number of errors in the preset state.
+
+        Args:
+            max_errors (int): The new maximum number of errors
+        """
+        self._preset_state.max_errors = max_errors
+
+    def _prepare_state_and_config(
+        self, messages: list[AnyMessage]
+    ) -> tuple[CodeAgentState, dict]:
+        """
+        Prepare the state copy and configuration for agent invocation.
+
+        Args:
+            messages (list[AnyMessage]): The messages to add to the preset state
+
+        Returns:
+            tuple[CodeAgentState, dict]: The prepared state and configuration
+        """
+        state_copy = self._preset_state.model_copy(
+            deep=True, update={"messages": self._preset_state.messages + messages}
+        )
+        config = {"recursion_limit": state_copy.max_iterations * self._nodes_count}
+        return state_copy, config
+
+    async def ainvoke(self, messages: list[AnyMessage]) -> dict:
+        """
+        Asynchronously invoke the code agent with the given messages.
+
+        Args:
+            messages (list[AnyMessage]): The messages to process
+
+        Returns:
+            dict: The result from the agent invocation
+        """
+        state_copy, config = self._prepare_state_and_config(messages)
+        return await self._agent.ainvoke(state_copy, config)
+
+    def invoke(self, messages: list[AnyMessage]) -> dict:
+        """
+        Synchronously invoke the code agent with the given messages.
+
+        Args:
+            messages (list[AnyMessage]): The messages to process
+
+        Returns:
+            dict: The result from the agent invocation
+        """
+        state_copy, config = self._prepare_state_and_config(messages)
+        return self._agent.invoke(state_copy, config)
