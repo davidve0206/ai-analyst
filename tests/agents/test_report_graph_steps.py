@@ -26,7 +26,6 @@ from .helpers import (
 @pytest.fixture()
 def patch_graph_environment(
     monkeypatch: pytest.MonkeyPatch,
-    quantitative_agent: CompiledStateGraph,
     patched_get_request_temp_dir: Callable,
 ) -> None:
     """

@@ -1,10 +1,10 @@
 from pathlib import Path
+from typing import Callable
 import pytest
 import pandas as pd
 
 from src.agents.models import default_models, AppChatModels
 from src.configuration.kpis import SalesReportRequest
-from src.configuration.settings import DATA_DIR
 from .helpers import test_temp_dir
 
 
@@ -26,16 +26,25 @@ def patched_get_request_temp_dir():
 
 
 @pytest.fixture(scope="function")
-def quantitative_agent(models_client: AppChatModels, monkeypatch):
+def quantitative_agent(
+    models_client: AppChatModels,
+    patched_get_request_temp_dir: Callable,
+    default_request: SalesReportRequest,
+    monkeypatch,
+):
     """
     Fixture to get the quantitative agent for testing, with a patched
     temporary directory for file creation.
     """
-    monkeypatch.setattr("src.agents.quant_agent.TEMP_DIR", test_temp_dir)
+    # Patch the TEMP_DIR - ensure its patched wherever it's used
+    monkeypatch.setattr(
+        "src.agents.utils.output_utils.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
 
     from src.agents.quant_agent import get_quantitative_agent
 
-    return get_quantitative_agent(models_client)
+    return get_quantitative_agent(models=models_client, request=default_request)
 
 
 @pytest.fixture(scope="function")
