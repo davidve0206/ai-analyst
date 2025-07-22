@@ -8,7 +8,7 @@ from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, HumanMessage, AIMessage
 
 from src.agents.models import default_models as models_client
-from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
+from src.agents.quant_agent import get_quantitative_agent
 from src.agents.utils.prompt_utils import (
     MessageTypes,
     extract_graph_response_content,
@@ -263,7 +263,7 @@ async def quantitative_analysis_agent(state: ResearchGraphState):
     response = await agent.ainvoke({"messages": updated_context})
 
     # Extract the content and files from the response
-    response: QuantitativeAgentResponse = extract_graph_response_content(response)
+    response = extract_graph_response_content(response)
     updated_context.append(AIMessage(response.content))
 
     return {

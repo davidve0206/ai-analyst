@@ -6,7 +6,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.internal_data_agent import get_internal_data_agent
 from src.agents.models import default_models as models_client
-from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
+from src.agents.quant_agent import get_quantitative_agent
 from src.agents.report_editor_graph import (
     ReportEditorGraphState,
     create_report_editor_graph,
@@ -85,23 +85,23 @@ async def process_sales_data(state: SalesReportGraphState):
     default_logger.info(
         f"Processing sales data for {state.request.grouping} - {state.request.grouping_value}."
     )
-    input_location = get_sales_history_location(state.request.grouping_value)
+    input_location = get_sales_history_location(state.request)
     task_prompt = render_prompt_template(
         template_name="analyse_sales_step_prompt.md",
         context={
+            "date": app_settings.analysis_date,
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
+            "periodicity": state.request.period,
             "input_location": str(input_location),
         },
         type=MessageTypes.HUMAN,
     )
 
-    quant_agent = get_quantitative_agent(models_client)
-    response = await quant_agent.ainvoke({"messages": [task_prompt]})
-    quant_agent_response: QuantitativeAgentResponse = extract_graph_response_content(
-        response
-    )
-    return {"sales_analysis": quant_agent_response.content}
+    quant_agent = get_quantitative_agent(models=models_client, request=state.request)
+    quant_agent_response = await quant_agent.ainvoke(messages=[task_prompt])
+    quant_agent_response_content = extract_graph_response_content(quant_agent_response)
+    return {"sales_analysis": quant_agent_response_content}
 
 
 async def retrieve_operational_data(state: SalesReportGraphState):
@@ -133,9 +133,7 @@ async def retrieve_operational_data(state: SalesReportGraphState):
     #       Alternatively, we could use a more structured approach to retrieve the data.
     quant_agent = get_quantitative_agent(models_client)
     response = await quant_agent.ainvoke(prompt, {"recursion_limit": 50})
-    quant_agent_response: QuantitativeAgentResponse = extract_graph_response_content(
-        response
-    )
+    quant_agent_response = extract_graph_response_content(response)
     return {
         "sales_operational_data": quant_agent_response.content,
         "sales_operational_data_code": quant_agent_response.code,

@@ -1,10 +1,8 @@
-from pathlib import Path
 import pytest
 from unittest.mock import AsyncMock, patch, ANY
 
 from langchain_core.messages import BaseMessage, HumanMessage
 
-from src.agents.quant_agent import QuantitativeAgentResponse
 from src.agents.research_graph import (
     ProgressLedger,
     ResearchGraphState,
@@ -333,12 +331,12 @@ async def test_quantitative_agent_calls_with_different_messages(monkeypatch):
     """
     # Mock the quantitative agent
     mock_agent = AsyncMock()
-    mock_agent.ainvoke.return_value = {
-        "structured_response": QuantitativeAgentResponse(
-            content="Mocked response content",
+    """ mock_agent.ainvoke.return_value = {
+        "structured_response": {
+            "content"="Mocked response content",
             code="Mocked code",
-        )
-    }
+        }
+    } """
     monkeypatch.setattr(
         "src.agents.research_graph.get_quantitative_agent", lambda _: mock_agent
     )

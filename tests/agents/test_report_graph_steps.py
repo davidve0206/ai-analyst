@@ -12,7 +12,7 @@ from typing import Callable
 import pytest
 import pandas as pd
 
-from langgraph.graph.state import CompiledStateGraph
+from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.configuration.kpis import SalesReportRequest
 from .helpers import (
     test_temp_dir,
@@ -163,7 +163,7 @@ async def test_sales_analysis_step(
         sales_history="The data has been retrieved successfully.",
     )
 
-    # Now call the actual process_sales_data function which will use our patched helper
+    # Now call the actual process_sales_data function
     step_result = await process_sales_data(test_state)
 
     assert step_result is not None
@@ -172,10 +172,8 @@ async def test_sales_analysis_step(
     )
 
     response_content = step_result["sales_analysis"]
-    print(response_content)  # Debugging output
     found_files = get_all_files_mentioned_in_response(response_content)
 
-    print(f"Found files: {found_files}")
     assert found_files, "No output files were generated in the response."
 
     try:
