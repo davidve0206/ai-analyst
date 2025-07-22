@@ -7,17 +7,16 @@ reasonable results when provided with the correct data and context.
 """
 
 from pathlib import Path
+from typing import Callable
+
 import pytest
 import pandas as pd
 
 from langgraph.graph.state import CompiledStateGraph
-
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.configuration.kpis import SalesReportRequest
 from .helpers import (
     test_temp_dir,
     csv_file_name,
-    sales_history_code_sample,
     sales_analysis_declining_yoy,
     sales_analysis_declining_trend,
     sales_analysis_no_special_case,
@@ -28,23 +27,16 @@ from .helpers import (
 def patch_graph_environment(
     monkeypatch: pytest.MonkeyPatch,
     quantitative_agent: CompiledStateGraph,
+    patched_get_request_temp_dir: Callable,
 ) -> None:
     """
     Fixture to patch the environment for the graph tests.
     This is used to ensure that the TEMP_DIR is set correctly.
     """
     # Patch the TEMP_DIR - ensure its patched wherever it's used
-    monkeypatch.setattr("src.configuration.settings.TEMP_DIR", test_temp_dir)
-    monkeypatch.setattr("src.agents.utils.prompt_utils.TEMP_DIR", test_temp_dir)
-
-    # Set get_quantitative_agent to return the patched agent (which uses the test TEMP_DIR)
-    def patched_get_quantitative_agent(models) -> CompiledStateGraph:
-        """Patched version that returns the quantitative agent for testing."""
-        return quantitative_agent
-
     monkeypatch.setattr(
-        "src.agents.quant_agent.get_quantitative_agent",
-        patched_get_quantitative_agent,
+        "src.agents.utils.output_utils.get_request_temp_dir",
+        patched_get_request_temp_dir,
     )
 
 
@@ -61,9 +53,9 @@ def patch_graph_environment_with_fixture_csv(
     """
 
     # Patch the helper that returns fixture filenames for testing
-    def patched_get_sales_history_location(grouping_value: str) -> Path:
+    def patched_get_sales_history_location(request: SalesReportRequest) -> Path:
         """Patched version that uses fixture filenames for testing."""
-        return test_temp_dir / f"{grouping_value}_sales_history_fixture.csv"
+        return test_temp_dir / f"{request.grouping_value}_sales_history_fixture.csv"
 
     # Patch just the helper function in the graph module (since it's imported there)
     monkeypatch.setattr(
@@ -84,9 +76,9 @@ def patch_graph_environment_with_temp_csv(
     """
 
     # Patch the helper that returns fixture filenames for testing
-    def patched_get_sales_history_location(grouping_value: str) -> Path:
+    def patched_get_sales_history_location(request: SalesReportRequest) -> Path:
         """Patched version that uses a temporary file for testing."""
-        return test_temp_dir / f"{grouping_value}_sales_history_temp.csv"
+        return test_temp_dir / f"{request.grouping_value}_sales_history_temp.csv"
 
     # Patch just the helper function in the graph module (since it's imported there)
     monkeypatch.setattr(
@@ -113,15 +105,8 @@ async def test_sales_retrieval_step(
 
     step_result = await retrieve_sales_history(test_state)
     try:
-        assert step_result is not None
         assert "sales_history" in step_result, (
             "Step result does not contain 'sales_history' key."
-        )
-        assert "sales_history_code" in step_result, (
-            "Step result does not contain 'sales_history_code' key."
-        )
-        assert step_result["sales_history_code"], (
-            "Expected sales history code to be non-empty."
         )
         assert expected_file_path.exists(), (
             f"Expected file {expected_file_path} was not created."
@@ -136,7 +121,9 @@ async def test_sales_retrieval_step(
         # We don't care about exact column names, just that the values exist
 
         # Get all expected values we need to find
-        expected_sales_amounts = set(spain_sales_history_df["GROSS_AMOUNT"].values)
+        expected_sales_amounts = set(
+            spain_sales_history_df["SALES_FUNCTIONAL_CURRENCY"].values
+        )
 
         # Collect all numeric values from the retrieved data
         retrieved_values = set()
@@ -219,7 +206,6 @@ async def test_operational_data_retrieval_step(
     test_state = SalesReportGraphState(
         request=default_request,
         sales_history="The data has been retrieved successfully.",
-        sales_history_code=sales_history_code_sample,
     )
 
     step_result = await retrieve_operational_data(test_state)

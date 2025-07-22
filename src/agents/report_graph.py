@@ -4,6 +4,7 @@ from pydantic import BaseModel, Field
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 
+from src.agents.internal_data_agent import get_internal_data_agent
 from src.agents.models import default_models as models_client
 from src.agents.quant_agent import QuantitativeAgentResponse, get_quantitative_agent
 from src.agents.report_editor_graph import (
@@ -11,15 +12,14 @@ from src.agents.report_editor_graph import (
     create_report_editor_graph,
 )
 from src.agents.research_graph import ResearchGraphState, create_research_graph
+from src.agents.utils.output_utils import get_sales_history_location
 from src.agents.utils.prompt_utils import (
     MessageTypes,
     create_human_message_from_parts,
     create_multimodal_prompt,
     extract_graph_response_content,
-    get_sales_history_location,
     render_prompt_template,
 )
-from src.configuration.constants import DATA_PROVIDED
 from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR, DATA_DIR, app_settings
@@ -28,7 +28,6 @@ from src.configuration.settings import BASE_DIR, DATA_DIR, app_settings
 class SalesReportGraphState(BaseModel):
     request: SalesReportRequest
     sales_history: str = ""
-    sales_history_code: str = ""
     sales_analysis: str = ""
     sales_operational_data: str = ""
     sales_operational_data_code: str = ""
@@ -55,7 +54,7 @@ async def retrieve_sales_history(state: SalesReportGraphState):
     default_logger.info(
         f"Retrieving sales history for {state.request.grouping} - {state.request.grouping_value}."
     )
-    output_location = get_sales_history_location(state.request.grouping_value)
+    output_location = get_sales_history_location(state.request)
     task_prompt = render_prompt_template(
         template_name="retrieve_sales_step_prompt.md",
         context={
@@ -63,21 +62,19 @@ async def retrieve_sales_history(state: SalesReportGraphState):
             "periodicity": state.request.period,
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
-            "input_location": str(DATA_DIR / DATA_PROVIDED.name),
-            "data_description": DATA_PROVIDED.description,
+            "currency": state.request.currency,
             "output_location": str(output_location),
         },
         type=MessageTypes.HUMAN,
     )
 
-    quant_agent = get_quantitative_agent(models_client)
-    response = await quant_agent.ainvoke({"messages": [task_prompt]})
-    quant_agent_response: QuantitativeAgentResponse = extract_graph_response_content(
-        response
+    internal_data_agent = get_internal_data_agent(
+        models=models_client, request=state.request
     )
+    response = await internal_data_agent.ainvoke(messages=[task_prompt])
+    internal_data_agent_response = extract_graph_response_content(response)
     return {
-        "sales_history": quant_agent_response.content,
-        "sales_history_code": quant_agent_response.code,
+        "sales_history": internal_data_agent_response,
     }
 
 

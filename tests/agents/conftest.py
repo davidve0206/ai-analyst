@@ -1,3 +1,4 @@
+from pathlib import Path
 import pytest
 import pandas as pd
 
@@ -10,6 +11,18 @@ from .helpers import test_temp_dir
 @pytest.fixture(scope="session")
 def models_client() -> AppChatModels:
     return default_models
+
+
+@pytest.fixture(scope="session")
+def patched_get_request_temp_dir():
+    """
+    Fixture to get the temporary directory for a specific sales report request.
+    """
+
+    def _get_request_temp_dir(request: SalesReportRequest) -> Path:
+        return test_temp_dir
+
+    return _get_request_temp_dir
 
 
 @pytest.fixture(scope="function")
@@ -44,31 +57,13 @@ def default_request() -> SalesReportRequest:
         grouping="country",
         grouping_value="Spain",
         period="monthly",
+        currency="Functional currency",
     )
 
 
 @pytest.fixture(scope="session")
-def financials_df() -> pd.DataFrame:
-    df_path = DATA_DIR / "financials_final.csv"
-    df = pd.read_csv(df_path, encoding="ISO-8859-1", low_memory=False)
-    return df
+def spain_sales_history_df() -> pd.DataFrame:
+    df_path = test_temp_dir / "Spain_sales_history_fixture.csv"
+    spain_sales = pd.read_csv(df_path, encoding="ISO-8859-1", low_memory=False)
 
-
-@pytest.fixture(scope="session")
-def spain_sales_history_df(financials_df: pd.DataFrame) -> pd.DataFrame:
-    spain_sales = financials_df[financials_df["SOLD_TO_COUNTRY"] == "SPAIN"]
-    total_gross_amount = (
-        spain_sales.groupby(["INVOICE_MONTH", "INVOICE_YEAR"])
-        .agg(
-            GROSS_AMOUNT=("GROSS_AMOUNT", "sum"),
-            INVOICE_COUNT=("INVOICED_QUANTITY", "sum"),
-        )
-        .reset_index()
-    )
-
-    # sort by INVOICE_YEAR and INVOICE_MONTH
-    total_gross_amount = total_gross_amount.sort_values(
-        by=["INVOICE_YEAR", "INVOICE_MONTH"]
-    )
-
-    return total_gross_amount
+    return spain_sales
