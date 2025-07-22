@@ -28,6 +28,11 @@ class SalesGroupingsEnum(PyEnum):
     PRODUCT_CATEGORY = "Product Category"
 
 
+class SalesCurrencyEnum(PyEnum):
+    FUNCTIONAL = "Functional currency"
+    REPORTING = "Reporting currency"
+
+
 # SQLAlchemy model
 class KpiRequestModel(Base):
     __tablename__ = "kpi_requests"
@@ -44,6 +49,8 @@ class SalesReportRequestModel(Base):
     period = Column(Enum(KpiPeriodsEnum), nullable=False)
     grouping = Column(Enum(SalesGroupingsEnum), nullable=False)
     grouping_value = Column(String, nullable=False)
+    currency = Column(Enum(SalesCurrencyEnum), nullable=False)
+
 
 class RecipientEmail(Base):
     __tablename__ = "recipient_emails"
