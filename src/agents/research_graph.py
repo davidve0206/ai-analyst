@@ -5,17 +5,18 @@ from langgraph.types import Command
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
-from langchain_core.messages import AnyMessage, HumanMessage, AIMessage
+from langchain_core.messages import AnyMessage, HumanMessage
+from langgraph.managed.is_last_step import RemainingSteps
 
 from src.agents.models import default_models as models_client
+from src.agents.internal_data_agent import get_internal_data_agent
 from src.agents.quant_agent import get_quantitative_agent
 from src.agents.utils.prompt_utils import (
     MessageTypes,
-    extract_graph_response_content,
     render_prompt_template,
 )
+from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
-from src.configuration.settings import BASE_DIR
 
 # TODO: This file is a bit convoluted and could be refactored.
 #       Think about separating the graph logic from class definitions.
@@ -90,6 +91,7 @@ class ResearchGraphState(BaseModel):
     """
 
     task_id: str
+    request: SalesReportRequest
     task: str
     task_output: str = ""
     task_facts: str = ""
@@ -100,9 +102,6 @@ class ResearchGraphState(BaseModel):
     reset_count: int = 0
     reset_count_limit: int = 3
     messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
-    quant_agent_context: list[AnyMessage] = Field(
-        default_factory=list
-    )  # Note this doesn't auto add messages, this gives me more fine-grained control
     progress_ledger: ProgressLedger = ProgressLedger()
 
 
@@ -111,6 +110,7 @@ class GraphNodeNames(Enum):
     CREATE_OR_UPDATE_TASK_PLAN = "create_or_update_task_plan"
     UPDATE_PROGRESS_LEDGER = "update_progress_ledger"
     EVALUATE_PROGRESS_LEDGER = "evaluate_progress_ledger"
+    INTERNAL_DATA_AGENT = "internal_data_agent"
     QUANTITATIVE_ANALYSIS_AGENT = "quantitative_analysis_agent"
     SUMMARIZE_FINDINGS = "summarize_findings"
 
@@ -152,8 +152,16 @@ class Team(BaseModel):
 DEFAULT_TEAM = Team(
     members=[
         TeamMember(
+            name=GraphNodeNames.INTERNAL_DATA_AGENT.value,
+            role="Agent that can retrieve data in from the internal database. Only has access to files mentioned in the task, not to the general internet. Should always be used if you need to retrieve data.",
+        ),
+        TeamMember(
             name=GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
-            role="Can load files, run code, and perform quantitative analysis. Only has access to files mentioned in the task, not to the general internet. Should not perform any complex statistical analysis; only simple regression analysis is allowed.",
+            role="Can load files, run code, and perform quantitative analysis. Only has access to files mentioned in the task, not to the general internet. Should be called for analysis, not for data retrieval. Should not perform any complex statistical analysis; only simple regression analysis is allowed.",
+        ),
+        TeamMember(
+            name=GraphNodeNames.SUMMARIZE_FINDINGS.value,
+            role="Summarizes the findings of the task and returns them to the user. Should not perform any analysis or data retrieval, and should be called when the task is complete or when the request is satisfied.",
         ),
     ]
 )
@@ -245,30 +253,38 @@ async def update_progress_ledger(state: ResearchGraphState):
     }
 
 
+async def internal_data_agent(state: ResearchGraphState):
+    """
+    Function that retrieves data from the internal database.
+    """
+    default_logger.info(f"Retrieving data for task: {state.task_id}")
+
+    agent = get_internal_data_agent(models=models_client, request=state.request)
+    response = await agent.ainvoke(state.messages)
+    # TODO: Review if this agent needs access to the entire conversation history or just the last request.
+
+    # Extract the content and files from the response
+    response_message = response["messages"][-1]
+
+    return {
+        "messages": [response_message],
+    }
+
+
 async def quantitative_analysis_agent(state: ResearchGraphState):
     """
     Function that performs quantitative analysis.
-
-    The context of the quant agent only includes the messages that
-    have been sent to it and its own responses, while the conversation
-    history excludes the quant agent's code.
     """
     default_logger.info(f"Performing quantitative analysis for task: {state.task_id}")
 
-    #
-    agent = get_quantitative_agent(models_client)
-    updated_context = state.quant_agent_context + [
-        HumanMessage(state.progress_ledger.instruction_or_question.answer)
-    ]
-    response = await agent.ainvoke({"messages": updated_context})
+    agent = get_quantitative_agent(models=models_client, request=state.request)
+    response = await agent.ainvoke(state.messages)
 
     # Extract the content and files from the response
-    response = extract_graph_response_content(response)
-    updated_context.append(AIMessage(response.content))
+    response_message = response["messages"][-1]
 
     return {
-        "quant_agent_context": updated_context,
-        "messages": [AIMessage(response.content)],
+        "messages": [response_message],
     }
 
 
@@ -299,6 +315,7 @@ async def evaluate_progress_ledger(
     Literal[
         "create_or_update_task_ledger",
         "summarize_findings",
+        "internal_data_agent",
         "quantitative_analysis_agent",
     ]
 ]:
@@ -313,6 +330,7 @@ async def evaluate_progress_ledger(
         or not state.progress_ledger.is_progress_being_made.answer
     ):
         state.stall_count += 1
+    task_message = ""
 
     # Then, determine the next step based on the progress ledger
     if (
@@ -328,20 +346,23 @@ async def evaluate_progress_ledger(
         state.reset_count += 1  # Count the reset
     else:
         goto = state.progress_ledger.next_speaker.answer
+        task_message = state.progress_ledger.instruction_or_question.answer
+
+    update_dict = {
+        "stall_count": state.stall_count,
+        "reset_count": state.reset_count,
+    }
+
+    if task_message:
+        update_dict["messages"] = [task_message]
 
     return Command(
         goto=goto,
-        update={
-            "next_speaker": goto,
-            "stall_count": state.stall_count,
-            "reset_count": state.reset_count,
-        },
+        update=update_dict,
     )
 
 
-async def create_research_graph(
-    store_diagram: bool = False,
-) -> CompiledStateGraph[ResearchGraphState]:
+async def create_research_graph() -> CompiledStateGraph[ResearchGraphState]:
     workflow = StateGraph(ResearchGraphState)
 
     workflow.add_node(
@@ -359,6 +380,10 @@ async def create_research_graph(
     workflow.add_node(
         GraphNodeNames.EVALUATE_PROGRESS_LEDGER.value,
         evaluate_progress_ledger,
+    )
+    workflow.add_node(
+        GraphNodeNames.INTERNAL_DATA_AGENT.value,
+        internal_data_agent,
     )
     workflow.add_node(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
@@ -383,6 +408,10 @@ async def create_research_graph(
         GraphNodeNames.EVALUATE_PROGRESS_LEDGER.value,
     )
     workflow.add_edge(
+        GraphNodeNames.INTERNAL_DATA_AGENT.value,
+        GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
+    )
+    workflow.add_edge(
         GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,
         GraphNodeNames.UPDATE_PROGRESS_LEDGER.value,
     )
@@ -392,12 +421,5 @@ async def create_research_graph(
     )
 
     chain = workflow.compile()
-    print(chain)
-    if store_diagram:
-        # Store the graph diagram as a PNG file
-        default_logger.info("Storing the research graph diagram as a PNG file.")
-        chain.get_graph().draw_mermaid_png(
-            output_file_path=(BASE_DIR / "documentation" / "sales_research_graph.png")
-        )
 
     return chain

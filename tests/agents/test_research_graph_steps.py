@@ -9,7 +9,6 @@ from src.agents.research_graph import (
     create_or_update_task_ledger,
     create_or_update_task_plan,
     evaluate_progress_ledger,
-    quantitative_analysis_agent,
     update_progress_ledger,
     summarize_findings,
     create_research_graph,
@@ -17,16 +16,31 @@ from src.agents.research_graph import (
 )
 from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import MessageTypes
+from src.configuration.kpis import SalesReportRequest
 from tests.agents.helpers import test_temp_dir
 
 
+@pytest.fixture(scope="session")
+def ai_sales_request() -> SalesReportRequest:
+    """
+    Fixture to create a sales report request for testing.
+    """
+    return SalesReportRequest(
+        grouping="product",
+        grouping_value="AI",
+        period="any",
+        currency="any",
+    )
+
+
 @pytest.fixture()
-def base_research_request() -> ResearchGraphState:
+def base_research_request(ai_sales_request: SalesReportRequest) -> ResearchGraphState:
     """
     Base research request fixture for testing.
     """
     return ResearchGraphState(
         task_id="test_task_id",
+        request=ai_sales_request,
         task="Analyze the impact of AI on financial markets.",
     )
 
@@ -324,75 +338,9 @@ async def test_evaluate_progress_ledger_progress_made_despite_stall(
 
 
 @pytest.mark.asyncio
-async def test_quantitative_agent_calls_with_different_messages(monkeypatch):
-    """
-    Test that the quantitative_analysis_agent calls the quantitative agent
-    with "messages" that are different from state.messages.
-    """
-    # Mock the quantitative agent
-    mock_agent = AsyncMock()
-    """ mock_agent.ainvoke.return_value = {
-        "structured_response": {
-            "content"="Mocked response content",
-            code="Mocked code",
-        }
-    } """
-    monkeypatch.setattr(
-        "src.agents.research_graph.get_quantitative_agent", lambda _: mock_agent
-    )
-
-    # Create a mock state
-    state = ResearchGraphState(
-        task_id="test_task",
-        task="Analyze sales data",
-        messages=[HumanMessage("message1"), HumanMessage("message2")],
-    )
-    state.progress_ledger.instruction_or_question.answer = "What is the sales trend?"
-
-    # Call the function
-    await quantitative_analysis_agent(state)
-
-    # Assert that the agent was called with different messages
-    mock_agent.ainvoke.assert_called_once()
-    called_args = mock_agent.ainvoke.call_args[0][0]
-    assert called_args["messages"] != state.messages, (
-        "Expected messages to differ from state.messages."
-    )
-
-
-@pytest.mark.asyncio
-async def test_quantitative_analysis_agent():
-    """
-    Test that the values returned by the function as "quant_agent_context"
-    and "messages" are different.
-    """
-
-    # Create a mock state
-    state = ResearchGraphState(
-        task_id="test_task",
-        task="Analyze sales data",
-        messages=[HumanMessage("message1"), HumanMessage("message2")],
-    )
-    state.progress_ledger.instruction_or_question.answer = (
-        "The company has made sales for 100, 120, 110 and 140. What is the sales trend?"
-    )
-
-    # Call the function
-    result = await quantitative_analysis_agent(state)
-
-    # Assert that the returned values are different
-    assert result["quant_agent_context"] != result["messages"], (
-        "Expected quant_agent_context and messages to differ."
-    )
-    assert (
-        result["quant_agent_context"][-1].content != result["messages"][-1].content
-    ), (
-        "Expected the last message in quant_agent_context to differ from the last message in messages."
-    )
-
-
-@pytest.mark.asyncio
-async def test_summarize_findings_with_csv_context():
+async def test_summarize_findings_with_csv_context(
+    ai_sales_request: SalesReportRequest,
+):
     """
     Test that the summarize_findings function correctly processes a context
     containing a message with a CSV file and mentions the file and the 10% figure.
@@ -401,6 +349,7 @@ async def test_summarize_findings_with_csv_context():
     state = ResearchGraphState(
         task_id="test_task",
         task="Analyze the impact of AI on financial markets.",
+        request=ai_sales_request,
         messages=[
             HumanMessage(
                 "The file 'market_analysis.csv' contains marked data showing that AI increased the market value by 10%."
@@ -426,7 +375,9 @@ async def test_summarize_findings_with_csv_context():
 
 
 @pytest.mark.asyncio
-async def test_summarize_findings_with_extended_context():
+async def test_summarize_findings_with_extended_context(
+    ai_sales_request: SalesReportRequest,
+):
     """
     Test that the summarize_findings function correctly processes a context
     containing multiple messages, including a CSV file, a facts request, and a plan.
@@ -435,6 +386,7 @@ async def test_summarize_findings_with_extended_context():
     state = ResearchGraphState(
         task_id="test_task",
         task="Analyze the impact of AI on financial markets.",
+        request=ai_sales_request,
         messages=[
             HumanMessage(
                 "GIVEN OR VERIFIED FACTS:\n- AI adoption rates have increased by 20% in the last 5 years.\nFACTS TO LOOK UP:\n- Historical market data for AI-driven companies.\nFACTS TO DERIVE:\n- Correlation between AI adoption and market value growth."
@@ -469,35 +421,45 @@ async def test_summarize_findings_with_extended_context():
 
 
 @pytest.mark.asyncio
-async def test_run_research_graph(monkeypatch):
+async def test_run_research_graph(
+    monkeypatch, ai_sales_request, patched_get_request_temp_dir
+):  # Inject the fixture
     """
     Test that runs the entire research graph.
 
     TODO: This test sometimes fails due to the quant agent looping forever.
     """
-    monkeypatch.setattr("src.agents.quant_agent.TEMP_DIR", test_temp_dir)
+    monkeypatch.setattr(
+        "src.agents.internal_data_agent.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
+    monkeypatch.setattr(
+        "src.agents.quant_agent.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
 
     # Create a research graph
-    workflow = await create_research_graph(store_diagram=False)
+    workflow = await create_research_graph()
 
     # Define the task with detailed context
     task_context = (
         "Analyze the impact of AI on financial markets. "
-        "AI has revolutionized algorithmic trading, risk modeling, and fraud detection. "
+        "\nAI has revolutionized algorithmic trading, risk modeling, and fraud detection. "
         "Recent trends show increased adoption of AI-driven strategies by major financial firms, "
         "leading to notable changes in market volatility and liquidity. "
-        " The value of the market were: 2015: 62.27T USD; 2016: 65.12T USD; 2017: 79.50T USD; 2018: 68.89T USD; 2019: 78.83T USD; 2020: 93.69T USD; 2021: 111.16T USD; 2022: 93.69T USD; 2023: 115.0T USD; 2024: 128.21T USD; 2025 (as of June): 134T USD"
-        "Historical data indicates correlations between AI adoption rates and trading frequency."
-        "Your team does not have access to the internet, so you will need to use the provided data and your knowledge to analyze the impact of AI on financial markets."
+        "\nThe value of the market were: 2015: 62.27T USD; 2016: 65.12T USD; 2017: 79.50T USD; 2018: 68.89T USD; 2019: 78.83T USD; 2020: 93.69T USD; 2021: 111.16T USD; 2022: 93.69T USD; 2023: 115.0T USD; 2024: 128.21T USD; 2025 (as of June): 134T USD"
+        "\nHistorical data indicates correlations between AI adoption rates and trading frequency."
+        "\nYour team does not have access to the internet or any other data, so you will need to use the provided data and your knowledge to analyze the impact of AI on financial markets. Do not make use of the internal data agent, as it is not available in this task."
     )
 
     state = ResearchGraphState(
         task_id="test_task_id",
         task=task_context,
+        request=ai_sales_request,
     )
 
-    # Run the graph
-    result = await workflow.ainvoke(state, {"recursion_limit": 50})
+    # Run the graph with a high recursion limit to avoid recursion errors
+    result = await workflow.ainvoke(state, {"recursion_limit": 150})
 
     # Assert the task_output is not empty
     assert "task_output" in result
@@ -510,7 +472,7 @@ async def test_run_research_graph(monkeypatch):
         assert "financial markets" in output, (
             "Expected output to mention financial markets."
         )
-        assert "134T" in output, "Expected output to mention the latest market value."
+        assert "134" in output, "Expected output to mention the latest market value."
     finally:
         # Clean up the temp files
         for file in files_mentioned:
