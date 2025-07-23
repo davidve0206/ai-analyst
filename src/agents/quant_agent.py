@@ -3,6 +3,7 @@ from src.agents.models import AppChatModels
 from src.agents.utils.output_utils import get_request_temp_dir
 from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
 from src.configuration.kpis import SalesReportRequest
+from src.configuration.settings import app_settings
 
 
 def get_quantitative_agent(
@@ -21,6 +22,7 @@ def get_quantitative_agent(
     system_message = render_prompt_template(
         "quantitative_analyst_agent_system_prompt.md",
         context={
+            "date": app_settings.analysis_date,
             "temp_path": str(temp_path),
         },
         type=MessageTypes.SYSTEM,

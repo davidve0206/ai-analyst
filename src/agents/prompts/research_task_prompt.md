@@ -1,10 +1,10 @@
 Today is {date}.
 
-We are analysing sales data for data for {grouping} - {grouping_value}, but we have found that due to the following reason, we need to perform a more in-depth analysis:
+We are analysing the {periodicity} sales data for data for {grouping} - {grouping_value}, but we have found that due to the following reason, we need to perform a more in-depth analysis:
 
 {special_case_reason}
 
-The task is to try to retrieve additional information and perform an analysis on the reasons for this behaviour. Some examples include retrieving sales history per client
+Your task is to try to retrieve additional information and perform an analysis on the reasons for this behaviour, using only the information available. For example, retrieving the sale history by client for this {grouping} and analysing if this any particular client is causing this situation.
 
 For this, you can use the company's detailed sales data, which you can find at {input_location}, which contains {data_description}
 

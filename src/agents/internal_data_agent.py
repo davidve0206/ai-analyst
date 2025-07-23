@@ -4,7 +4,7 @@ from src.agents.utils.output_utils import get_request_temp_dir
 from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
 from src.configuration.constants import INTERNAL_DATA
 from src.configuration.kpis import SalesReportRequest
-
+from src.configuration.settings import app_settings
 
 def get_internal_data_agent(
     models: AppChatModels, request: SalesReportRequest
@@ -22,6 +22,7 @@ def get_internal_data_agent(
     system_message = render_prompt_template(
         "internal_data_agent_system_prompt.md",
         context={
+            "date": app_settings.analysis_date,
             "input_location": str(INTERNAL_DATA.path),
             "data_description": INTERNAL_DATA.description,
             "temp_path": str(temp_path),

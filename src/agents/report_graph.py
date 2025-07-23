@@ -197,6 +197,7 @@ async def process_special_case(state: SalesReportGraphState):
         "research_task_prompt.md",
         context={
             "date": app_settings.analysis_date,
+            "periodicity": state.request.period,
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
             "special_case_reason": state.special_case_reason,
@@ -208,19 +209,12 @@ async def process_special_case(state: SalesReportGraphState):
         },
         type=MessageTypes.HUMAN,
     )
-    quant_agent_message = create_human_message_from_parts(
-        text_parts=[
-            "The following code was used to retrieve the sales history:\n",
-            state.sales_history_code,
-        ],
-        file_list=[get_sales_history_location(state.request.grouping_value)],
-    )
 
     result = await researcher_workflow.ainvoke(
         ResearchGraphState(
             task_id=state.request.task_id,
+            request=state.request,
             task=task_prompt.content,
-            quant_agent_context=[quant_agent_message],
         ),
         {"recursion_limit": 10000},
     )

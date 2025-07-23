@@ -49,7 +49,7 @@ class Settings(BaseSettings):
     langsmith_project: str = "default"
 
     # Run configuration
-    is_data_current: bool = False
+    is_data_current: bool = True
 
     model_config = ConfigDict(extra="ignore")
 

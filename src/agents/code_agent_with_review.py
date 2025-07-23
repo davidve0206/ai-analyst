@@ -72,15 +72,15 @@ def is_invalid_code_tool_message(message: ToolMessage) -> bool:
         )
 
     if message.status == "error":
-        default_logger.warning("Received an error status in the tool message.")
+        default_logger.debug("Received an error status in the tool message.")
         return True
 
     if message.content == "":
-        default_logger.warning("Received an empty string as the last message content.")
+        default_logger.debug("Received an empty string as the last message content.")
         return True
 
     if "Error" in message.content or "Exception" in message.content:
-        default_logger.warning("Received an error message in the last content.")
+        default_logger.debug("Received an error message in the last content.")
         return True
 
     return False

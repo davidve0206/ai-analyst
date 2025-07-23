@@ -59,11 +59,6 @@ async def main():
 
 
 if __name__ == "__main__":
-    from src.agents.code_agent_with_review import create_code_agent_with_review
-    from src.agents.models import default_models
-    from src.agents.utils.output_utils import store_graph_as_png
+    import asyncio
 
-    agent = create_code_agent_with_review(default_models)
-    store_graph_as_png(agent, "code_agent_with_review")
-    # import asyncio
-    # asyncio.run(main())
+    asyncio.run(main())
