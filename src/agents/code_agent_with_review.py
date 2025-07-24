@@ -80,7 +80,7 @@ def is_invalid_code_tool_message(message: ToolMessage) -> bool:
         return True
 
     if "Error" in message.content or "Exception" in message.content:
-        default_logger.debug("Received an error message in the last content.")
+        default_logger.debug("Received an error message in the last tool call output.")
         return True
 
     return False
@@ -98,9 +98,7 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
     """
     # Create the tool for code execution and bind it to the model and tools node
     python_repl_tool = create_python_repl_tool()
-    llm_with_tools = models.default_model.bind_tools(
-        tools=[python_repl_tool], parallel_tool_calls=False
-    )
+    llm_with_tools = models.default_model.bind_tools(tools=[python_repl_tool])
     tool_node = ToolNode(tools=[python_repl_tool])
 
     async def agent(state: CodeAgentState) -> dict:
@@ -184,7 +182,9 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
         review_context = [system_message] + state.messages[:-1]
 
         # Get LLM review
-        review_response = await models.default_model.ainvoke(review_context)
+        review_response = await models.default_non_reasoning_model.ainvoke(
+            review_context
+        )
 
         return {"messages": [review_response]}
 
