@@ -100,7 +100,7 @@ async def supervisor(
         )
 
     messages = [system_message] + state.messages + [state.current_report_message()]
-    response: Router = await models_client.gpt_o4_mini.with_structured_output(
+    response: Router = await models_client.default_model.with_structured_output(
         Router
     ).ainvoke(messages)
 
@@ -185,7 +185,7 @@ async def document_writing_agent(
 
     messages = [system_message] + state.messages + [state.current_report_message()]
 
-    result = await models_client.gpt_o4_mini.ainvoke(messages)
+    result = await models_client.default_model.ainvoke(messages)
     return Command(
         update={
             "report": result.content,

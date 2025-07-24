@@ -169,7 +169,7 @@ async def test_writer_loop_avoidance_logic(
 
     # Patch the specific model attribute in models_client
     monkeypatch.setattr(
-        "src.agents.report_editor_graph.models_client.gpt_o4_mini", mock_model
+        "src.agents.report_editor_graph.models_client.default_model", mock_model
     )
 
     # Create the report editor graph
@@ -261,7 +261,7 @@ async def test_visualization_loop_avoidance_logic(
 
     # Patch the specific model attribute in models_client
     monkeypatch.setattr(
-        "src.agents.report_editor_graph.models_client.gpt_o4_mini", mock_model
+        "src.agents.report_editor_graph.models_client.default_model", mock_model
     )
 
     # Create the report editor graph
