@@ -49,6 +49,7 @@ def store_response_with_timestamp(
     Store the agent's response in a file.
     """
     timestamp = datetime.now().strftime("%y%m%d%H%M")
+
     if temp:
         file_path = TEMP_DIR / f"{timestamp} - {file_name}.md"
     else:
@@ -60,7 +61,7 @@ def store_response_with_timestamp(
     return file_path
 
 
-def convert_markdown_to_pdf(markdown_path: Path) -> Path:
+def convert_markdown_to_pdf(markdown_path: Path, root_dir: Path) -> Path:
     """
     Convert the given markdown content to a PDF file.
     If the file is in TEMP_DIR, convert absolute paths to relative paths.
@@ -83,7 +84,7 @@ def convert_markdown_to_pdf(markdown_path: Path) -> Path:
     pdf = MarkdownPdf(toc_level=0)
     pdf_path = markdown_path.with_suffix(".pdf")
     pdf.add_section(
-        Section(text=markdown_content, toc=False, root=str(TEMP_DIR)), user_css=css
+        Section(text=markdown_content, toc=False, root=str(root_dir)), user_css=css
     )
     pdf.save(pdf_path)
 
