@@ -16,7 +16,9 @@ To make progress on the request, please answer the following questions, includin
       - False if recent messages show evidence of being stuck in a loop or if there is evidence of significant barriers to success such as the inability to read from a required file.
       - Be very strict, the analysis should be making significant progress, not just adding small bits of information.
     - Who should speak next? (select from: {team_names})
-    - What instruction or question would you give this team member? (Phrase as if speaking directly to them, and include any specific information they may need)
+    - What instruction or question would you give this team member?
+      - Phrase as if speaking directly to them, and include any specific information they may need
+      - Be specific and clear, for example, instead of asking "analyse the decline in sales by customer", ask "load the sales data, by customer, for 2023 and 2022, then identify customers with large drops in sales value"
 
 It is possible that there is just not enough information available to continue the analysis. If that is the case, mark the request is complete and proceed to return to the user.
 

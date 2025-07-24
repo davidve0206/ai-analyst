@@ -241,6 +241,7 @@ async def generate_report(state: SalesReportGraphState):
 
     result = await editor_workflow.ainvoke(
         ReportEditorGraphState(
+            request=state.request,
             messages=[
                 create_human_message_from_parts(
                     text_parts=text_parts,

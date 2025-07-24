@@ -17,3 +17,5 @@ The following analysis has already been performed:
 {sales_analysis}
 
 {sales_operational_data}
+
+Your insights need to add information to this, such as historical values and changes, do not stop until you have new insights.

@@ -23,6 +23,18 @@ def get_request_temp_dir(request: SalesReportRequest) -> Path:
     return path
 
 
+def get_all_temp_files(request: SalesReportRequest) -> list[Path]:
+    """Get all files in the temporary directory."""
+    temp_dir = get_request_temp_dir(request)
+    return list(temp_dir.glob("*"))
+
+
+def get_full_path_to_temp_file(file_name: str, request: SalesReportRequest) -> Path:
+    """Get the full path to a temporary file."""
+    temp_dir = get_request_temp_dir(request)
+    return temp_dir / file_name
+
+
 def get_sales_history_location(request: SalesReportRequest) -> Path:
     """Helper function to get the input location for sales history data."""
     temp_dir = get_request_temp_dir(request)

@@ -3,11 +3,14 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.python_interpreter import create_python_repl_tool
+from src.agents.utils.output_utils import get_request_temp_dir
 from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
-from src.configuration.settings import TEMP_DIR
+from src.configuration.kpis import SalesReportRequest
 
 
-def get_data_visualization_agent(models: AppChatModels) -> CompiledStateGraph:
+def get_data_visualization_agent(
+    models: AppChatModels, request: SalesReportRequest
+) -> CompiledStateGraph:
     """
     Very basic agent that can interact with a code interpreter.
 
@@ -20,7 +23,7 @@ def get_data_visualization_agent(models: AppChatModels) -> CompiledStateGraph:
     system_message = render_prompt_template(
         "data_visualization_agent_system_prompt.md",
         context={
-            "temp_path": str(TEMP_DIR),
+            "temp_path": str(get_request_temp_dir(request)),
         },
         type=MessageTypes.SYSTEM,
     )

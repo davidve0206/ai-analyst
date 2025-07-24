@@ -16,19 +16,9 @@ from langchain_core.prompts import (
 from langchain_core.prompt_values import ChatPromptValue
 from openai import BaseModel
 
-from src.configuration.settings import SRC_DIR, TEMP_DIR
+from src.configuration.settings import SRC_DIR
 
 PROMPTS_PATH = SRC_DIR / "agents" / "prompts"
-
-
-def get_all_temp_files() -> list[Path]:
-    """Get all files in the temporary directory."""
-    return list(TEMP_DIR.glob("*"))
-
-
-def get_full_path_to_temp_file(file_name: str) -> Path:
-    """Get the full path to a temporary file."""
-    return TEMP_DIR / file_name
 
 
 class MessageTypes(Enum):
