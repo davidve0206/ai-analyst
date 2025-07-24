@@ -1,10 +1,6 @@
 Today is {date}.
 
-You have access a file at {input_location}, which contains the following data:
-
-{data_description}
-
-You have already retrieved the last three years of {periodicity} total sales for the following {grouping}: {grouping_value}, which you stored at {previous_output_location} - use this table to check what is the most recent data you could find.
+You have already retrieved the last three years of {periodicity} total sales for the following {grouping}: {grouping_value}, which you stored at {previous_output_location}.
 
 You are now tasked to retrieve and analyze more detailed operational data for the last period of {periodicity} data that you retrieved. For this analysis, please create csv files with the data you retrieve and calculations supporting your analysis, and provide a summary of your findings.
 

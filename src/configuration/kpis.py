@@ -5,6 +5,7 @@ from src.configuration.db import (
     KpiDirectionsEnum,
     KpiPeriodsEnum,
     KpiRequestModel,
+    SalesCurrencyEnum,
     SalesGroupingsEnum,
     SalesReportRequestModel,
 )
@@ -21,10 +22,15 @@ class SalesReportRequest(BaseModel):
     grouping: str
     grouping_value: str
     period: str
+    currency: str = SalesCurrencyEnum.FUNCTIONAL.value
 
     @property
     def name(self) -> str:
         return f"Sales Report - {self.grouping} - {self.grouping_value}"
+
+    @property
+    def task_id(self) -> str:
+        return f"sales_report_{self.grouping}_{self.grouping_value}"
 
 
 def add_kpi_request(session_maker: sessionmaker, kpi: KpiRequest):
@@ -73,6 +79,7 @@ def add_sales_report_request(session_maker: sessionmaker, report: SalesReportReq
             period=KpiPeriodsEnum(report.period),
             grouping=SalesGroupingsEnum(report.grouping),
             grouping_value=report.grouping_value,
+            currency=report.currency,
         )
         session.add(new_report)
         session.commit()

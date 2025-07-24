@@ -1,6 +1,6 @@
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from src.agents.utils.prompt_utils import PrompTypes
+from src.agents.utils.prompt_utils import MessageTypes
 from src.configuration.settings import BASE_DIR
 from .helpers import test_temp_dir, png_file_name, csv_file_name
 
@@ -17,7 +17,7 @@ def test_render_system_prompt_template(monkeypatch):
     template_name = "test_render_prompt.md"
 
     rendered_template = render_prompt_template(
-        template_name, context, type=PrompTypes.SYSTEM
+        template_name, context, type=MessageTypes.SYSTEM
     )
     assert rendered_template is not None
     assert type(rendered_template) is SystemMessage
@@ -39,7 +39,7 @@ def test_render_human_prompt_template(monkeypatch):
     template_name = "test_render_prompt.md"
 
     rendered_template = render_prompt_template(
-        template_name, context, type=PrompTypes.HUMAN
+        template_name, context, type=MessageTypes.HUMAN
     )
     assert rendered_template is not None
     assert type(rendered_template) is HumanMessage

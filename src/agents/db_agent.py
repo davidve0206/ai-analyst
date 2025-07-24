@@ -8,7 +8,7 @@ from langgraph.graph.state import CompiledStateGraph
 
 from src.agents.models import AppChatModels
 from src.agents.tools.db import InternalDatabaseToolkit
-from src.agents.utils.prompt_utils import render_system_prompt_template
+from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
 from src.configuration.constants import DATABASE_CATALOG
 
 RECURSION_LIMIT = 10
@@ -30,17 +30,18 @@ def get_database_agent(
     Returns:
         CompiledStateGraph: The compiled state graph for the agent.
     """
-    system_prompt = render_system_prompt_template(
+    system_message = render_prompt_template(
         "db_agent_system_prompt.md",
         context={
             "dialect": db_toolkit.dialect,
             "tables": db_toolkit.table_names,
             "catalog": DATABASE_CATALOG,
         },
+        type=MessageTypes.SYSTEM,
     )
 
     return create_react_agent(
-        model=models.gpt_o4_mini, tools=db_toolkit.get_tools(), prompt=system_prompt
+        model=models.default_model, tools=db_toolkit.get_tools(), prompt=system_message
     )
 
     """ limited_agent = agent.with_config(

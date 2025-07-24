@@ -74,26 +74,6 @@ operational_values_expected = {
     "9100": 1234526.39,  # Sales by EU_ITEM_FAMILY
 }
 
-sales_history_code_sample = """import pandas as pd
-
-# Load the data from the specified CSV file again due to previous context loss
-file_path = '/Users/davidv/Projects/ai_analyst/data/financials_final.csv'
-df = pd.read_csv(file_path, encoding='ISO-8859-1')
-
-# It seems there is a potential issue with the country name 'SPAIN' having a trailing space.
-# Let's filter again, ensuring to strip any whitespace from the country name.
-spain_sales = df[(df['SOLD_TO_COUNTRY'].str.strip() == 'SPAIN') & (df['INVOICE_YEAR'] >= 2021)]
-
-# Group by year and month to get total sales per month
-monthly_sales = spain_sales.groupby(['INVOICE_YEAR', 'INVOICE_MONTH'])['GROSS_AMOUNT'].sum().reset_index()
-
-# Save the resulting dataframe to a CSV file
-output_path = '/Users/davidv/Projects/ai_analyst/tests/temp/Spain_sales_history_temp.csv'
-monthly_sales.to_csv(output_path, index=False)
-
-# Display the resulting dataframe
-print(monthly_sales)"""
-
 sales_analysis_declining_yoy = """### Analysis of Sales History Data for Spain
 
 #### Key Metrics

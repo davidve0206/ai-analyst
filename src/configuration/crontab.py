@@ -51,9 +51,11 @@ class CrontabFrequency(BaseModel):
     """
 
     hour: int
-    days_of_month: list[Annotated[int, Field(strict=True, ge=0, le=31)]] = []
-    months: list[Month] = []
-    days_of_week: list[Weekday] = []
+    days_of_month: list[Annotated[int, Field(strict=True, ge=0, le=31)]] = Field(
+        default_factory=list
+    )
+    months: list[Month] = Field(default_factory=list)
+    days_of_week: list[Weekday] = Field(default_factory=list)
     frequency: JobFrequency
 
     @model_validator(mode="after")

@@ -1,7 +1,9 @@
 import pytest
 
 from langgraph.graph.state import CompiledStateGraph
+from langchain_core.messages import HumanMessage
 
+from src.agents.code_agent_with_review import PreConfiguredCodeAgent
 from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import extract_graph_response_content
 
@@ -13,7 +15,7 @@ from .helpers import (
 
 @pytest.mark.asyncio
 async def test_task_with_intermediate_interpreter(
-    quantitative_agent: CompiledStateGraph,
+    quantitative_agent: PreConfiguredCodeAgent,
 ):
     """
     Test the agent with a task that requires basic code generation and execution.
@@ -31,17 +33,16 @@ async def test_task_with_intermediate_interpreter(
         "7.46"  # %, but might include more decimal places so we check for substring
     )
 
-    response = await quantitative_agent.ainvoke({"messages": [("user", query)]})
+    response = await quantitative_agent.ainvoke(messages=[HumanMessage(content=query)])
 
     assert response is not None
     quant_agent_response = extract_graph_response_content(response)
 
-    assert expected in quant_agent_response.content
-    assert quant_agent_response.code != "", "Expected some code to be generated."
+    assert expected in quant_agent_response
 
 
 @pytest.mark.asyncio
-async def test_file_creation(quantitative_agent: CompiledStateGraph):
+async def test_file_creation(quantitative_agent: PreConfiguredCodeAgent):
     """
     Test the agent creates at least one file in the temp directory.
     """
@@ -52,14 +53,11 @@ async def test_file_creation(quantitative_agent: CompiledStateGraph):
     
     Perform a detailed analysis of the sales data, including trends, patterns, and insights."""
 
-    response = await quantitative_agent.ainvoke({"messages": [("user", query)]})
+    response = await quantitative_agent.ainvoke(messages=[HumanMessage(content=query)])
+    response_content = extract_graph_response_content(response)
 
-    assert response is not None
-    response = extract_graph_response_content(response)
-
-    files_created = get_all_files_mentioned_in_response(response.content)
+    files_created = get_all_files_mentioned_in_response(response_content)
     try:
-        assert response.code != "", "Expected some code to be generated."
         # Assert that there is at least one file created in the temp directory
         assert len(files_created) > 0, "No files were created in the temp directory."
         # Assert all files are csv files

@@ -5,6 +5,7 @@ from src.agents.report_graph import create_report_graph
 from src.agents.utils.email_service import MailingService
 from src.agents.utils.output_utils import (
     convert_markdown_to_pdf,
+    get_request_temp_dir,
     move_file_to_storage,
     store_response_with_timestamp,
 )
@@ -12,7 +13,7 @@ from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
 from src.configuration.recipients import get_recipient_emails
 from src.configuration.db import default_config_db_sessionmaker
-from src.configuration.settings import app_settings
+from src.configuration.settings import TEMP_DIR, app_settings
 
 
 @traceable
@@ -35,12 +36,16 @@ async def main():
     print("Test Result:", test_result["report"])
 
     default_logger.info(f"Completed research task for KPI: {test_request.name}")
+    temp_dir = get_request_temp_dir(test_request)
     md_file_path = store_response_with_timestamp(
-        response=test_result["report"], file_name=f"{test_request.name}"
+        response=test_result["report"],
+        folder=temp_dir,
+        file_name=test_request.name,
+        temp=True,
     )
 
     # Convert the Markdown report to PDF and move it to storage
-    pdf_path = convert_markdown_to_pdf(md_file_path)
+    pdf_path = convert_markdown_to_pdf(markdown_path=md_file_path, root_dir=temp_dir)
     pdf_path = move_file_to_storage(pdf_path)
 
     # Send email notification with the report

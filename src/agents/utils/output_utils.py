@@ -3,8 +3,43 @@ from datetime import datetime
 from pathlib import Path
 
 from markdown_pdf import MarkdownPdf, Section
+from langgraph.graph.state import CompiledStateGraph
 
-from src.configuration.settings import STORAGE_DIR, TEMP_DIR
+from src.configuration.kpis import SalesReportRequest
+from src.configuration.settings import (
+    DOCUMENTATION_DIR,
+    STORAGE_DIR,
+    TEMP_DIR,
+)
+
+
+def get_request_temp_dir(request: SalesReportRequest) -> Path:
+    """
+    Get the temporary directory for a specific sales report request.
+    """
+    path = TEMP_DIR / f"{request.task_id}"
+    path.mkdir(parents=True, exist_ok=True)
+
+    return path
+
+
+def get_all_temp_files(request: SalesReportRequest) -> list[Path]:
+    """Get all files in the temporary directory."""
+    temp_dir = get_request_temp_dir(request)
+    return list(temp_dir.glob("*"))
+
+
+def get_full_path_to_temp_file(file_name: str, request: SalesReportRequest) -> Path:
+    """Get the full path to a temporary file."""
+    temp_dir = get_request_temp_dir(request)
+    return temp_dir / file_name
+
+
+def get_sales_history_location(request: SalesReportRequest) -> Path:
+    """Helper function to get the input location for sales history data."""
+    temp_dir = get_request_temp_dir(request)
+    grouping_value = request.grouping_value.replace(" ", "_").lower()
+    return temp_dir / f"{grouping_value}_sales_history.csv"
 
 
 def store_response_with_timestamp(
@@ -14,6 +49,7 @@ def store_response_with_timestamp(
     Store the agent's response in a file.
     """
     timestamp = datetime.now().strftime("%y%m%d%H%M")
+
     if temp:
         file_path = TEMP_DIR / f"{timestamp} - {file_name}.md"
     else:
@@ -25,7 +61,7 @@ def store_response_with_timestamp(
     return file_path
 
 
-def convert_markdown_to_pdf(markdown_path: Path) -> Path:
+def convert_markdown_to_pdf(markdown_path: Path, root_dir: Path) -> Path:
     """
     Convert the given markdown content to a PDF file.
     If the file is in TEMP_DIR, convert absolute paths to relative paths.
@@ -37,10 +73,19 @@ def convert_markdown_to_pdf(markdown_path: Path) -> Path:
     with open(markdown_path, "r") as file:
         markdown_content = file.read()
 
+    # Set the styling for the PDF
+    css = (
+        "body {font-family: 'Helvetica', 'Arial', sans-serif;}"
+        "h1, h2, h3 {color: #0A2347;}"
+        "p, li {line-height: 1.5;}"
+    )
+
     # By default, no table of content is generated in the PDF.
     pdf = MarkdownPdf(toc_level=0)
     pdf_path = markdown_path.with_suffix(".pdf")
-    pdf.add_section(Section(text=markdown_content, toc=False, root=str(TEMP_DIR)))
+    pdf.add_section(
+        Section(text=markdown_content, toc=False, root=str(root_dir)), user_css=css
+    )
     pdf.save(pdf_path)
 
     return pdf_path
@@ -88,3 +133,13 @@ def get_all_files_mentioned_in_response(response: str) -> list[str]:
     file_pattern = r"\b[\w\-_]+\.(?:png|csv)\b"
     found_files: list[str] = re.findall(file_pattern, response)
     return found_files
+
+
+def store_graph_as_png(graph: CompiledStateGraph, file_name: str) -> Path:
+    """
+    Store the graph as a PNG file.
+    """
+    file_path = DOCUMENTATION_DIR / f"{file_name}.png"
+    graph.get_graph().draw_mermaid_png(output_file_path=file_path)
+
+    return file_path

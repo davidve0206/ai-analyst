@@ -10,39 +10,42 @@ from langchain_core.messages import AnyMessage, HumanMessage
 
 from src.agents.models import default_models as models_client
 from src.agents.data_visualization_agent import get_data_visualization_agent
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
-from src.agents.utils.prompt_utils import (
-    PrompTypes,
-    create_human_message_from_parts,
-    extract_graph_response_content,
+from src.agents.utils.output_utils import (
+    get_all_files_mentioned_in_response,
     get_all_temp_files,
     get_full_path_to_temp_file,
+)
+from src.agents.utils.prompt_utils import (
+    MessageTypes,
+    create_human_message_from_parts,
+    extract_graph_response_content,
     render_prompt_template,
 )
+from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR
 
 
 class ReportEditorGraphState(BaseModel):
+    request: SalesReportRequest
     messages: Annotated[list[AnyMessage], add_messages]
     report: str = ""
     next_speaker: str = ""
     loop_count: int = 0
     max_writer_loops: int = 3  # End if the writer is repeated this many times in a row
     # Example: if the writing agent is chosen 3 times in a row (once first time, two repeated), we return the current report
-    max_visualization_loops: int = 10  # Similar logic for visualization agent
+    max_visualization_loops: int = 5  # Similar logic for visualization agent
     # This is much higher as we expect the visualization agent to be called multiple times for different charts
 
-    @property
     def current_report_message(self) -> HumanMessage:
         """
         Returns the last human message in the conversation.
         """
-        temp_file_list = get_all_temp_files()
+        temp_file_list = get_all_temp_files(self.request)
         temp_file_str = [file.name for file in temp_file_list]
 
         return HumanMessage(
-            f"This is the current report: \n\n {self.report} \n The following files are available: {', '.join(temp_file_str)} \n Last speaker: {self.next_speaker} \n Loop count: {self.loop_count}",
+            f"{'No report has been generated yet.' if not self.report else f'This is the current report: \n\n {self.report}'} \n The following files are available: {', '.join(temp_file_str)} \n Last speaker: {self.next_speaker}",
         )
 
 
@@ -70,7 +73,7 @@ async def supervisor(
             "data_visualization_agent_name": GraphNodeNames.DATA_VISUALIZATION_AGENT.value,
             "complete_value": COMPLETE_VALUE,
         },
-        type=PrompTypes.SYSTEM,
+        type=MessageTypes.SYSTEM,
     )
 
     next_speaker_options = [
@@ -96,8 +99,8 @@ async def supervisor(
             description="The task to be performed by the next speaker. State the task as if you were talking directly to them, with as much detail as necessary.",
         )
 
-    messages = [system_message] + state.messages + [state.current_report_message]
-    response: Router = await models_client.gpt_o4_mini.with_structured_output(
+    messages = [system_message] + state.messages + [state.current_report_message()]
+    response: Router = await models_client.default_model.with_structured_output(
         Router
     ).ainvoke(messages)
 
@@ -139,14 +142,16 @@ async def data_visualization_agent(
     default_logger.info("Generating charts for the report.")
 
     # Call the data visualization agent to generate charts
-    agent = get_data_visualization_agent(models_client)
+    agent = get_data_visualization_agent(models_client, request=state.request)
     response = await agent.ainvoke({"messages": state.messages})
 
     # Extract the content and files from the response
     response = extract_graph_response_content(response)
     files = get_all_files_mentioned_in_response(response)
     img_paths = [
-        get_full_path_to_temp_file(file) for file in files if file.endswith(".png")
+        get_full_path_to_temp_file(file, state.request)
+        for file in files
+        if file.endswith(".png")
     ]
 
     # Create the updated message with the generated charts
@@ -175,12 +180,12 @@ async def document_writing_agent(
     system_message = render_prompt_template(
         template_name="editing_writer_system_prompt.md",
         context={},
-        type=PrompTypes.SYSTEM,
+        type=MessageTypes.SYSTEM,
     )
 
-    messages = [system_message] + state.messages + [state.current_report_message]
+    messages = [system_message] + state.messages + [state.current_report_message()]
 
-    result = await models_client.gpt_o4_mini.ainvoke(messages)
+    result = await models_client.default_model.ainvoke(messages)
     return Command(
         update={
             "report": result.content,
@@ -195,20 +200,22 @@ async def create_report_editor_graph(store_diagram: bool = False) -> CompiledSta
     """
     default_logger.info("Creating the report editor graph.")
 
-    graph = StateGraph(ReportEditorGraphState)
+    workflow = StateGraph(ReportEditorGraphState)
 
     # Define the nodes in the graph
-    graph.add_node(GraphNodeNames.SUPERVISOR.value, supervisor)
-    graph.add_node(
+    workflow.add_node(GraphNodeNames.SUPERVISOR.value, supervisor)
+    workflow.add_node(
         GraphNodeNames.DATA_VISUALIZATION_AGENT.value, data_visualization_agent
     )
-    graph.add_node(GraphNodeNames.DOCUMENT_WRITING_AGENT.value, document_writing_agent)
+    workflow.add_node(
+        GraphNodeNames.DOCUMENT_WRITING_AGENT.value, document_writing_agent
+    )
 
     # Define the transitions between nodes
-    graph.add_edge(START, GraphNodeNames.SUPERVISOR.value)
+    workflow.add_edge(START, GraphNodeNames.SUPERVISOR.value)
 
     # Compile the state graph
-    chain = graph.compile()
+    chain = workflow.compile()
     default_logger.info("Report editor graph created successfully.")
 
     if store_diagram:
