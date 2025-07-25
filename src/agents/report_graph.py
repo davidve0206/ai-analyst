@@ -236,6 +236,7 @@ async def generate_report(state: SalesReportGraphState):
         state.sales_history,
         state.sales_analysis,
         state.sales_operational_data,
+        state.special_case_reason,
         state.sales_in_depth_analysis,
     ]
 

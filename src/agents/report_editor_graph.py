@@ -45,7 +45,7 @@ class ReportEditorGraphState(BaseModel):
         temp_file_str = [file.name for file in temp_file_list]
 
         return HumanMessage(
-            f"{'No report has been generated yet.' if not self.report else f'This is the current report: \n\n {self.report}'} \n The following files are available: {', '.join(temp_file_str)} \n Last speaker: {self.next_speaker}",
+            f"{'No report has been generated yet.' if not self.report else f'This is the current report: \n\n {self.report}'} \n\n The following files are available: {', '.join(temp_file_str)} \n\n Last speaker: {self.next_speaker}",
         )
 
 
