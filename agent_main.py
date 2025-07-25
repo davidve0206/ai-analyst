@@ -13,7 +13,7 @@ from src.configuration.kpis import SalesReportRequest
 from src.configuration.logger import default_logger
 from src.configuration.recipients import get_recipient_emails
 from src.configuration.db import default_config_db_sessionmaker
-from src.configuration.settings import TEMP_DIR, app_settings
+from src.configuration.settings import app_settings
 
 
 @traceable
@@ -40,8 +40,7 @@ async def main():
     md_file_path = store_response_with_timestamp(
         response=test_result["report"],
         folder=temp_dir,
-        file_name=test_request.name,
-        temp=True,
+        file_name=test_request.name
     )
 
     # Convert the Markdown report to PDF and move it to storage
