@@ -48,16 +48,24 @@ def quantitative_agent(
 
 
 @pytest.fixture(scope="function")
-def data_visualization_agent(models_client: AppChatModels, monkeypatch):
+def data_visualization_agent(
+    models_client: AppChatModels,
+    default_request: SalesReportRequest,
+    patched_get_request_temp_dir: Callable,
+    monkeypatch,
+):
     """
     Fixture to get the data visualization agent for testing, with a patched
     temporary directory for file creation.
     """
-    monkeypatch.setattr("src.agents.data_visualization_agent.TEMP_DIR", test_temp_dir)
+    monkeypatch.setattr(
+        "src.agents.utils.output_utils.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
 
     from src.agents.data_visualization_agent import get_data_visualization_agent
 
-    return get_data_visualization_agent(models_client)
+    return get_data_visualization_agent(models_client, default_request)
 
 
 @pytest.fixture(scope="session")

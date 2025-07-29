@@ -34,7 +34,7 @@ class ReportEditorGraphState(BaseModel):
     loop_count: int = 0
     max_writer_loops: int = 3  # End if the writer is repeated this many times in a row
     # Example: if the writing agent is chosen 3 times in a row (once first time, two repeated), we return the current report
-    max_visualization_loops: int = 5  # Similar logic for visualization agent
+    max_visualization_loops: int = 10  # Similar logic for visualization agent
     # This is much higher as we expect the visualization agent to be called multiple times for different charts
 
     def current_report_message(self) -> HumanMessage:
@@ -45,7 +45,7 @@ class ReportEditorGraphState(BaseModel):
         temp_file_str = [file.name for file in temp_file_list]
 
         return HumanMessage(
-            f"{'No report has been generated yet.' if not self.report else f'This is the current report: \n\n {self.report}'} \n\n The following files are available: {', '.join(temp_file_str)} \n\n Last speaker: {self.next_speaker}",
+            f"The following files are available: {', '.join(temp_file_str)} \n\n Last speaker: {self.next_speaker} \n\n {'No report has been generated yet.' if not self.report else f'This is the current report: \n\n {self.report}'}",
         )
 
 
@@ -56,6 +56,7 @@ class GraphNodeNames(Enum):
     SUPERVISOR = "supervisor"
     DATA_VISUALIZATION_AGENT = "data_visualization_agent"
     DOCUMENT_WRITING_AGENT = "document_writing_agent"
+    FILE_LOADING_AGENT = "file_loading_agent"
 
 
 async def supervisor(
@@ -67,10 +68,11 @@ async def supervisor(
     default_logger.info("Supervisor node is processing the report editing request.")
 
     system_message = render_prompt_template(
-        template_name="editing_supervisor_system_prompt.md",
+        template_name="report_editing/supervisor_system_prompt.md",
         context={
             "writing_agent_name": GraphNodeNames.DOCUMENT_WRITING_AGENT.value,
             "data_visualization_agent_name": GraphNodeNames.DATA_VISUALIZATION_AGENT.value,
+            "file_loading_agent_name": GraphNodeNames.FILE_LOADING_AGENT.value,
             "complete_value": COMPLETE_VALUE,
         },
         type=MessageTypes.SYSTEM,
@@ -114,7 +116,7 @@ async def supervisor(
         new_loop_count = 0
 
     # Determine the max loops based on which agent is being chosen
-    max_loops = 0
+    max_loops = 100  # Default is allowing the supervisor to loop indefinitely
     if goto == GraphNodeNames.DOCUMENT_WRITING_AGENT.value:
         max_loops = state.max_writer_loops
     elif goto == GraphNodeNames.DATA_VISUALIZATION_AGENT.value:
@@ -160,17 +162,14 @@ async def data_visualization_agent(
         file_list=img_paths,
     )
 
-    return Command(
-        update={
-            "messages": [message],
-        },
-        goto=GraphNodeNames.SUPERVISOR.value,
-    )
+    return {
+        "messages": [message],
+    }
 
 
 async def document_writing_agent(
     state: ReportEditorGraphState,
-) -> Command[Literal["supervisor"]]:
+):
     """
     Node to write the document based on the report request.
     """
@@ -178,20 +177,53 @@ async def document_writing_agent(
 
     # Get the system prompt for the editor agent
     system_message = render_prompt_template(
-        template_name="editing_writer_system_prompt.md",
+        template_name="report_editing/writer_system_prompt.md",
         context={},
         type=MessageTypes.SYSTEM,
     )
 
-    messages = [system_message] + state.messages + [state.current_report_message()]
+    messages = (
+        [system_message]
+        + state.messages[:-1]
+        + [state.current_report_message()]
+        + state.messages[-1:]  # Put the last instruction at the very end
+    )
 
     result = await models_client.default_model.ainvoke(messages)
-    return Command(
-        update={
-            "report": result.content,
-        },
-        goto=GraphNodeNames.SUPERVISOR.value,
+
+    return {
+        "report": result.content,
+    }
+
+
+async def file_loading_agent(
+    state: ReportEditorGraphState,
+):
+    """Code that takes the last message and loads the files mentioned in it."""
+    default_logger.info("Loading files mentioned in the last message.")
+
+    # Get the last message and extract file paths
+    last_message = state.messages[-1]
+    file_paths = get_all_files_mentioned_in_response(last_message.content)
+
+    # Load the files and return their content
+    loaded_files = []
+    for file_path in file_paths:
+        full_path = get_full_path_to_temp_file(file_path, state.request)
+        if full_path.exists():
+            loaded_files.append(f"\n\nContents of {file_path}:\n\n")
+            with open(full_path, "r") as f:
+                loaded_files.append(f.read())
+        else:
+            loaded_files.append(f"\n\nFile {file_path} not found.\n\n")
+
+    message = create_human_message_from_parts(
+        text_parts=loaded_files,
     )
+
+    return {
+        "messages": [message],
+    }
 
 
 async def create_report_editor_graph(store_diagram: bool = False) -> CompiledStateGraph:
@@ -210,9 +242,22 @@ async def create_report_editor_graph(store_diagram: bool = False) -> CompiledSta
     workflow.add_node(
         GraphNodeNames.DOCUMENT_WRITING_AGENT.value, document_writing_agent
     )
+    workflow.add_node(GraphNodeNames.FILE_LOADING_AGENT.value, file_loading_agent)
 
     # Define the transitions between nodes
     workflow.add_edge(START, GraphNodeNames.SUPERVISOR.value)
+    workflow.add_edge(
+        GraphNodeNames.DATA_VISUALIZATION_AGENT.value,
+        GraphNodeNames.SUPERVISOR.value,
+    )
+    workflow.add_edge(
+        GraphNodeNames.DOCUMENT_WRITING_AGENT.value,
+        GraphNodeNames.SUPERVISOR.value,
+    )
+    workflow.add_edge(
+        GraphNodeNames.FILE_LOADING_AGENT.value,
+        GraphNodeNames.SUPERVISOR.value,
+    )
 
     # Compile the state graph
     chain = workflow.compile()

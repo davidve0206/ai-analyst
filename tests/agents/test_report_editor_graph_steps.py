@@ -6,18 +6,15 @@ rather to ensure that the graph steps can be executed and produce
 reasonable results when provided with the correct data and context.
 """
 
+from typing import Any, Callable
 import pytest
 from pathlib import Path
 
 from langchain_core.messages import HumanMessage
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agents.report_editor_graph import (
-    ReportEditorGraphState,
-    create_report_editor_graph,
-)
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
-from .helpers import test_temp_dir
+from src.configuration.kpis import SalesReportRequest
+from .helpers import test_temp_dir, csv_file_name
 
 
 # Test data fixtures
@@ -29,16 +26,20 @@ report_editor_csv_file_name = "test_data.csv"
 def patch_editor_graph_environment(
     monkeypatch: pytest.MonkeyPatch,
     data_visualization_agent: CompiledStateGraph,
+    patched_get_request_temp_dir: Callable,
 ) -> None:
     """
     Fixture to patch the environment for the report editor graph tests.
     This ensures that the TEMP_DIR is set correctly and files are created in test directory.
     """
     # Patch the TEMP_DIR where it's actually used - in prompt_utils
-    monkeypatch.setattr("src.agents.utils.prompt_utils.TEMP_DIR", test_temp_dir)
+    monkeypatch.setattr(
+        "src.agents.utils.output_utils.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
 
     # Patch the data visualization agent getter
-    def patched_get_data_visualization_agent(models) -> CompiledStateGraph:
+    def patched_get_data_visualization_agent(models, request) -> CompiledStateGraph:
         """Patched version that returns the data visualization agent for testing."""
         return data_visualization_agent
 
@@ -48,7 +49,7 @@ def patch_editor_graph_environment(
     )
 
     # Patch the helper that gets full path to temp files
-    def patched_get_full_path_to_temp_file(file_name: str) -> Path:
+    def patched_get_full_path_to_temp_file(file_name: str, request: Any) -> Path:
         """Patched version that returns test temp directory paths."""
         return test_temp_dir / file_name
 
@@ -59,11 +60,19 @@ def patch_editor_graph_environment(
 
 
 @pytest.fixture()
-def base_report_request() -> ReportEditorGraphState:
+def base_report_request(
+    default_request: SalesReportRequest,
+    patch_editor_graph_environment: None,
+):
     """
     Base report request fixture for testing.
     """
+    from src.agents.report_editor_graph import (
+        ReportEditorGraphState,
+    )
+
     return ReportEditorGraphState(
+        request=default_request,
         messages=[
             HumanMessage(
                 content="Please generate a report for the sales data; we have already generated Spain_sales_history_fixture.csv which contains the sales history for Spain."
@@ -76,13 +85,16 @@ def base_report_request() -> ReportEditorGraphState:
 
 @pytest.mark.asyncio
 async def test_report_editor_workflow(
-    base_report_request: ReportEditorGraphState,
-    patch_editor_graph_environment: None,
+    base_report_request,
+    patch_editor_graph_environment,
 ) -> None:
     """
     Test the complete report editor workflow.
     Ensures we get a report and that it contains at least one plot.
     """
+    from src.agents.report_editor_graph import create_report_editor_graph
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
     # Create the report editor graph
     workflow = await create_report_editor_graph()
 
@@ -96,7 +108,9 @@ async def test_report_editor_workflow(
 
     # Check that the report mentions at least one plot file
     files_mentioned = get_all_files_mentioned_in_response(output_report)
-    plot_files = [f for f in files_mentioned if f.endswith((".png"))]
+    plot_files = [
+        f for f in files_mentioned if f.endswith((".png")) and "fixture" not in f
+    ]
     assert len(plot_files) > 0, (
         f"Expected at least one plot file in report, but found: {files_mentioned}"
     )
@@ -116,7 +130,7 @@ async def test_report_editor_workflow(
 
 @pytest.mark.asyncio
 async def test_writer_loop_avoidance_logic(
-    base_report_request: ReportEditorGraphState,
+    base_report_request,
     patch_editor_graph_environment: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -125,7 +139,14 @@ async def test_writer_loop_avoidance_logic(
     This test forces the LLM to always choose the document writing agent and verifies
     that the real supervisor logic terminates the graph after max_writer_loops iterations.
     """
-    from unittest.mock import AsyncMock
+    from unittest.mock import AsyncMock, MagicMock
+    from src.agents.report_editor_graph import create_report_editor_graph
+
+    # Mock the LLM to always return the document writing agent choice to force a loop
+    class MockRouter:
+        def __init__(self):
+            self.next_speaker = "document_writing_agent"
+            self.next_speaker_task = "Keep writing the document"
 
     # Set max_writer_loops to 2 for faster testing
     base_report_request.max_writer_loops = 2
@@ -151,15 +172,6 @@ async def test_writer_loop_avoidance_logic(
         "src.agents.report_editor_graph.document_writing_agent",
         mock_document_writing_agent,
     )
-
-    # Mock the LLM to always return the document writing agent choice to force a loop
-    class MockRouter:
-        def __init__(self):
-            self.next_speaker = "document_writing_agent"
-            self.next_speaker_task = "Keep writing the document"
-
-    # Create a proper mock for the LLM chain
-    from unittest.mock import MagicMock
 
     mock_structured_output = AsyncMock()
     mock_structured_output.ainvoke = AsyncMock(return_value=MockRouter())
@@ -208,7 +220,7 @@ async def test_writer_loop_avoidance_logic(
 
 @pytest.mark.asyncio
 async def test_visualization_loop_avoidance_logic(
-    base_report_request: ReportEditorGraphState,
+    base_report_request,
     patch_editor_graph_environment: None,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -217,7 +229,16 @@ async def test_visualization_loop_avoidance_logic(
     This test forces the LLM to always choose the document writing agent and verifies
     that the real supervisor logic terminates the graph after max_writer_loops iterations.
     """
-    from unittest.mock import AsyncMock
+    from unittest.mock import AsyncMock, MagicMock
+    from src.agents.report_editor_graph import create_report_editor_graph
+
+    # Mock the LLM to always return the document writing agent choice to force a loop
+    class MockRouter:
+        def __init__(self):
+            self.next_speaker = "data_visualization_agent"
+            self.next_speaker_task = "Keep visualizing the document"
+
+    mock_structured_output = AsyncMock()
 
     # Set max_writer_loops to 4 for faster testing
     base_report_request.max_visualization_loops = 4
@@ -244,16 +265,6 @@ async def test_visualization_loop_avoidance_logic(
         mock_data_visualization_agent,
     )
 
-    # Mock the LLM to always return the document writing agent choice to force a loop
-    class MockRouter:
-        def __init__(self):
-            self.next_speaker = "data_visualization_agent"
-            self.next_speaker_task = "Keep visualizing the document"
-
-    # Create a proper mock for the LLM chain
-    from unittest.mock import MagicMock
-
-    mock_structured_output = AsyncMock()
     mock_structured_output.ainvoke = AsyncMock(return_value=MockRouter())
 
     mock_model = MagicMock()
@@ -296,3 +307,83 @@ async def test_visualization_loop_avoidance_logic(
         f"Expected at least {base_report_request.max_writer_loops + 1} LLM calls, "
         f"but got {mock_structured_output.ainvoke.call_count}"
     )
+
+
+@pytest.mark.asyncio
+async def test_file_loading_agent_with_existing_files(
+    base_report_request,
+    patch_editor_graph_environment: None,
+) -> None:
+    """
+    Test that the file_loading_agent successfully loads content from existing files.
+    """
+    from src.agents.report_editor_graph import (
+        file_loading_agent,
+        ReportEditorGraphState,
+    )
+
+    # Create state with a message mentioning the existing CSV file
+    state = ReportEditorGraphState(
+        request=base_report_request.request,
+        messages=[
+            HumanMessage(
+                content=f"Please load the data from {csv_file_name} for analysis."
+            )
+        ],
+        report="",
+        next_speaker="",
+    )
+
+    # Call the file_loading_agent
+    result = await file_loading_agent(state)
+
+    # Verify the result structure
+    assert "messages" in result
+    assert len(result["messages"]) == 1
+
+    # Verify the loaded content is in the message
+    loaded_message = str(result["messages"][0].content)
+    assert f"Contents of {csv_file_name}:" in loaded_message
+    # Should contain CSV data with headers
+    assert "MONTH_YEAR" in loaded_message
+    assert "SALES_FUNCTIONAL_CURRENCY" in loaded_message
+
+
+@pytest.mark.asyncio
+async def test_file_loading_agent_with_missing_files(
+    base_report_request,
+    patch_editor_graph_environment: None,
+) -> None:
+    """
+    Test that the file_loading_agent handles missing files gracefully.
+    """
+    from src.agents.report_editor_graph import (
+        file_loading_agent,
+        ReportEditorGraphState,
+    )
+
+    # Use a non-existent file name
+    missing_file_name = "non_existent_file.csv"
+
+    # Create state with a message mentioning the non-existent file
+    state = ReportEditorGraphState(
+        request=base_report_request.request,
+        messages=[
+            HumanMessage(
+                content=f"Please load the data from {missing_file_name} for analysis."
+            )
+        ],
+        report="",
+        next_speaker="",
+    )
+
+    # Call the file_loading_agent
+    result = await file_loading_agent(state)
+
+    # Verify the result structure
+    assert "messages" in result
+    assert len(result["messages"]) == 1
+
+    # Verify the missing file message is returned
+    loaded_message = str(result["messages"][0].content)
+    assert f"File {missing_file_name} not found." in loaded_message

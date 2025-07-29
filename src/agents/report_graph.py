@@ -234,10 +234,15 @@ async def generate_report(state: SalesReportGraphState):
     # so no need to explicitly include files.
     text_parts = [
         state.sales_history,
+        "\n",
         state.sales_analysis,
+        "\n",
         state.sales_operational_data,
+        "\n",
         state.special_case_reason,
+        "\n",
         state.sales_in_depth_analysis,
+        "\n",
     ]
 
     result = await editor_workflow.ainvoke(
@@ -248,7 +253,8 @@ async def generate_report(state: SalesReportGraphState):
                     text_parts=text_parts,
                 )
             ],
-        )
+        ),
+        {"recursion_limit": 100},  # Looping is managed within the graph
     )
     return {"report": result["report"]}
 
