@@ -38,8 +38,8 @@ class AppChatModels:
         )
 
         azure_rate_limiter = InMemoryRateLimiter(
-            requests_per_second=12,  # Slightly under max RPM (1K/min = ~16.6/sec)
-            check_every_n_seconds=0.1,  # Check every 100 ms
+            requests_per_second=10,  # Under max RPM (1K/min = ~16.6/sec)
+            check_every_n_seconds=0.2,  # Check every 200 ms
             max_bucket_size=10,  # Allow small bursts
         )
         self.openai_gpt_4o_mini = init_chat_model(
@@ -50,7 +50,7 @@ class AppChatModels:
             azure_deployment="gpt-4o-mini",
             temperature=DEFAULT_TEMPERATURE,
             top_p=DEFAULT_TOP_P,
-            request_timeout=45,  # Set a reasonable timeout for requests
+            request_timeout=60,  # Set a reasonable timeout for requests
             rate_limiter=azure_rate_limiter,
         )
         self.openai_o4_mini = init_chat_model(
@@ -59,7 +59,7 @@ class AppChatModels:
             api_version="2025-01-01-preview",  # Consider making this configurable if needed
             azure_endpoint=app_settings.azure_openai_endpoint,
             azure_deployment="o4-mini",
-            request_timeout=45,  # Set a reasonable timeout for requests
+            request_timeout=60,  # Set a reasonable timeout for requests
             rate_limiter=azure_rate_limiter,
         )
         # Sets a default model; this allow us to change the model used by the agents without changing the code
