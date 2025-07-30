@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import Annotated, Literal
 from pydantic import BaseModel, Field
 
-from langgraph.graph import StateGraph, START
+from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
-from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.prebuilt import ToolNode
 from langgraph.types import Command
 from langchain_core.messages import AnyMessage, SystemMessage, ToolMessage
 
@@ -49,7 +49,7 @@ class CodeAgentState(BaseModel):
 class GraphNodeNames(Enum):
     AGENT = "agent"
     CODE_REVIEW = "code_review"
-    TOOLS = "tools"
+    TOOL_NODE = "tool_node"
     TOOL_RESULT_ASSESSMENT = "tool_result_assessment"
 
 
@@ -109,6 +109,38 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
         messages += state.messages
         result = await llm_with_tools.ainvoke(messages)
         return {"messages": [result]}
+
+    async def continue_condition(
+        state: CodeAgentState,
+    ) -> Literal["agent", "tool_node", "__end__"]:
+        """
+        Determines if the agent should continue based on the current state.
+        """
+        last_message = state.messages[-1]
+
+        # If the last message has tool calls, go to the tool node
+        if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+            return GraphNodeNames.TOOL_NODE.value
+
+        # Else, use an LLM to assess if we should continue
+        assessment_message = render_prompt_template(
+            "code_agent/continue_condition_prompt.md",
+            context={
+                "last_message": str(last_message.content),
+            },
+            type=MessageTypes.HUMAN,
+        )
+
+        review_response = await models.default_non_reasoning_model.ainvoke(
+            [assessment_message]
+        )
+
+        # If the response is to continue, go to the agent node
+        if review_response.content.upper() == "CONTINUE":
+            return GraphNodeNames.AGENT.value
+        # If the response is to stop, end the graph
+        elif review_response.content.upper() == "RESPOND":
+            return END
 
     async def tool_result_assessment(
         state: CodeAgentState,
@@ -194,7 +226,7 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
         agent,
     )
     workflow.add_node(
-        GraphNodeNames.TOOLS.value,
+        GraphNodeNames.TOOL_NODE.value,
         tool_node,
     )
     workflow.add_node(
@@ -207,9 +239,9 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
     )
 
     workflow.add_edge(START, GraphNodeNames.AGENT.value)
-    workflow.add_conditional_edges(GraphNodeNames.AGENT.value, tools_condition)
+    workflow.add_conditional_edges(GraphNodeNames.AGENT.value, continue_condition)
     workflow.add_edge(
-        GraphNodeNames.TOOLS.value,
+        GraphNodeNames.TOOL_NODE.value,
         GraphNodeNames.TOOL_RESULT_ASSESSMENT.value,
     )
     workflow.add_edge(
