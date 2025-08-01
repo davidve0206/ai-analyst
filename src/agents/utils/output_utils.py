@@ -5,7 +5,7 @@ from pathlib import Path
 from markdown_pdf import MarkdownPdf, Section
 from langgraph.graph.state import CompiledStateGraph
 
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from src.configuration.settings import (
     DOCUMENTATION_DIR,
     STORAGE_DIR,

@@ -5,7 +5,7 @@ from src.agents.models import AppChatModels
 from src.agents.tools.python_interpreter import create_python_repl_tool
 from src.agents.utils.output_utils import get_request_temp_dir
 from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 
 
 def get_data_visualization_agent(

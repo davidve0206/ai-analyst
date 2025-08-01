@@ -14,7 +14,7 @@ from src.agents.utils.prompt_utils import (
     MessageTypes,
     render_prompt_template,
 )
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from src.configuration.logger import default_logger
 
 # TODO: This file is a bit convoluted and could be refactored.

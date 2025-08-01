@@ -21,7 +21,7 @@ from src.agents.utils.prompt_utils import (
     render_prompt_template,
 )
 from src.configuration.constants import INTERNAL_DATA
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from src.configuration.logger import default_logger
 from src.configuration.settings import BASE_DIR, app_settings
 
