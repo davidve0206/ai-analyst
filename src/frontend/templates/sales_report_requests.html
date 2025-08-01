@@ -1,0 +1,117 @@
+<!-- Sales Report Requests Section -->
+{% if existing_requests %}
+  <div class="card mb-3">
+    <div class="card-header">
+      <h5 class="card-title mb-0">
+        <i class="fas fa-list me-2"></i>
+        Existing Sales Report Requests
+      </h5>
+    </div>
+    <div class="card-body p-0">
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Period</th>
+              <th>Grouping</th>
+              <th>Currency</th>
+              <th>Recipients</th>
+              <th width="120">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for request in existing_requests %}
+              <tr>
+                <td>
+                  <strong>{{ request.name }}</strong>
+                </td>
+                <td>
+                  <span class="badge bg-secondary">{{ request.period.value }}</span>
+                </td>
+                <td>
+                  {% if request.grouping %}
+                    <span class="badge bg-info">{{ request.grouping.value }}</span>
+                    <br />
+                    <small class="text-muted">{{ request.grouping_value }}</small>
+                  {% else %}
+                    <span class="badge bg-success">Total Sales</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge bg-primary">{{ request.currency.value }}</span>
+                </td>
+                <td>
+                  <small>
+                    {% for recipient in request.recipients %}
+                      <div>{{ recipient.name }} ({{ recipient.email }})</div>
+                    {% endfor %}
+                  </small>
+                </td>
+                <td>
+                  <div class="btn-group" role="group">
+                    <a href="/sales_report/edit/{{ request.id }}" class="btn btn-sm btn-outline-primary" title="Edit"><i class="fas fa-edit"></i></a>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="confirmDelete({{ request.id }}, '{{ request.name }}')" title="Delete"><i class="fas fa-trash"></i></button>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+{% else %}
+  <div class="card text-center">
+    <div class="card-body py-5">
+      <i class="fas fa-chart-line fa-3x text-muted mb-3"></i>
+      <h5 class="card-title">No Sales Report Requests Found</h5>
+      <p class="card-text text-muted">Get started by creating your first sales report request.</p>
+      <a href="/sales_report/create" class="btn btn-primary">
+        <i class="fas fa-plus me-2"></i>
+        Create New Report
+      </a>
+    </div>
+  </div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+          Confirm Delete
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete the sales report request:</p>
+        <p>
+          <strong id="deleteRequestName"></strong>
+        </p>
+        <p class="text-muted">This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <form id="deleteForm" method="post" style="display: inline;">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash me-2"></i>
+            Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmDelete(requestId, requestName) {
+    document.getElementById('deleteRequestName').textContent = requestName
+    document.getElementById('deleteForm').action = '/sales_report/delete/' + requestId
+  
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'))
+    deleteModal.show()
+  }
+</script>
