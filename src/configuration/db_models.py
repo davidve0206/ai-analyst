@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel, model_validator, ConfigDict
+from pydantic import BaseModel, EmailStr, model_validator, ConfigDict
 from sqlalchemy import String, ForeignKey, Enum as SQLEnum
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -34,8 +34,8 @@ class RecipientEmail(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-    email: str
-    name: str
+    email: Optional[EmailStr] = None
+    name: Optional[str] = None
 
 
 class SalesReportRequestBase(BaseModel):
