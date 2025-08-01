@@ -47,6 +47,19 @@ class SalesReportRequestBase(BaseModel):
     currency: SalesCurrencyEnum = SalesCurrencyEnum.FUNCTIONAL
     recipients: list[RecipientEmail]
 
+    @property
+    def name(self) -> str:
+        if self.grouping is None:
+            return "Sales Report - Total Sales"
+        else:
+            return f"Sales Report - {self.grouping.value} - {self.grouping_value}"
+
+    @property
+    def task_id(self) -> str:
+        if self.grouping is None or self.grouping_value is None:
+            return "sales_report_total_sales"
+        return f"sales_report_{self.grouping.value.lower().replace(' ', '_')}_{self.grouping_value.lower().replace(' ', '_')}"
+
 
 class SalesReportRequestCreateDto(SalesReportRequestBase):
     """Model for creating a new sales report request with all validations."""
@@ -75,19 +88,6 @@ class SalesReportRequestCreateDto(SalesReportRequestBase):
         if not self.recipients or len(self.recipients) == 0:
             raise ValueError("At least one recipient must be provided")
         return self
-
-    @property
-    def name(self) -> str:
-        if self.grouping is None:
-            return "Sales Report - Total Sales"
-        else:
-            return f"Sales Report - {self.grouping.value} - {self.grouping_value}"
-
-    @property
-    def task_id(self) -> str:
-        if self.grouping is None or self.grouping_value is None:
-            return "sales_report_total_sales"
-        return f"sales_report_{self.grouping.value.lower().replace(' ', '_')}_{self.grouping_value.lower().replace(' ', '_')}"
 
 
 class SalesReportRequestUpdateDto(SalesReportRequestBase):
