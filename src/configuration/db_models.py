@@ -91,7 +91,9 @@ class SalesReportRequest(SalesReportRequestBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
     # Relationship to recipients
-    recipients: list[RecipientEmail] = Relationship(back_populates="recipients")
+    recipients: list[RecipientEmail] = Relationship(
+        back_populates="sales_report_request"
+    )
 
 
 class SalesReportRequestCreate(SalesReportRequestBase):

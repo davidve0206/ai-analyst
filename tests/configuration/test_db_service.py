@@ -1,106 +1,112 @@
-def test_can_add_sales_report_request(test_session_maker):
-    report = SalesReportRequest(
-        grouping=SalesGroupingsEnum.CITY,
-        grouping_value="Los Angeles",
-        period=KpiPeriodsEnum.MONTHLY,
-    )
+import pytest
+from sqlmodel import Session
 
-    created_report = add_sales_report_request(test_session_maker, report)
-
-    # Verify the function returns the created report with ID
-    assert created_report.id is not None
-    assert created_report.grouping == report.grouping
-    assert created_report.grouping_value == report.grouping_value
-    assert created_report.period == report.period
-
-
-def test_can_add_sales_report_with_no_grouping(test_session_maker):
-    """Test adding a sales report with None grouping values."""
-    report = SalesReportRequest(
-        grouping=None,
-        grouping_value=None,
-        period=KpiPeriodsEnum.YEARLY,
-    )
-
-    created_report = add_sales_report_request(test_session_maker, report)
-
-    assert created_report.id is not None
-    assert created_report.grouping is None
-    assert created_report.grouping_value is None
-    assert created_report.name == "Sales Report - Total Sales"
+from src.configuration.db_service import SalesReportsDB
+from src.configuration.db_models import (
+    SalesReportRequestCreate,
+    SalesReportRequest,
+    RecipientEmailBase,
+    KpiPeriodsEnum,
+    SalesGroupingsEnum,
+    SalesCurrencyEnum,
+    RecipientEmail,
+)
 
 
-def test_can_add_retrieve_sales_report_requests(test_session_maker):
-    report = SalesReportRequest(
-        grouping=SalesGroupingsEnum.COUNTRY,
-        grouping_value="United States",
-        period=KpiPeriodsEnum.QUARTERLY,
-    )
-
-    add_sales_report_request(test_session_maker, report)
-    retrieved_report = get_sales_report_request(test_session_maker)
-    assert retrieved_report.grouping == report.grouping
-    assert retrieved_report.grouping_value == report.grouping_value
-    assert retrieved_report.period == report.period
+@pytest.fixture
+def test_db():
+    """Create an in-memory database for testing."""
+    return SalesReportsDB(db_url="sqlite:///:memory:")
 
 
-def test_adding_multiple_sales_reports_allows_multiple(test_session_maker):
-    """Test that multiple sales reports can now coexist."""
-    from src.configuration.db_models import get_sales_report_requests
-
-    report1 = SalesReportRequest(
-        grouping=SalesGroupingsEnum.CITY,
-        grouping_value="Los Angeles",
-        period=KpiPeriodsEnum.MONTHLY,
-    )
-    report2 = SalesReportRequest(
-        grouping=SalesGroupingsEnum.COUNTRY,
-        grouping_value="United States",
-        period=KpiPeriodsEnum.YEARLY,
-    )
-
-    add_sales_report_request(test_session_maker, report1)
-    add_sales_report_request(test_session_maker, report2)
-
-    all_reports = get_sales_report_requests(test_session_maker)
-    assert len(all_reports) == 2
-
-
-def test_sales_report_name_property(test_session_maker):
-    """Test the name property of SalesReportRequest."""
-    report = SalesReportRequest(
-        grouping=SalesGroupingsEnum.PRODUCT_FAMILY,
-        grouping_value="Electronics",
-        period=KpiPeriodsEnum.QUARTERLY,
-    )
-
-    expected_name = "Sales Report - Product Family - Electronics"
-    assert report.name == expected_name
-
-    # Test that it works after adding to database
-    add_sales_report_request(test_session_maker, report)
-    retrieved_report = get_sales_report_request(test_session_maker)
-    assert retrieved_report.name == expected_name
-
-
-def test_can_add_sales_report_with_recipients(test_session_maker):
-    """Test adding a sales report with recipient emails."""
+def test_create_sales_report_request_basic(test_db):
+    """Test creating a basic sales report request with all data persisted correctly."""
+    # Arrange
     recipients = [
-        RecipientEmail(email="user1@example.com", name="User One"),
-        RecipientEmail(email="user2@example.com", name="User Two"),
+        RecipientEmailBase(email="test1@example.com", name="Test User 1"),
+        RecipientEmailBase(email="test2@example.com", name="Test User 2"),
     ]
 
-    report = SalesReportRequest(
+    request_data = SalesReportRequestCreate(
+        period=KpiPeriodsEnum.MONTHLY,
         grouping=SalesGroupingsEnum.COUNTRY,
         grouping_value="Spain",
-        period=KpiPeriodsEnum.QUARTERLY,
+        currency=SalesCurrencyEnum.FUNCTIONAL,
         recipients=recipients,
     )
 
-    created_report = add_sales_report_request(test_session_maker, report)
+    # Act
+    result = test_db.create_sales_report_request(request_data)
 
-    # Verify recipients were saved and have IDs
-    assert len(created_report.recipients) == 2
-    assert all(recipient.id is not None for recipient in created_report.recipients)
-    assert created_report.recipients[0].email == "user1@example.com"
-    assert created_report.recipients[1].name == "User Two"
+    # Assert - Check the returned object
+    assert isinstance(result, SalesReportRequest)
+    assert result.id is not None
+    assert result.period == KpiPeriodsEnum.MONTHLY
+    assert result.grouping == SalesGroupingsEnum.COUNTRY
+    assert result.grouping_value == "Spain"
+    assert result.currency == SalesCurrencyEnum.FUNCTIONAL
+    assert len(result.recipients) == 2
+
+    # Check recipients
+    assert result.recipients[0].email == "test1@example.com"
+    assert result.recipients[0].name == "Test User 1"
+    assert result.recipients[1].email == "test2@example.com"
+    assert result.recipients[1].name == "Test User 2"
+
+    # Assert - Verify data is actually in the database
+    with Session(test_db.engine) as session:
+        # Check sales report request is in database
+        db_request = session.get(SalesReportRequest, result.id)
+        assert db_request is not None
+        assert db_request.period == KpiPeriodsEnum.MONTHLY
+        assert db_request.grouping == SalesGroupingsEnum.COUNTRY
+        assert db_request.grouping_value == "Spain"
+        assert db_request.currency == SalesCurrencyEnum.FUNCTIONAL
+
+        # Check recipients are in database
+        db_recipients = (
+            session.query(RecipientEmail).filter_by(parent_id=result.id).all()
+        )
+        assert len(db_recipients) == 2
+
+        emails = [r.email for r in db_recipients]
+        names = [r.name for r in db_recipients]
+        assert "test1@example.com" in emails
+        assert "test2@example.com" in emails
+        assert "Test User 1" in names
+        assert "Test User 2" in names
+
+
+def test_create_sales_report_request_without_grouping(test_db):
+    """Test creating a sales report request without grouping (total sales)."""
+    # Arrange
+    recipients = [RecipientEmailBase(email="admin@example.com", name="Admin User")]
+
+    request_data = SalesReportRequestCreate(
+        period=KpiPeriodsEnum.QUARTERLY,
+        grouping=None,
+        grouping_value=None,
+        currency=SalesCurrencyEnum.REPORTING,
+        recipients=recipients,
+    )
+
+    # Act
+    result = test_db.create_sales_report_request(request_data)
+
+    # Assert
+    assert isinstance(result, SalesReportRequest)
+    assert result.id is not None
+    assert result.period == KpiPeriodsEnum.QUARTERLY
+    assert result.grouping is None
+    assert result.grouping_value is None
+    assert result.currency == SalesCurrencyEnum.REPORTING
+    assert len(result.recipients) == 1
+    assert result.recipients[0].email == "admin@example.com"
+    assert result.recipients[0].name == "Admin User"
+
+    # Verify in database
+    with Session(test_db.engine) as session:
+        db_request = session.get(SalesReportRequest, result.id)
+        assert db_request is not None
+        assert db_request.grouping is None
+        assert db_request.grouping_value is None
