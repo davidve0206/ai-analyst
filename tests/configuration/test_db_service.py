@@ -3,14 +3,15 @@ from sqlmodel import Session, select
 
 from src.configuration.db_service import SalesReportsDB
 from src.configuration.db_models import (
-    SalesReportRequestCreate,
-    SalesReportRequestUpdate,
+    SalesReportRequestCreateDto,
+    SalesReportRequestUpdateDto,
+    SalesReportRequestModel,
     SalesReportRequest,
-    RecipientEmailBase,
+    RecipientEmailModel,
+    RecipientEmail,
     KpiPeriodsEnum,
     SalesGroupingsEnum,
     SalesCurrencyEnum,
-    RecipientEmail,
 )
 
 
@@ -24,11 +25,11 @@ def test_create_sales_report_request_basic(test_db: SalesReportsDB):
     """Test creating a basic sales report request with all data persisted correctly."""
     # Arrange
     recipients = [
-        RecipientEmailBase(email="test1@example.com", name="Test User 1"),
-        RecipientEmailBase(email="test2@example.com", name="Test User 2"),
+        RecipientEmail(email="test1@example.com", name="Test User 1"),
+        RecipientEmail(email="test2@example.com", name="Test User 2"),
     ]
 
-    request_data = SalesReportRequestCreate(
+    request_data = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.MONTHLY,
         grouping=SalesGroupingsEnum.COUNTRY,
         grouping_value="Spain",
@@ -57,7 +58,7 @@ def test_create_sales_report_request_basic(test_db: SalesReportsDB):
     # Assert - Verify data is actually in the database
     with Session(test_db.engine) as session:
         # Check sales report request is in database
-        db_request = session.get(SalesReportRequest, result.id)
+        db_request = session.get(SalesReportRequestModel, result.id)
         assert db_request is not None
         assert db_request.period == KpiPeriodsEnum.MONTHLY
         assert db_request.grouping == SalesGroupingsEnum.COUNTRY
@@ -66,7 +67,9 @@ def test_create_sales_report_request_basic(test_db: SalesReportsDB):
 
         # Check recipients are in database
         db_recipients = session.exec(
-            select(RecipientEmail).where(RecipientEmail.parent_id == result.id)
+            select(RecipientEmailModel).where(
+                RecipientEmailModel.request_id == result.id
+            )
         ).all()
         assert len(db_recipients) == 2
 
@@ -81,9 +84,9 @@ def test_create_sales_report_request_basic(test_db: SalesReportsDB):
 def test_create_sales_report_request_without_grouping(test_db: SalesReportsDB):
     """Test creating a sales report request without grouping (total sales)."""
     # Arrange
-    recipients = [RecipientEmailBase(email="admin@example.com", name="Admin User")]
+    recipients = [RecipientEmail(email="admin@example.com", name="Admin User")]
 
-    request_data = SalesReportRequestCreate(
+    request_data = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.QUARTERLY,
         grouping=None,
         grouping_value=None,
@@ -107,7 +110,7 @@ def test_create_sales_report_request_without_grouping(test_db: SalesReportsDB):
 
     # Verify in database
     with Session(test_db.engine) as session:
-        db_request = session.get(SalesReportRequest, result.id)
+        db_request = session.get(SalesReportRequestModel, result.id)
         assert db_request is not None
         assert db_request.grouping is None
         assert db_request.grouping_value is None
@@ -117,11 +120,11 @@ def test_update_sales_report_request_with_email_changes(test_db: SalesReportsDB)
     """Test updating a sales report request with changes to recipient emails."""
     # Arrange - Create initial request
     initial_recipients = [
-        RecipientEmailBase(email="user1@example.com", name="User One"),
-        RecipientEmailBase(email="user2@example.com", name="User Two"),
+        RecipientEmail(email="user1@example.com", name="User One"),
+        RecipientEmail(email="user2@example.com", name="User Two"),
     ]
 
-    initial_request = SalesReportRequestCreate(
+    initial_request = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.MONTHLY,
         grouping=SalesGroupingsEnum.CITY,
         grouping_value="Madrid",
@@ -133,14 +136,14 @@ def test_update_sales_report_request_with_email_changes(test_db: SalesReportsDB)
 
     # Arrange - Prepare update with different recipients
     updated_recipients = [
-        RecipientEmailBase(
+        RecipientEmail(
             email="user1@example.com", name="User One Updated"
         ),  # Updated name
-        RecipientEmailBase(email="user3@example.com", name="User Three"),  # New user
+        RecipientEmail(email="user3@example.com", name="User Three"),  # New user
         # Note: user2@example.com is removed
     ]
 
-    update_data = SalesReportRequestUpdate(
+    update_data = SalesReportRequestUpdateDto(
         id=created_request.id,
         period=KpiPeriodsEnum.QUARTERLY,  # Changed
         grouping=SalesGroupingsEnum.CITY,
@@ -173,7 +176,7 @@ def test_update_sales_report_request_with_email_changes(test_db: SalesReportsDB)
     # Assert - Verify data is correctly updated in the database
     with Session(test_db.engine) as session:
         # Check sales report request is updated in database
-        db_request = session.get(SalesReportRequest, result.id)
+        db_request = session.get(SalesReportRequestModel, result.id)
         assert db_request is not None
         assert db_request.period == KpiPeriodsEnum.QUARTERLY
         assert db_request.grouping == SalesGroupingsEnum.CITY
@@ -182,7 +185,9 @@ def test_update_sales_report_request_with_email_changes(test_db: SalesReportsDB)
 
         # Check recipients are correctly updated in database
         db_recipients = session.exec(
-            select(RecipientEmail).where(RecipientEmail.parent_id == result.id)
+            select(RecipientEmailModel).where(
+                RecipientEmailModel.request_id == result.id
+            )
         ).all()
         assert len(db_recipients) == 2
 
@@ -199,10 +204,10 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
     """Test updating basic fields while keeping the same recipients."""
     # Arrange - Create initial request
     initial_recipients = [
-        RecipientEmailBase(email="admin@example.com", name="Admin User"),
+        RecipientEmail(email="admin@example.com", name="Admin User"),
     ]
 
-    initial_request = SalesReportRequestCreate(
+    initial_request = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.YEARLY,
         grouping=SalesGroupingsEnum.PRODUCT_FAMILY,
         grouping_value="Electronics",
@@ -213,7 +218,7 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
     created_request = test_db.create_sales_report_request(initial_request)
 
     # Arrange - Prepare update with same recipients but different other fields
-    update_data = SalesReportRequestUpdate(
+    update_data = SalesReportRequestUpdateDto(
         id=created_request.id,
         period=KpiPeriodsEnum.MONTHLY,  # Changed
         grouping=None,  # Changed to no grouping
@@ -238,7 +243,7 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
 
     # Assert - Verify data is correctly updated in the database
     with Session(test_db.engine) as session:
-        db_request = session.get(SalesReportRequest, result.id)
+        db_request = session.get(SalesReportRequestModel, result.id)
         assert db_request is not None
         assert db_request.period == KpiPeriodsEnum.MONTHLY
         assert db_request.grouping is None
@@ -247,7 +252,9 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
 
         # Check that recipients are still correct in database
         db_recipients = session.exec(
-            select(RecipientEmail).where(RecipientEmail.parent_id == result.id)
+            select(RecipientEmailModel).where(
+                RecipientEmailModel.request_id == result.id
+            )
         ).all()
         assert len(db_recipients) == 1
         assert db_recipients[0].email == "admin@example.com"
@@ -256,13 +263,13 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
 
 def test_update_sales_report_request_nonexistent(test_db: SalesReportsDB):
     """Test updating a non-existent sales report request raises ValueError."""
-    update_data = SalesReportRequestUpdate(
+    update_data = SalesReportRequestUpdateDto(
         id=99999,  # Non-existent ID
         period=KpiPeriodsEnum.MONTHLY,
         grouping=None,
         grouping_value=None,
         currency=SalesCurrencyEnum.FUNCTIONAL,
-        recipients=[RecipientEmailBase(email="test@example.com", name="Test User")],
+        recipients=[RecipientEmail(email="test@example.com", name="Test User")],
     )
 
     # Act & Assert - Try to update a request that doesn't exist
@@ -274,12 +281,12 @@ def test_delete_sales_report_request_with_recipients(test_db: SalesReportsDB):
     """Test deleting a sales report request removes it and all associated recipients."""
     # Arrange - Create a request with multiple recipients
     recipients = [
-        RecipientEmailBase(email="user1@example.com", name="User One"),
-        RecipientEmailBase(email="user2@example.com", name="User Two"),
-        RecipientEmailBase(email="user3@example.com", name="User Three"),
+        RecipientEmail(email="user1@example.com", name="User One"),
+        RecipientEmail(email="user2@example.com", name="User Two"),
+        RecipientEmail(email="user3@example.com", name="User Three"),
     ]
 
-    request_data = SalesReportRequestCreate(
+    request_data = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.MONTHLY,
         grouping=SalesGroupingsEnum.COUNTRY,
         grouping_value="France",
@@ -300,12 +307,14 @@ def test_delete_sales_report_request_with_recipients(test_db: SalesReportsDB):
     # Assert - Verify both request and recipients are deleted from database
     with Session(test_db.engine) as session:
         # Check that the request is deleted
-        db_request = session.get(SalesReportRequest, request_id)
+        db_request = session.get(SalesReportRequestModel, request_id)
         assert db_request is None
 
         # Check that all associated recipients are also deleted
         db_recipients = session.exec(
-            select(RecipientEmail).where(RecipientEmail.parent_id == request_id)
+            select(RecipientEmailModel).where(
+                RecipientEmailModel.request_id == request_id
+            )
         ).all()
         assert len(db_recipients) == 0
 
@@ -320,30 +329,30 @@ def test_delete_sales_report_request_nonexistent(test_db: SalesReportsDB):
 def test_get_all_sales_report_requests(test_db: SalesReportsDB):
     """Test retrieving all sales report requests from the database."""
     # Arrange - Create multiple requests
-    request1_data = SalesReportRequestCreate(
+    request1_data = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.MONTHLY,
         grouping=SalesGroupingsEnum.COUNTRY,
         grouping_value="Spain",
         currency=SalesCurrencyEnum.FUNCTIONAL,
-        recipients=[RecipientEmailBase(email="user1@example.com", name="User One")],
+        recipients=[RecipientEmail(email="user1@example.com", name="User One")],
     )
 
-    request2_data = SalesReportRequestCreate(
+    request2_data = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.QUARTERLY,
         grouping=None,
         grouping_value=None,
         currency=SalesCurrencyEnum.REPORTING,
-        recipients=[RecipientEmailBase(email="user2@example.com", name="User Two")],
+        recipients=[RecipientEmail(email="user2@example.com", name="User Two")],
     )
 
-    request3_data = SalesReportRequestCreate(
+    request3_data = SalesReportRequestCreateDto(
         period=KpiPeriodsEnum.YEARLY,
         grouping=SalesGroupingsEnum.CITY,
         grouping_value="Madrid",
         currency=SalesCurrencyEnum.FUNCTIONAL,
         recipients=[
-            RecipientEmailBase(email="user3@example.com", name="User Three"),
-            RecipientEmailBase(email="user4@example.com", name="User Four"),
+            RecipientEmail(email="user3@example.com", name="User Three"),
+            RecipientEmail(email="user4@example.com", name="User Four"),
         ],
     )
 

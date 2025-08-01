@@ -1,8 +1,14 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, List
 
-from pydantic import model_validator
-from sqlmodel import SQLModel, Field, Relationship
+from pydantic import BaseModel, model_validator, ConfigDict
+from sqlalchemy import String, ForeignKey, Enum as SQLEnum
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+
+# SQLAlchemy Base
+class Base(DeclarativeBase):
+    pass
 
 
 class KpiPeriodsEnum(Enum):
@@ -22,34 +28,28 @@ class SalesCurrencyEnum(Enum):
     REPORTING = "Reporting currency"
 
 
-class RecipientEmailBase(SQLModel):
+# Pydantic Models for API/validation
+class RecipientEmail(BaseModel):
     """Base model for recipient emails with validation."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     email: str
     name: str
 
 
-class RecipientEmail(RecipientEmailBase, table=True):
-    """Database table model for recipient emails."""
-
-    __tablename__ = "recipient_emails"
-
-    id: Optional[int] = Field(default=None, primary_key=True)
-    parent_id: int = Field(foreign_key="sales_report_requests.id")
-
-    # Relationship back to the sales report
-    sales_report_request: Optional["SalesReportRequest"] = Relationship(
-        back_populates="recipients"
-    )
-
-
-class SalesReportRequestBase(SQLModel):
-    """Base model for sales report requests with validation."""
+class SalesReportRequestBase(BaseModel):
+    """Base model for sales report requests without validation."""
 
     period: KpiPeriodsEnum
-    grouping: Optional[SalesGroupingsEnum] = Field(default=None)
-    grouping_value: Optional[str] = Field(default=None)
-    currency: SalesCurrencyEnum = Field(default=SalesCurrencyEnum.FUNCTIONAL)
+    grouping: Optional[SalesGroupingsEnum] = None
+    grouping_value: Optional[str] = None
+    currency: SalesCurrencyEnum = SalesCurrencyEnum.FUNCTIONAL
+    recipients: list[RecipientEmail]
+
+
+class SalesReportRequestCreateDto(SalesReportRequestBase):
+    """Model for creating a new sales report request with all validations."""
 
     @model_validator(mode="before")
     def validate_grouping_relationship(cls, values):
@@ -69,6 +69,13 @@ class SalesReportRequestBase(SQLModel):
             )
         return values
 
+    @model_validator(mode="after")
+    def validate_recipients(self):
+        """Validate that at least one recipient is provided."""
+        if not self.recipients or len(self.recipients) == 0:
+            raise ValueError("At least one recipient must be provided")
+        return self
+
     @property
     def name(self) -> str:
         if self.grouping is None:
@@ -83,33 +90,53 @@ class SalesReportRequestBase(SQLModel):
         return f"sales_report_{self.grouping.value.lower().replace(' ', '_')}_{self.grouping_value.lower().replace(' ', '_')}"
 
 
-class SalesReportRequest(SalesReportRequestBase, table=True):
+class SalesReportRequestUpdateDto(SalesReportRequestBase):
+    """Model for updating an existing sales report request."""
+
+    id: int
+
+
+class SalesReportRequest(SalesReportRequestBase):
+    """Base model for sales report requests without validation after DB retrieval."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+
+
+# SQLAlchemy Models for database
+class RecipientEmailModel(Base):
+    """Database table model for recipient emails."""
+
+    __tablename__ = "recipient_emails"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String)
+    request_id: Mapped[int] = mapped_column(ForeignKey("sales_report_requests.id"))
+
+    # Relationship back to the sales report
+    sales_report_request: Mapped["SalesReportRequestModel"] = relationship(
+        back_populates="recipients"
+    )
+
+
+class SalesReportRequestModel(Base):
     """Database table model for sales report requests."""
 
     __tablename__ = "sales_report_requests"
 
-    id: Optional[int] = Field(default=None, primary_key=True)
-
-    # Relationship to recipients with cascade delete
-    recipients: list[RecipientEmail] = Relationship(
-        back_populates="sales_report_request", cascade_delete=True
+    id: Mapped[int] = mapped_column(primary_key=True)
+    period: Mapped[KpiPeriodsEnum] = mapped_column(SQLEnum(KpiPeriodsEnum))
+    grouping: Mapped[Optional[SalesGroupingsEnum]] = mapped_column(
+        SQLEnum(SalesGroupingsEnum), nullable=True
+    )
+    grouping_value: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    currency: Mapped[SalesCurrencyEnum] = mapped_column(
+        SQLEnum(SalesCurrencyEnum), default=SalesCurrencyEnum.FUNCTIONAL
     )
 
-
-class SalesReportRequestCreate(SalesReportRequestBase):
-    """Model for creating a new sales report request."""
-
-    recipients: list[RecipientEmailBase]
-
-    @model_validator(mode="after")
-    def validate_recipients(self):
-        """Validate that at least one recipient is provided."""
-        if not self.recipients or len(self.recipients) == 0:
-            raise ValueError("At least one recipient must be provided")
-        return self
-
-
-class SalesReportRequestUpdate(SalesReportRequestCreate):
-    """Model for updating an existing sales report request."""
-
-    id: int
+    # Relationship to recipients with cascade delete
+    recipients: Mapped[List["RecipientEmailModel"]] = relationship(
+        back_populates="sales_report_request", cascade="all, delete-orphan"
+    )

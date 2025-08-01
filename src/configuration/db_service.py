@@ -1,16 +1,16 @@
 import os
-
 from typing import Optional
 
-from sqlalchemy import create_engine, delete
-from sqlalchemy.orm import selectinload
-from sqlmodel import SQLModel, Session, select
+from sqlalchemy import create_engine, delete, select
+from sqlalchemy.orm import selectinload, Session
 
 from .db_models import (
-    SalesReportRequestCreate,
-    SalesReportRequestUpdate,
+    Base,
+    SalesReportRequestCreateDto,
+    SalesReportRequestUpdateDto,
     SalesReportRequest,
-    RecipientEmail,
+    SalesReportRequestModel,
+    RecipientEmailModel,
 )
 
 
@@ -30,10 +30,10 @@ class SalesReportsDB:
         self.engine = create_engine(db_url, echo=False)
 
         # Create tables if they don't exist
-        SQLModel.metadata.create_all(self.engine)
+        Base.metadata.create_all(self.engine)
 
     def create_sales_report_request(
-        self, request_data: SalesReportRequestCreate
+        self, request_data: SalesReportRequestCreateDto
     ) -> SalesReportRequest:
         """Create a new sales report request in the database.
 
@@ -45,7 +45,7 @@ class SalesReportsDB:
         """
         with Session(self.engine) as session:
             # Create the main sales report request
-            db_request = SalesReportRequest(
+            db_request = SalesReportRequestModel(
                 period=request_data.period,
                 grouping=request_data.grouping,
                 grouping_value=request_data.grouping_value,
@@ -54,7 +54,7 @@ class SalesReportsDB:
 
             # Create recipient emails and establish relationship directly
             db_request.recipients = [
-                RecipientEmail(email=recipient.email, name=recipient.name)
+                RecipientEmailModel(email=recipient.email, name=recipient.name)
                 for recipient in request_data.recipients
             ]
 
@@ -62,14 +62,14 @@ class SalesReportsDB:
             session.add(db_request)
             session.commit()
 
-            # Refresh and load relationships explicitly
+            # Refresh to ensure all relationships are loaded
             session.refresh(db_request)
-            _ = db_request.recipients
 
-            return db_request
+            # Convert to Pydantic model for return
+            return SalesReportRequest.model_validate(db_request)
 
     def update_sales_report_request(
-        self, update_data: SalesReportRequestUpdate
+        self, update_data: SalesReportRequestUpdateDto
     ) -> SalesReportRequest:
         """Update an existing sales report request in the database.
 
@@ -81,7 +81,7 @@ class SalesReportsDB:
         """
         with Session(self.engine) as session:
             # Get the existing request
-            db_request = session.get(SalesReportRequest, update_data.id)
+            db_request = session.get(SalesReportRequestModel, update_data.id)
             if db_request is None:
                 raise ValueError(
                     f"SalesReportRequest with id {update_data.id} not found"
@@ -94,30 +94,25 @@ class SalesReportsDB:
             db_request.currency = update_data.currency
 
             # Handle recipients - delete existing ones first, then create new ones
-            # This approach avoids constraint violations with NOT NULL parent_id
-
-            # Bulk delete existing recipients
-            session.exec(
-                delete(RecipientEmail).where(RecipientEmail.parent_id == update_data.id)
+            session.execute(
+                delete(RecipientEmailModel).where(
+                    RecipientEmailModel.request_id == update_data.id
+                )
             )
-
-            # Flush to ensure deletions are processed before inserts
             session.flush()
 
             # Create new recipients and add them to the relationship
             db_request.recipients = [
-                RecipientEmail(email=recipient.email, name=recipient.name)
+                RecipientEmailModel(email=recipient.email, name=recipient.name)
                 for recipient in update_data.recipients
             ]
 
             # Commit the changes
             session.commit()
-
-            # Refresh and load relationships
             session.refresh(db_request)
-            _ = db_request.recipients
 
-            return db_request
+            # Convert to Pydantic model for return
+            return SalesReportRequest.model_validate(db_request)
 
     def delete_sales_report_request(self, request_id: int) -> SalesReportRequest:
         """Delete a sales report request and all its associated recipient emails.
@@ -132,19 +127,25 @@ class SalesReportsDB:
             ValueError: If no request with the given ID exists
         """
         with Session(self.engine) as session:
-            # Get the existing request
-            db_request = session.get(SalesReportRequest, request_id)
+            # Get the existing request with eager loading
+            stmt = (
+                select(SalesReportRequestModel)
+                .options(selectinload(SalesReportRequestModel.recipients))
+                .where(SalesReportRequestModel.id == request_id)
+            )
+
+            db_request = session.execute(stmt).scalar_one_or_none()
             if db_request is None:
                 raise ValueError(f"SalesReportRequest with id {request_id} not found")
 
-            # Load the recipients before deletion to return them
-            _ = db_request.recipients
+            # Convert to Pydantic model before deletion
+            result = SalesReportRequest.model_validate(db_request)
 
             # Delete the request - cascade will handle recipients automatically
             session.delete(db_request)
             session.commit()
 
-            return db_request
+            return result
 
     def get_all_sales_report_requests(self) -> list[SalesReportRequest]:
         """Retrieve all sales report requests from the database.
@@ -154,12 +155,15 @@ class SalesReportsDB:
         """
         with Session(self.engine) as session:
             # Get all sales report requests with recipients eagerly loaded
-            statement = select(SalesReportRequest).options(
-                selectinload(SalesReportRequest.recipients)
+            stmt = select(SalesReportRequestModel).options(
+                selectinload(SalesReportRequestModel.recipients)
             )
-            requests = session.exec(statement).all()
+            db_requests = session.execute(stmt).scalars().all()
 
-            return list(requests)
+            # Convert to Pydantic models for return
+            return [
+                SalesReportRequest.model_validate(request) for request in db_requests
+            ]
 
 
 default_db = SalesReportsDB()
