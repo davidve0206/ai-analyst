@@ -2,7 +2,7 @@ import base64
 from enum import Enum
 from pathlib import Path
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.messages.content_blocks import (
     BaseDataContentBlock,
     PlainTextContentBlock,
@@ -35,7 +35,7 @@ def render_prompt_template(
     template_name: str,
     context: dict[str, str | int | float],
     type: MessageTypes = MessageTypes.SYSTEM,
-) -> SystemMessage | HumanMessage:
+) -> SystemMessage | HumanMessage | AIMessage:
     """
     Render a system prompt template from the specified file.
 

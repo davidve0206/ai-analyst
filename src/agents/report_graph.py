@@ -201,7 +201,7 @@ async def process_special_case(state: SalesReportGraphState):
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
             "special_case_reason": state.special_case_reason,
-            "input_location": str(INTERNAL_DATA.path),
+            "internal_data_file_name": INTERNAL_DATA.name,
             "data_description": INTERNAL_DATA.description,
             "sales_history": state.sales_history,
             "sales_analysis": state.sales_analysis,
@@ -234,9 +234,15 @@ async def generate_report(state: SalesReportGraphState):
     # so no need to explicitly include files.
     text_parts = [
         state.sales_history,
+        "\n",
         state.sales_analysis,
+        "\n",
         state.sales_operational_data,
+        "\n",
+        state.special_case_reason,
+        "\n",
         state.sales_in_depth_analysis,
+        "\n",
     ]
 
     result = await editor_workflow.ainvoke(
@@ -247,7 +253,8 @@ async def generate_report(state: SalesReportGraphState):
                     text_parts=text_parts,
                 )
             ],
-        )
+        ),
+        {"recursion_limit": 100},  # Looping is managed within the graph
     )
     return {"report": result["report"]}
 

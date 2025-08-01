@@ -10,7 +10,7 @@ from pydantic import BaseModel
 from src.configuration.settings import DATA_DIR
 
 financials_description = """Detailed per-invoice data of the company.
-        
+
 Some of the key columns include:
 - ENTITY_CURRENCY: The currency in which the entity that made the sale operates.
 - CURRENCY: The currency in which the invoice is issued.
@@ -22,6 +22,8 @@ Some of the key columns include:
 - GROSS_AMOUNT: The gross amount of the invoice, in the company's reporting currency - EUR.
 - DISCOUNT_AMOUNT: Discount amount applied to the invoice, in the company's reporting currency - EUR.
 - SoldToID: The ID of the customer who made the purchase.
+- ITEM_CODE: The code of the item sold.
+- ITEM_EU_FAMILY: The EU family classification of the item sold.
 
 To load to dataframe, use encoding="ISO-8859-1"
 """

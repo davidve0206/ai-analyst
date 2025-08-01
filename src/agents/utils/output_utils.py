@@ -42,18 +42,13 @@ def get_sales_history_location(request: SalesReportRequest) -> Path:
     return temp_dir / f"{grouping_value}_sales_history.csv"
 
 
-def store_response_with_timestamp(
-    response: str, file_name: str, temp: bool = True
-) -> Path:
+def store_response_with_timestamp(response: str, file_name: str, folder: Path) -> Path:
     """
     Store the agent's response in a file.
     """
     timestamp = datetime.now().strftime("%y%m%d%H%M")
 
-    if temp:
-        file_path = TEMP_DIR / f"{timestamp} - {file_name}.md"
-    else:
-        file_path = STORAGE_DIR / f"{timestamp} - {file_name}.md"
+    file_path = folder / f"{timestamp} - {file_name}.md"
 
     with open(file_path, "a") as file:
         file.write(response)

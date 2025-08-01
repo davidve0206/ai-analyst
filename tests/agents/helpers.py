@@ -1,5 +1,4 @@
 import os
-import re
 from src.configuration.settings import BASE_DIR
 
 
