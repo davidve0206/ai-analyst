@@ -252,3 +252,66 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
         assert len(db_recipients) == 1
         assert db_recipients[0].email == "admin@example.com"
         assert db_recipients[0].name == "Admin User"
+
+
+def test_update_sales_report_request_nonexistent(test_db: SalesReportsDB):
+    """Test updating a non-existent sales report request raises ValueError."""
+    update_data = SalesReportRequestUpdate(
+        id=99999,  # Non-existent ID
+        period=KpiPeriodsEnum.MONTHLY,
+        grouping=None,
+        grouping_value=None,
+        currency=SalesCurrencyEnum.FUNCTIONAL,
+        recipients=[RecipientEmailBase(email="test@example.com", name="Test User")],
+    )
+
+    # Act & Assert - Try to update a request that doesn't exist
+    with pytest.raises(ValueError):
+        test_db.update_sales_report_request(update_data)
+
+
+def test_delete_sales_report_request_with_recipients(test_db: SalesReportsDB):
+    """Test deleting a sales report request removes it and all associated recipients."""
+    # Arrange - Create a request with multiple recipients
+    recipients = [
+        RecipientEmailBase(email="user1@example.com", name="User One"),
+        RecipientEmailBase(email="user2@example.com", name="User Two"),
+        RecipientEmailBase(email="user3@example.com", name="User Three"),
+    ]
+
+    request_data = SalesReportRequestCreate(
+        period=KpiPeriodsEnum.MONTHLY,
+        grouping=SalesGroupingsEnum.COUNTRY,
+        grouping_value="France",
+        currency=SalesCurrencyEnum.FUNCTIONAL,
+        recipients=recipients,
+    )
+
+    created_request = test_db.create_sales_report_request(request_data)
+    request_id = created_request.id
+
+    # Act - Delete the request
+    deleted_request = test_db.delete_sales_report_request(request_id)
+
+    # Assert - Check the returned deleted object (simplified)
+    assert deleted_request.id == request_id
+    assert len(deleted_request.recipients) == 3
+
+    # Assert - Verify both request and recipients are deleted from database
+    with Session(test_db.engine) as session:
+        # Check that the request is deleted
+        db_request = session.get(SalesReportRequest, request_id)
+        assert db_request is None
+
+        # Check that all associated recipients are also deleted
+        db_recipients = session.exec(
+            select(RecipientEmail).where(RecipientEmail.parent_id == request_id)
+        ).all()
+        assert len(db_recipients) == 0
+
+
+def test_delete_sales_report_request_nonexistent(test_db: SalesReportsDB):
+    """Test deleting a non-existent sales report request raises ValueError."""
+    # Act & Assert - Try to delete a request that doesn't exist
+    with pytest.raises(ValueError):
+        test_db.delete_sales_report_request(99999)

@@ -90,9 +90,9 @@ class SalesReportRequest(SalesReportRequestBase, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    # Relationship to recipients
+    # Relationship to recipients with cascade delete
     recipients: list[RecipientEmail] = Relationship(
-        back_populates="sales_report_request"
+        back_populates="sales_report_request", cascade_delete=True
     )
 
 

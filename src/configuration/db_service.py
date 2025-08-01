@@ -117,3 +117,30 @@ class SalesReportsDB:
             _ = db_request.recipients
 
             return db_request
+
+    def delete_sales_report_request(self, request_id: int) -> SalesReportRequest:
+        """Delete a sales report request and all its associated recipient emails.
+
+        Args:
+            request_id: The ID of the sales report request to delete
+
+        Returns:
+            The deleted SalesReportRequest object (before deletion)
+
+        Raises:
+            ValueError: If no request with the given ID exists
+        """
+        with Session(self.engine) as session:
+            # Get the existing request
+            db_request = session.get(SalesReportRequest, request_id)
+            if db_request is None:
+                raise ValueError(f"SalesReportRequest with id {request_id} not found")
+
+            # Load the recipients before deletion to return them
+            _ = db_request.recipients
+
+            # Delete the request - cascade will handle recipients automatically
+            session.delete(db_request)
+            session.commit()
+
+            return db_request
