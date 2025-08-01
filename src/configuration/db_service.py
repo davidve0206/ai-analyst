@@ -3,7 +3,8 @@ import os
 from typing import Optional
 
 from sqlalchemy import create_engine, delete
-from sqlmodel import SQLModel, Session
+from sqlalchemy.orm import selectinload
+from sqlmodel import SQLModel, Session, select
 
 from .db_models import (
     SalesReportRequestCreate,
@@ -144,3 +145,18 @@ class SalesReportsDB:
             session.commit()
 
             return db_request
+
+    def get_all_sales_report_requests(self) -> list[SalesReportRequest]:
+        """Retrieve all sales report requests from the database.
+
+        Returns:
+            List of all SalesReportRequest objects with their recipients loaded
+        """
+        with Session(self.engine) as session:
+            # Get all sales report requests with recipients eagerly loaded
+            statement = select(SalesReportRequest).options(
+                selectinload(SalesReportRequest.recipients)
+            )
+            requests = session.exec(statement).all()
+
+            return list(requests)

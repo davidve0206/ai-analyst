@@ -315,3 +315,64 @@ def test_delete_sales_report_request_nonexistent(test_db: SalesReportsDB):
     # Act & Assert - Try to delete a request that doesn't exist
     with pytest.raises(ValueError):
         test_db.delete_sales_report_request(99999)
+
+
+def test_get_all_sales_report_requests(test_db: SalesReportsDB):
+    """Test retrieving all sales report requests from the database."""
+    # Arrange - Create multiple requests
+    request1_data = SalesReportRequestCreate(
+        period=KpiPeriodsEnum.MONTHLY,
+        grouping=SalesGroupingsEnum.COUNTRY,
+        grouping_value="Spain",
+        currency=SalesCurrencyEnum.FUNCTIONAL,
+        recipients=[RecipientEmailBase(email="user1@example.com", name="User One")],
+    )
+
+    request2_data = SalesReportRequestCreate(
+        period=KpiPeriodsEnum.QUARTERLY,
+        grouping=None,
+        grouping_value=None,
+        currency=SalesCurrencyEnum.REPORTING,
+        recipients=[RecipientEmailBase(email="user2@example.com", name="User Two")],
+    )
+
+    request3_data = SalesReportRequestCreate(
+        period=KpiPeriodsEnum.YEARLY,
+        grouping=SalesGroupingsEnum.CITY,
+        grouping_value="Madrid",
+        currency=SalesCurrencyEnum.FUNCTIONAL,
+        recipients=[
+            RecipientEmailBase(email="user3@example.com", name="User Three"),
+            RecipientEmailBase(email="user4@example.com", name="User Four"),
+        ],
+    )
+
+    # Create the requests
+    created1 = test_db.create_sales_report_request(request1_data)
+    created2 = test_db.create_sales_report_request(request2_data)
+    created3 = test_db.create_sales_report_request(request3_data)
+
+    # Act - Retrieve all requests
+    all_requests = test_db.get_all_sales_report_requests()
+
+    # Assert - Check we got all 3 requests with their IDs
+    assert len(all_requests) == 3
+
+    request_ids = [r.id for r in all_requests]
+    assert created1.id in request_ids
+    assert created2.id in request_ids
+    assert created3.id in request_ids
+
+    # Check that recipients are properly loaded
+    for request in all_requests:
+        assert len(request.recipients) > 0
+
+
+def test_get_all_sales_report_requests_empty(test_db: SalesReportsDB):
+    """Test retrieving all sales report requests when database is empty."""
+    # Act - Retrieve all requests from empty database
+    all_requests = test_db.get_all_sales_report_requests()
+
+    # Assert - Should return empty list
+    assert isinstance(all_requests, list)
+    assert len(all_requests) == 0
