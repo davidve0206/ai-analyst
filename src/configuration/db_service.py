@@ -160,3 +160,6 @@ class SalesReportsDB:
             requests = session.exec(statement).all()
 
             return list(requests)
+
+
+default_db = SalesReportsDB()
