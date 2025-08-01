@@ -201,7 +201,7 @@ async def process_special_case(state: SalesReportGraphState):
             "grouping": state.request.grouping,
             "grouping_value": state.request.grouping_value,
             "special_case_reason": state.special_case_reason,
-            "input_location": str(INTERNAL_DATA.path),
+            "internal_data_file_name": INTERNAL_DATA.name,
             "data_description": INTERNAL_DATA.description,
             "sales_history": state.sales_history,
             "sales_analysis": state.sales_analysis,

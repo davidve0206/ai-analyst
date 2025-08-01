@@ -6,7 +6,6 @@ from langgraph.graph import StateGraph, START, END
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.graph.message import add_messages
 from langchain_core.messages import AnyMessage, HumanMessage
-from langgraph.managed.is_last_step import RemainingSteps
 
 from src.agents.models import default_models as models_client
 from src.agents.internal_data_agent import get_internal_data_agent
@@ -100,7 +99,7 @@ class ResearchGraphState(BaseModel):
     stall_count: int = 0
     stall_count_limit: int = 3
     reset_count: int = 0
-    reset_count_limit: int = 3
+    reset_count_limit: int = 2
     messages: Annotated[list[AnyMessage], add_messages] = Field(default_factory=list)
     progress_ledger: ProgressLedger = ProgressLedger()
 
@@ -153,7 +152,7 @@ DEFAULT_TEAM = Team(
     members=[
         TeamMember(
             name=GraphNodeNames.INTERNAL_DATA_AGENT.value,
-            role="Agent that can retrieve data in from the internal database. Only has access to files mentioned in the task, not to the general internet. Should always be used if you need to retrieve data.",
+            role="Agent that can retrieve data in from the internal database. Only has access to data mentioned in the task, not to the general internet. Should always be used if you need to retrieve data.",
         ),
         TeamMember(
             name=GraphNodeNames.QUANTITATIVE_ANALYSIS_AGENT.value,

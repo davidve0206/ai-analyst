@@ -6,7 +6,7 @@ We are analysing the {periodicity} sales data for data for {grouping} - {groupin
 
 Your task is to try to retrieve additional information, perform an analysis on the reasons for this behaviour and extract actionable insights on how to correct this. For example, retrieving the sale history by client for this {grouping} and analysing if this any particular client has had a change in behaviour.
 
-For this, you can only use the company's detailed sales data, which you can find at {input_location}, which contains {data_description}
+For this, you can only use the company's detailed sales data, which you can find in the file {internal_data_file_name}, which contains {data_description}
 
 This is the only company information you have access to.
 
