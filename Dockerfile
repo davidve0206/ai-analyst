@@ -25,4 +25,4 @@ COPY --from=deps /app/.venv /app/.venv
 COPY . .
 RUN uv sync --frozen --no-dev
 ENV PATH="/app/.venv/bin:$PATH"
-CMD ["streamlit", "run", "frontend_main.py", "--server.address", "0.0.0.0"]
+CMD ["fastapi", "dev", "frontend_main.py", "--host", "0.0.0.0"]
