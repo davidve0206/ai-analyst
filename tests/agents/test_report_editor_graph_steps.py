@@ -13,7 +13,7 @@ from pathlib import Path
 from langchain_core.messages import HumanMessage
 from langgraph.graph.state import CompiledStateGraph
 
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from .helpers import test_temp_dir, csv_file_name
 
 

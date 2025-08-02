@@ -8,12 +8,10 @@ dependencies = [
     "pydantic[email]>=2.11.6",
     "pydantic-settings>=2.9.1",
     "python-crontab>=3.2.0",
-    "streamlit>=1.39.0",
     "azure-identity>=1.23.0",
     "sqlalchemy[asyncio]>=2.0.41",
     "aioodbc>=0.5.0",
     "pytest-asyncio>=1.0.0",
-    "semantic-kernel[google]>=1.32.2",
     "markdown-pdf>=1.7",
     "matplotlib>=3.10.3",
     "langgraph>=0.5.1",
@@ -21,6 +19,9 @@ dependencies = [
     "langchain[google-genai,openai]>=0.3.26",
     "langchain-community>=0.3.27",
     "langchain-experimental>=0.3.4",
+    "jinja2>=3.1.0",
+    "fastapi[standard]>=0.116.1",
+    "pandas>=2.3.1",
 ]
 
 [dependency-groups]

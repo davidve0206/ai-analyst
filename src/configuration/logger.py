@@ -2,15 +2,12 @@ import logging
 import os
 from logging.handlers import RotatingFileHandler
 
-from semantic_kernel.agents.orchestration.magentic import logger as magentic_logger
-
 from src.configuration.settings import LOG_DIR, app_settings
 
 # Log file path
 log_file = LOG_DIR / "app.log"
 
 # Configure logger
-# Follows the format used in semantic_kernel.utils.logging but adds file logging
 logging.basicConfig(
     format="[%(asctime)s - %(name)s:%(lineno)d - %(levelname)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
@@ -24,9 +21,7 @@ logging.basicConfig(
 default_logger = logging.getLogger(__name__)
 default_logger.setLevel(logging.DEBUG)
 
-# Set the logging level for  semantic_kernel.kernel to DEBUG.
 logging.getLogger("kernel").setLevel(logging.DEBUG)
-magentic_logger.setLevel(logging.DEBUG)
 
 # Set tracing
 # LangSmith tracing is handles in environment variables

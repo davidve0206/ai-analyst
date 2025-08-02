@@ -1,6 +1,6 @@
 Today is {date}.
 
-Perform an in-depth analysis of the {periodicity} sales history data, net of discounts, for {grouping} - {grouping_value}. Identify trends, patterns, and insights that can be derived from the data. Provide all of your findings in a structured format, focusing on the most recent period.
+Perform an in-depth analysis of the {kpi_description}. Identify trends, patterns, and insights that can be derived from the data. Provide all of your findings in a structured format, focusing on the most recent period.
 
 The sales data can be found at {input_location}; you can update this file by adding columns for your analysis, or create new files as needed.
 

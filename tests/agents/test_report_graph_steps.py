@@ -13,7 +13,7 @@ import pytest
 import pandas as pd
 
 from src.agents.utils.output_utils import get_all_files_mentioned_in_response
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from .helpers import (
     test_temp_dir,
     csv_file_name,

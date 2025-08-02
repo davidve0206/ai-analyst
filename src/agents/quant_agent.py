@@ -2,7 +2,7 @@ from src.agents.code_agent_with_review import CodeAgentState, PreConfiguredCodeA
 from src.agents.models import AppChatModels
 from src.agents.utils.output_utils import get_request_temp_dir
 from src.agents.utils.prompt_utils import MessageTypes, render_prompt_template
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from src.configuration.settings import app_settings
 
 

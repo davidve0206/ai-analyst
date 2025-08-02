@@ -4,7 +4,7 @@ import pytest
 import pandas as pd
 
 from src.agents.models import default_models, AppChatModels
-from src.configuration.kpis import SalesReportRequest
+from src.configuration.db_models import SalesReportRequest
 from .helpers import test_temp_dir
 
 
