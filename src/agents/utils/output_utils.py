@@ -38,8 +38,7 @@ def get_full_path_to_temp_file(file_name: str, request: SalesReportRequest) -> P
 def get_sales_history_location(request: SalesReportRequest) -> Path:
     """Helper function to get the input location for sales history data."""
     temp_dir = get_request_temp_dir(request)
-    grouping_value = request.grouping_value.replace(" ", "_").lower()
-    return temp_dir / f"{grouping_value}_sales_history.csv"
+    return temp_dir / f"{request.short_name}_sales_history.csv"
 
 
 def store_response_with_timestamp(response: str, file_name: str, folder: Path) -> Path:

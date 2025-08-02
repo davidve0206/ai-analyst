@@ -50,6 +50,7 @@ class Settings(BaseSettings):
 
     # Run configuration
     is_data_current: bool = True
+    retry_limit: int = 3
 
     model_config = ConfigDict(extra="ignore")
 

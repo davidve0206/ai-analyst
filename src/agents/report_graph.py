@@ -51,17 +51,13 @@ async def retrieve_sales_history(state: SalesReportGraphState):
     First LLM call, retrieve the sales history for the last 3 years
     from the database.
     """
-    default_logger.info(
-        f"Retrieving sales history for {state.request.grouping} - {state.request.grouping_value}."
-    )
+    default_logger.info(f"Retrieving sales history for {state.request.name}.")
     output_location = get_sales_history_location(state.request)
     task_prompt = render_prompt_template(
         template_name="retrieve_sales_step_prompt.md",
         context={
             "date": app_settings.analysis_date,
-            "periodicity": state.request.period,
-            "grouping": state.request.grouping,
-            "grouping_value": state.request.grouping_value,
+            "kpi_description": state.request.description,
             "currency": state.request.currency,
             "output_location": str(output_location),
         },
@@ -82,17 +78,13 @@ async def process_sales_data(state: SalesReportGraphState):
     """
     Process the sales data retrieved from the database.
     """
-    default_logger.info(
-        f"Processing sales data for {state.request.grouping} - {state.request.grouping_value}."
-    )
+    default_logger.info(f"Processing sales data for {state.request.name}.")
     input_location = get_sales_history_location(state.request)
     task_prompt = render_prompt_template(
         template_name="analyse_sales_step_prompt.md",
         context={
             "date": app_settings.analysis_date,
-            "grouping": state.request.grouping,
-            "grouping_value": state.request.grouping_value,
-            "periodicity": state.request.period,
+            "kpi_description": state.request.description,
             "input_location": str(input_location),
         },
         type=MessageTypes.HUMAN,
@@ -106,17 +98,17 @@ async def process_sales_data(state: SalesReportGraphState):
 
 async def retrieve_operational_data(state: SalesReportGraphState):
     """Retrieve operational data for the sales history."""
-    default_logger.info(
-        f"Retrieving operational data for {state.request.grouping} - {state.request.grouping_value}."
-    )
+    default_logger.info(f"Retrieving operational data for {state.request.name}.")
     sales_history_location = get_sales_history_location(state.request)
     task_message = render_prompt_template(
         template_name="retrieve_operational_data_step_prompt.md",
         context={
             "date": app_settings.analysis_date,
-            "periodicity": state.request.period,
-            "grouping": state.request.grouping,
-            "grouping_value": state.request.grouping_value,
+            "kpi_description": state.request.description,
+            "grouping_str": f"by {state.request.grouping.value} and by"
+            if state.request.grouping
+            else "by",
+            "periodicity": state.request.period.value,
             "previous_output_location": str(sales_history_location),
             "input_location": str(INTERNAL_DATA.path),
         },
@@ -197,9 +189,10 @@ async def process_special_case(state: SalesReportGraphState):
         "research_task_prompt.md",
         context={
             "date": app_settings.analysis_date,
-            "periodicity": state.request.period,
-            "grouping": state.request.grouping,
-            "grouping_value": state.request.grouping_value,
+            "kpi_description": state.request.description,
+            "grouping_str": f"for this {state.request.grouping.value}"
+            if state.request.grouping
+            else "",
             "special_case_reason": state.special_case_reason,
             "internal_data_file_name": INTERNAL_DATA.name,
             "data_description": INTERNAL_DATA.description,

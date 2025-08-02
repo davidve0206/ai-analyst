@@ -1,6 +1,6 @@
 Today is {date}.
 
-You have already retrieved the last three years of {periodicity} total sales for the following {grouping}: {grouping_value}, which you stored at {previous_output_location}.
+You have already retrieved the last three years of {kpi_description}, which you stored at {previous_output_location}.
 
 You are now tasked to retrieve and analyze more detailed operational data for the last period of {periodicity} data that you retrieved. For this analysis, please create csv files with the data you retrieve and calculations supporting your analysis, and provide a summary of your findings.
 
@@ -37,6 +37,6 @@ Any breakdown should include the total sales and the percentage of total they re
 
 Prefer ordering the results by sales, so the most important groups are on top.
 
-Note that you should always first filter the data by {grouping} and by the last period available, before grouping by any other category.
+Note that you should always first filter the data {grouping_str} the last period available, before grouping by any other category.
 
 ## Previous outputs

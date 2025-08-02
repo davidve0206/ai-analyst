@@ -58,7 +58,24 @@ class SalesReportRequestBase(BaseModel):
     def task_id(self) -> str:
         if self.grouping is None or self.grouping_value is None:
             return "sales_report_total_sales"
-        return f"sales_report_{self.grouping.value.lower().replace(' ', '_')}_{self.grouping_value.lower().replace(' ', '_')}"
+        else:
+            return f"sales_report_{self.grouping.value.lower().replace(' ', '_')}_{self.grouping_value.lower().replace(' ', '_')}"
+
+    @property
+    def short_name(self) -> str:
+        """Short name for the report, suitable for filenames."""
+        if self.grouping is None:
+            return "total"
+        else:
+            return self.grouping_value.lower().replace(" ", "_")
+
+    @property
+    def description(self) -> str:
+        """Description of the task for the report."""
+        if self.grouping is None or self.grouping_value is None:
+            return f"{self.period.value} total sales history data, net of discounts, in its {self.currency.value}"
+        else:
+            return f"{self.period.value} sales history data, net of discounts, for the following {self.grouping}: {self.grouping_value}, in its {self.currency.value}"
 
 
 class SalesReportRequestCreateDto(SalesReportRequestBase):
