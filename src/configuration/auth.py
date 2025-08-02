@@ -5,8 +5,6 @@ import urllib.parse
 
 from azure.core.credentials import AccessToken
 from azure.identity import DefaultAzureCredential
-from semantic_kernel.agents import AzureAIAgent
-from azure.ai.projects.aio import AIProjectClient
 
 from .settings import app_settings
 
@@ -74,13 +72,3 @@ def provide_azure_sql_token(dialect, conn_rec, cargs, cparams):
     SQL_COPT_SS_ACCESS_TOKEN = 1256  # Defied by microsoft
 
     cparams["attrs_before"] = {SQL_COPT_SS_ACCESS_TOKEN: token_struct}
-
-
-def get_azure_ai_agent_client() -> AIProjectClient:
-    """
-    Context manager to get an Azure AI Agent client with the DefaultAzureCredential.
-    """
-    return AzureAIAgent.create_client(
-        credential=azure_credential,
-        endpoint=app_settings.azure_foundry_project_endpoint,
-    )
