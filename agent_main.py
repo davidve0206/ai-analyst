@@ -16,6 +16,7 @@ from src.configuration.settings import app_settings
 
 
 async def execute_sales_report_request(request: SalesReportRequest) -> None:
+    default_logger.info(f"Starting research task for KPI: {request.name}")
     retry_count = 0  # TODO: Add tests for retry logic
     result: dict | None = None
     while retry_count < app_settings.retry_limit:
@@ -25,13 +26,13 @@ async def execute_sales_report_request(request: SalesReportRequest) -> None:
             default_logger.info(f"Completed research task for KPI: {request.name}")
             break  # Exit loop if successful
         except Exception as e:
+            if retry_count >= app_settings.retry_limit:
+                default_logger.error(f"Max retries reached for request {request.name}.")
+                break
             retry_count += 1
             default_logger.error(
                 f"Error processing request {request.name}: {str(e)}. Retry {retry_count}/{app_settings.retry_limit}."
             )
-            raise e
-            if retry_count >= app_settings.retry_limit:
-                default_logger.error(f"Max retries reached for request {request.name}.")
 
     email_list = [recipient.email for recipient in request.recipients]
     mailing = MailingService(env=app_settings)

@@ -65,7 +65,9 @@ async def supervisor(
     """
     Supervisor node to handle the report editing process.
     """
-    default_logger.info("Supervisor node is processing the report editing request.")
+    default_logger.info(
+        f"Supervisor node is processing the report editing request for {state.request.name}."
+    )
 
     system_message = render_prompt_template(
         template_name="report_editing/supervisor_system_prompt.md",
@@ -108,10 +110,18 @@ async def supervisor(
 
     goto = response.next_speaker
 
+    # Log the supervisor's routing decision
+    default_logger.info(
+        f"Supervisor routing decision for {state.request.name}: {goto} - {response.reasoning}"
+    )
+
     # Check if we are looping back to the same speaker
     new_loop_count = state.loop_count
     if goto == state.next_speaker:
         new_loop_count += 1
+        default_logger.debug(
+            f"Loop detected: {goto} chosen {new_loop_count} times in a row"
+        )
     else:
         new_loop_count = 0
 
@@ -122,7 +132,13 @@ async def supervisor(
     elif goto == GraphNodeNames.DATA_VISUALIZATION_AGENT.value:
         max_loops = state.max_visualization_loops
 
-    if new_loop_count >= max_loops or goto == COMPLETE_VALUE:
+    if new_loop_count >= max_loops:
+        default_logger.debug(
+            f"Maximum loops reached for {goto} (limit: {max_loops}) - ending report generation"
+        )
+        goto = END
+    elif goto == COMPLETE_VALUE:
+        default_logger.info(f"Report marked as complete for {state.request.name}")
         goto = END
 
     return Command(
@@ -141,7 +157,7 @@ async def data_visualization_agent(
     """
     Node to generate charts based on the report request.
     """
-    default_logger.info("Generating charts for the report.")
+    default_logger.info(f"Generating charts for the report: {state.request.name}")
 
     # Call the data visualization agent to generate charts
     agent = get_data_visualization_agent(models_client, request=state.request)
@@ -173,7 +189,7 @@ async def document_writing_agent(
     """
     Node to write the document based on the report request.
     """
-    default_logger.info("Writing the document for the report.")
+    default_logger.info(f"Writing document for the report: {state.request.name}")
 
     # Get the system prompt for the editor agent
     system_message = render_prompt_template(
@@ -200,7 +216,9 @@ async def file_loading_agent(
     state: ReportEditorGraphState,
 ):
     """Code that takes the last message and loads the files mentioned in it."""
-    default_logger.info("Loading files mentioned in the last message.")
+    default_logger.info(
+        f"Loading files mentioned in the last message for the report: {state.request.name}"
+    )
 
     # Get the last message and extract file paths
     last_message = state.messages[-1]

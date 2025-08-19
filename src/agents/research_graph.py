@@ -329,6 +329,10 @@ async def evaluate_progress_ledger(
         or not state.progress_ledger.is_progress_being_made.answer
     ):
         state.stall_count += 1
+        default_logger.debug(
+            f"Stall count incremented to {state.stall_count} for task {state.task_id}"
+        )
+
     task_message = ""
 
     # Then, determine the next step based on the progress ledger
@@ -337,15 +341,24 @@ async def evaluate_progress_ledger(
         or state.reset_count >= state.reset_count_limit
     ):
         goto = GraphNodeNames.SUMMARIZE_FINDINGS.value
+        default_logger.info(
+            f"Task {state.task_id} ready for summarization: {'reset limit reached' if state.reset_count >= state.reset_count_limit else 'request satisfied'}"
+        )
     elif (
         state.stall_count >= state.stall_count_limit
         and not state.progress_ledger.is_progress_being_made.answer
     ):
         goto = GraphNodeNames.CREATE_OR_UPDATE_TASK_LEDGER.value
         state.reset_count += 1  # Count the reset
+        default_logger.warning(
+            f"Task {state.task_id} stalled (count: {state.stall_count}) - resetting ledger (reset #{state.reset_count})"
+        )
     else:
         goto = state.progress_ledger.next_speaker.answer
         task_message = state.progress_ledger.instruction_or_question.answer
+        default_logger.info(
+            f"Progress ledger routing for task {state.task_id}: {goto}..."
+        )
 
     update_dict = {
         "stall_count": state.stall_count,

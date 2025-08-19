@@ -3,7 +3,8 @@ This module is similar to LangGraph's react agent, allowing
 for the creation of agents that can interact with a code interpreter,
 with a few key differences:
 
-    TODO: Complete the docstring
+1. It includes a code review step after executing code.
+2. It has a maximum number of iterations and errors to prevent infinite loops.
 
 This is useful for ensuring that the agent does not get stuck in an
 infinite loop or execute harmful code.
@@ -76,13 +77,14 @@ def is_invalid_code_tool_message(message: ToolMessage) -> bool:
         return True
 
     if message.content == "":
-        default_logger.debug("Received an empty string as the last message content.")
+        default_logger.debug("Received an empty string as the last tool call output.")
         return True
 
     if "Error" in message.content or "Exception" in message.content:
         default_logger.debug("Received an error message in the last tool call output.")
         return True
 
+    default_logger.debug("Received a valid tool call output.")
     return False
 
 
@@ -120,6 +122,7 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
 
         # If the last message has tool calls, go to the tool node
         if hasattr(last_message, "tool_calls") and last_message.tool_calls:
+            default_logger.debug("Tool calls detected - routing to tool execution")
             return GraphNodeNames.TOOL_NODE.value
 
         # Else, use an LLM to assess if we should continue
@@ -137,9 +140,13 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
 
         # If the response is to continue, go to the agent node
         if review_response.content.upper() == "CONTINUE":
+            default_logger.debug("Continue condition: CONTINUE - routing back to agent")
             return GraphNodeNames.AGENT.value
         # If the response is to stop, end the graph
         elif review_response.content.upper() == "RESPOND":
+            default_logger.info(
+                "Continue condition: RESPOND - ending code agent execution"
+            )
             return END
 
     async def tool_result_assessment(
@@ -172,6 +179,10 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
             )
             state.messages.append(diagnose_message)
 
+            default_logger.warning(
+                f"Code agent stopping - {'max errors' if state.errors_counter >= state.max_errors else 'iterations'} reached"
+            )
+
             # Jump directly to the agent node for the final output
             goto = GraphNodeNames.AGENT.value
         elif is_error:
@@ -202,6 +213,8 @@ def create_code_agent_with_review(models: AppChatModels) -> CompiledStateGraph:
         """
         Reviews the proposed code before execution using LLM.
         """
+        default_logger.debug("Adding code review to context.")
+
         # Create code review prompt with the code to review
         system_message = render_prompt_template(
             "code_agent/code_review_system_prompt.md",

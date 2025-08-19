@@ -61,6 +61,7 @@ class AppChatModels:
             azure_deployment="o4-mini",
             request_timeout=60,  # Set a reasonable timeout for requests
             rate_limiter=azure_rate_limiter,
+            reasoning_effort="high",  # Set reasoning effort to high for better reasoning capabilities
         )
         # Sets a default model; this allow us to change the model used by the agents without changing the code
         self.default_model = self.openai_o4_mini

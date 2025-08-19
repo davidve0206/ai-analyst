@@ -139,6 +139,8 @@ async def review_special_cases(
     """
     Check whether there are any special cases to review in the sales data.
     """
+    default_logger.info(f"Reviewing for special cases in {state.request.name}")
+    
     task_prompt = render_prompt_template(
         "review_special_case_step_prompt.md",
         context={
@@ -183,6 +185,7 @@ async def process_special_case(state: SalesReportGraphState):
     If there is a special case, we will process it in depth.
     """
     # Get the graph that processes the special case
+    default_logger.info(f"Processing special case for {state.request.name}.")
     researcher_workflow = await create_research_graph()
 
     task_prompt = render_prompt_template(
@@ -221,6 +224,7 @@ async def generate_report(state: SalesReportGraphState):
     using the report_editor_graph.
     """
     # Get the graph that edits the report
+    default_logger.info(f"Generating report for {state.request.name}.")
     editor_workflow = await create_report_editor_graph()
 
     # We assume that all files are mentioned in the outputs
