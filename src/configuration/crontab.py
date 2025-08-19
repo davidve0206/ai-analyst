@@ -77,9 +77,9 @@ class CrontabFrequency(BaseModel):
         Returns a string representation of the CrontabFrequency object.
         """
         if self.frequency == JobFrequency.DAY:
-            return f"At {self.hour}:00 on {', '.join(str(day) for day in self.days_of_week)}"
+            return f"at {self.hour}:00 on {', '.join(str(day) for day in self.days_of_week)}"
         elif self.frequency == JobFrequency.MONTH:
-            return f"At {self.hour}:00 on the {', '.join(str(day) for day in self.days_of_month)} of {', '.join(str(month) for month in self.months)}"
+            return f"at {self.hour}:00 on the {', '.join(str(day) for day in self.days_of_month)} of {', '.join(str(month) for month in self.months)}"
         else:
             return "Invalid frequency"
 
@@ -125,3 +125,58 @@ def set_crontab(config: CrontabFrequency, write: bool = True) -> CronTab:
         cron.write()
 
     return job
+
+
+def get_existing_agent_cronjob(cron: CronTab = None) -> CrontabFrequency:
+    """
+    Get the existing cron job for the AI agent, if it exists.
+
+    Args:
+        cron (CronTab, optional): The CronTab object to search. If None, uses the user's crontab.
+
+    Returns:
+        CrontabFrequency: The configuration of the existing cron job.
+    Raises:
+        ValueError: If no existing cron job is found.
+    """
+    if cron is None:
+        cron = CronTab(user=True)
+    for job in cron:
+        if "agent" in job.command:
+            # Parse the job's schedule using the job properties directly
+            # job.hour, job.dom (day of month), job.month, job.dow (day of week)
+            hour = int(str(job.hour))
+
+            # Parse days of month
+            dom_str = str(job.dom)
+            days_of_month = (
+                [int(day) for day in dom_str.split(",") if day != "*"]
+                if dom_str != "*"
+                else []
+            )
+
+            # Parse months
+            month_str = str(job.month)
+            months = (
+                [Month(month) for month in month_str.split(",") if month != "*"]
+                if month_str != "*"
+                else []
+            )
+
+            # Parse days of week
+            dow_str = str(job.dow)
+            days_of_week = (
+                [Weekday(day) for day in dow_str.split(",") if day != "*"]
+                if dow_str != "*"
+                else []
+            )
+
+            return CrontabFrequency(
+                hour=hour,
+                days_of_month=days_of_month,
+                months=months,
+                days_of_week=days_of_week,
+                frequency=JobFrequency.DAY if days_of_week else JobFrequency.MONTH,
+            )
+
+    raise ValueError("No existing cron job found for the AI agent.")

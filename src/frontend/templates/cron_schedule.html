@@ -1,113 +1,110 @@
 <!-- Cron Schedule Setup Section -->
 <div class="card mb-4">
   <div class="card-header">
-    <h5 class="card-title mb-0">
-      <i class="fas fa-clock me-2"></i>
-      Report Schedule Setup
-    </h5>
+    <h5 class="card-title mb-0 fw-bold">Report Schedule Setup</h5>
   </div>
   <div class="card-body">
     {% if last_crontab_config %}
-      <div class="alert alert-info">
+      <div class="alert alert-primary">
         <i class="fas fa-info-circle me-2"></i>
-        Update the frequency of the analyst's runs: <strong>{{ last_crontab_config }}</strong>
+        Currently running <strong>{{ last_crontab_config }}</strong>
       </div>
     {% else %}
       <p class="text-muted mb-3">Set up how frequently the AI Analyst runs.</p>
-
-      <div class="mb-3">
-        <label class="form-label">When do you want the AI Analyst to run?</label>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="cron_frequency" id="daily_frequency" value="daily" checked />
-          <label class="form-check-label" for="daily_frequency">{{ job_frequencies.0.value }}</label>
-        </div>
-        <div class="form-check">
-          <input class="form-check-input" type="radio" name="cron_frequency" id="monthly_frequency" value="monthly" />
-          <label class="form-check-label" for="monthly_frequency">{{ job_frequencies.1.value }}</label>
-        </div>
-      </div>
-
-      <!-- Daily Schedule Form -->
-      <div id="daily_form" class="schedule-form">
-        <form method="post" action="/crontab/daily" class="row g-3">
-          <div class="col-md-6">
-            <label class="form-label">Days of the week the agent will run</label>
-            <div class="row">
-              {% for weekday in weekdays %}
-                <div class="col-6 col-md-4">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="days_of_week" value="{{ weekday.value }}" id="day_{{ weekday.value }}" />
-                    <label class="form-check-label" for="day_{{ weekday.value }}">{{ weekday.value }}</label>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-          <div class="col-md-3">
-            <label for="daily_hour" class="form-label">Hour of the day</label>
-            <select class="form-select" name="hour" id="daily_hour" required>
-              {% for hour in hours %}
-                <option value="{{ hour }}">{{ hour }}:00</option>
-              {% endfor %}
-            </select>
-            <div class="form-text">Hour in UTC (0-23); adjust for your timezone if necessary.</div>
-          </div>
-          <div class="col-12">
-            <button type="submit" class="btn btn-success">
-              <i class="fas fa-save me-2"></i>
-              Set Daily Execution
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Monthly Schedule Form -->
-      <div id="monthly_form" class="schedule-form" style="display: none;">
-        <form method="post" action="/crontab/monthly" class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label">Months the agent will run</label>
-            <div class="row">
-              {% for month in months %}
-                <div class="col-6">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="months" value="{{ month.value }}" id="month_{{ month.value }}" />
-                    <label class="form-check-label" for="month_{{ month.value }}">{{ month.value }}</label>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-          <div class="col-md-4">
-            <label class="form-label">Days of the month the agent will run</label>
-            <div class="row">
-              {% for day in days_of_month %}
-                <div class="col-4">
-                  <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="days_of_month" value="{{ day }}" id="day_{{ day }}" />
-                    <label class="form-check-label" for="day_{{ day }}">{{ day }}</label>
-                  </div>
-                </div>
-              {% endfor %}
-            </div>
-          </div>
-          <div class="col-md-3">
-            <label for="monthly_hour" class="form-label">Hour of the day</label>
-            <select class="form-select" name="hour" id="monthly_hour" required>
-              {% for hour in hours %}
-                <option value="{{ hour }}">{{ hour }}:00</option>
-              {% endfor %}
-            </select>
-            <div class="form-text">Hour in UTC (0-23); adjust for your timezone if necessary.</div>
-          </div>
-          <div class="col-12">
-            <button type="submit" class="btn btn-success">
-              <i class="fas fa-save me-2"></i>
-              Set Monthly Execution
-            </button>
-          </div>
-        </form>
-      </div>
     {% endif %}
+
+    <div class="mb-3">
+      <label class="form-label">When do you want the AI Analyst to run?</label>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="cron_frequency" id="daily_frequency" value="daily" checked />
+        <label class="form-check-label" for="daily_frequency">{{ job_frequencies.0.value }}</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="radio" name="cron_frequency" id="monthly_frequency" value="monthly" />
+        <label class="form-check-label" for="monthly_frequency">{{ job_frequencies.1.value }}</label>
+      </div>
+    </div>
+
+    <!-- Daily Schedule Form -->
+    <div id="daily_form" class="schedule-form">
+      <form method="post" action="/crontab/daily" class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Days of the week the agent will run</label>
+          <div class="row">
+            {% for weekday in weekdays %}
+              <div class="col-6 col-md-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="days_of_week" value="{{ weekday.value }}" id="day_{{ weekday.value }}" />
+                  <label class="form-check-label" for="day_{{ weekday.value }}">{{ weekday.value }}</label>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label for="daily_hour" class="form-label">Hour of the day</label>
+          <select class="form-select" name="hour" id="daily_hour" required>
+            {% for hour in hours %}
+              <option value="{{ hour }}">{{ hour }}:00</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Hour in UTC (0-23); adjust for your timezone if necessary.</div>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-2"></i>
+            Set Daily Execution
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Monthly Schedule Form -->
+    <div id="monthly_form" class="schedule-form" style="display: none;">
+      <form method="post" action="/crontab/monthly" class="row g-3">
+        <div class="col-md-4">
+          <label class="form-label">Months the agent will run</label>
+          <div class="row">
+            {% for month in months %}
+              <div class="col-6">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="months" value="{{ month.value }}" id="month_{{ month.value }}" />
+                  <label class="form-check-label" for="month_{{ month.value }}">{{ month.value }}</label>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Days of the month the agent will run</label>
+          <div class="row">
+            {% for day in days_of_month %}
+              <div class="col-4">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="days_of_month" value="{{ day }}" id="day_{{ day }}" />
+                  <label class="form-check-label" for="day_{{ day }}">{{ day }}</label>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="col-md-3">
+          <label for="monthly_hour" class="form-label">Hour of the day</label>
+          <select class="form-select" name="hour" id="monthly_hour" required>
+            {% for hour in hours %}
+              <option value="{{ hour }}">{{ hour }}:00</option>
+            {% endfor %}
+          </select>
+          <div class="form-text">Hour in UTC (0-23); adjust for your timezone if necessary.</div>
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save me-2"></i>
+            Set Monthly Execution
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
 

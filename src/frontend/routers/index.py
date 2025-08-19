@@ -14,16 +14,11 @@ from src.configuration.crontab import (
     JobFrequency,
     Month,
     Weekday,
+    get_existing_agent_cronjob,
 )
 from src.frontend.templates_config import templates
 
 router = APIRouter()
-
-
-def get_last_crontab_config() -> Optional[CrontabFrequency]:
-    """Get the last crontab configuration. TODO: Implement actual retrieval logic."""
-    # TODO: Replace with actual logic to retrieve the last configuration
-    return None
 
 
 @router.get("/", response_class=HTMLResponse)
@@ -31,44 +26,33 @@ async def index(request: Request):
     """Main page showing all sales report requests and crontab setup."""
     try:
         existing_requests = default_db.get_all_sales_report_requests()
-        last_crontab_config = get_last_crontab_config()
+        last_crontab_config = get_existing_agent_cronjob()
+        error_message = None
     except Exception as e:
         existing_requests = []
         last_crontab_config = None
         error_message = f"Error loading existing requests: {str(e)}"
-        return templates.TemplateResponse(
-            "index.html",
-            {
-                "request": request,
-                "existing_requests": existing_requests,
-                "error": error_message,
-                "periods": list(KpiPeriodsEnum),
-                "groupings": list(SalesGroupingsEnum),
-                "currencies": list(SalesCurrencyEnum),
-                "job_frequencies": list(JobFrequency),
-                "weekdays": list(Weekday),
-                "months": list(Month),
-                "hours": list(range(0, 24)),
-                "days_of_month": list(range(1, 32)),
-                "last_crontab_config": last_crontab_config,
-            },
-        )
+
+    template_values = {
+        "request": request,
+        "existing_requests": existing_requests,
+        "periods": list(KpiPeriodsEnum),
+        "groupings": list(SalesGroupingsEnum),
+        "currencies": list(SalesCurrencyEnum),
+        "job_frequencies": list(JobFrequency),
+        "weekdays": list(Weekday),
+        "months": list(Month),
+        "hours": list(range(0, 24)),
+        "days_of_month": list(range(1, 32)),
+        "last_crontab_config": last_crontab_config,
+    }
+
+    if error_message:
+        template_values["error_message"] = error_message
 
     return templates.TemplateResponse(
         "index.html",
-        {
-            "request": request,
-            "existing_requests": existing_requests,
-            "periods": list(KpiPeriodsEnum),
-            "groupings": list(SalesGroupingsEnum),
-            "currencies": list(SalesCurrencyEnum),
-            "job_frequencies": list(JobFrequency),
-            "weekdays": list(Weekday),
-            "months": list(Month),
-            "hours": list(range(0, 24)),
-            "days_of_month": list(range(1, 32)),
-            "last_crontab_config": last_crontab_config,
-        },
+        context=template_values,
     )
 
 

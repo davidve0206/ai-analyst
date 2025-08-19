@@ -13,31 +13,6 @@ from src.configuration.crontab import (
 router = APIRouter()
 
 
-def setup_daily_crontab(
-    hour: int, days_of_week: List[Weekday], write: bool = True
-) -> str:
-    """Set up a daily cron job with the specified hour and days of the week."""
-    config = CrontabFrequency(
-        hour=hour, days_of_week=days_of_week, frequency=JobFrequency.DAY
-    )
-    set_crontab(config, write)
-    return f"Agent set up to run: {config}."
-
-
-def setup_monthly_crontab(
-    hour: int, days_of_month: List[int], months: List[Month], write: bool = True
-) -> str:
-    """Set up a monthly cron job with the specified hour, days of the month, and months."""
-    config = CrontabFrequency(
-        hour=hour,
-        days_of_month=days_of_month,
-        months=months,
-        frequency=JobFrequency.MONTH,
-    )
-    set_crontab(config, write)
-    return f"Agent set up to run: {config}."
-
-
 @router.post("/daily")
 async def setup_daily_cron(
     request: Request,
@@ -61,7 +36,13 @@ async def setup_daily_cron(
                 status_code=status.HTTP_303_SEE_OTHER,
             )
 
-        result = setup_daily_crontab(hour, weekday_enums)
+        # Set up daily cron job
+        config = CrontabFrequency(
+            hour=hour, days_of_week=weekday_enums, frequency=JobFrequency.DAY
+        )
+        set_crontab(config, write=True)
+        result = f"Agent set up to run {config}."
+
         return RedirectResponse(
             url=f"/?success={result}",
             status_code=status.HTTP_303_SEE_OTHER,
@@ -97,7 +78,16 @@ async def setup_monthly_cron(
                 status_code=status.HTTP_303_SEE_OTHER,
             )
 
-        result = setup_monthly_crontab(hour, days_of_month, month_enums)
+        # Set up monthly cron job
+        config = CrontabFrequency(
+            hour=hour,
+            days_of_month=days_of_month,
+            months=month_enums,
+            frequency=JobFrequency.MONTH,
+        )
+        set_crontab(config, write=True)
+        result = f"Agent set up to run {config}."
+
         return RedirectResponse(
             url=f"/?success={result}",
             status_code=status.HTTP_303_SEE_OTHER,

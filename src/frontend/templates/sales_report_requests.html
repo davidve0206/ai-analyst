@@ -2,10 +2,7 @@
 {% if existing_requests %}
   <div class="card mb-3">
     <div class="card-header">
-      <h5 class="card-title mb-0">
-        <i class="fas fa-list me-2"></i>
-        Existing Sales Report Requests
-      </h5>
+      <h5 class="card-title mb-0 fw-bold">Existing Sales Report Requests</h5>
     </div>
     <div class="card-body p-0">
       <div class="table-responsive">
@@ -23,24 +20,16 @@
           <tbody>
             {% for request in existing_requests %}
               <tr>
-                <td>
-                  <strong>{{ request.name }}</strong>
-                </td>
-                <td>
-                  <span class="badge bg-secondary">{{ request.period.value }}</span>
-                </td>
+                <td>{{ request.name }}</td>
+                <td>{{ request.period.value }}</td>
                 <td>
                   {% if request.grouping %}
-                    <span class="badge bg-info">{{ request.grouping.value }}</span>
-                    <br />
-                    <small class="text-muted">{{ request.grouping_value }}</small>
+                    {{ request.grouping.value }}: {{ request.grouping_value }}
                   {% else %}
-                    <span class="badge bg-success">Total Sales</span>
+                    Total Sales
                   {% endif %}
                 </td>
-                <td>
-                  <span class="badge bg-primary">{{ request.currency.value }}</span>
-                </td>
+                <td>{{ request.currency.value }}</td>
                 <td>
                   <small>
                     {% for recipient in request.recipients %}
@@ -69,7 +58,7 @@
       <p class="card-text text-muted">Get started by creating your first sales report request.</p>
       <a href="/sales_report/create" class="btn btn-primary">
         <i class="fas fa-plus me-2"></i>
-        Create New Report
+        Create New Request
       </a>
     </div>
   </div>
