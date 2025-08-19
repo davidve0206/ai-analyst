@@ -1,5 +1,7 @@
 import pytest
-from sqlmodel import Session, select
+
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 from src.configuration.db_service import SalesReportsDB
 from src.configuration.db_models import (
@@ -66,11 +68,15 @@ def test_create_sales_report_request_basic(test_db: SalesReportsDB):
         assert db_request.currency == SalesCurrencyEnum.FUNCTIONAL
 
         # Check recipients are in database
-        db_recipients = session.exec(
-            select(RecipientEmailModel).where(
-                RecipientEmailModel.request_id == result.id
+        db_recipients = (
+            session.execute(
+                select(RecipientEmailModel).where(
+                    RecipientEmailModel.request_id == result.id
+                )
             )
-        ).all()
+            .scalars()
+            .all()
+        )
         assert len(db_recipients) == 2
 
         emails = [r.email for r in db_recipients]
@@ -184,11 +190,15 @@ def test_update_sales_report_request_with_email_changes(test_db: SalesReportsDB)
         assert db_request.currency == SalesCurrencyEnum.REPORTING
 
         # Check recipients are correctly updated in database
-        db_recipients = session.exec(
-            select(RecipientEmailModel).where(
-                RecipientEmailModel.request_id == result.id
+        db_recipients = (
+            session.execute(
+                select(RecipientEmailModel).where(
+                    RecipientEmailModel.request_id == result.id
+                )
             )
-        ).all()
+            .scalars()
+            .all()
+        )
         assert len(db_recipients) == 2
 
         db_emails = [r.email for r in db_recipients]
@@ -251,11 +261,15 @@ def test_update_sales_report_request_basic_fields_only(test_db: SalesReportsDB):
         assert db_request.currency == SalesCurrencyEnum.REPORTING
 
         # Check that recipients are still correct in database
-        db_recipients = session.exec(
-            select(RecipientEmailModel).where(
-                RecipientEmailModel.request_id == result.id
+        db_recipients = (
+            session.execute(
+                select(RecipientEmailModel).where(
+                    RecipientEmailModel.request_id == result.id
+                )
             )
-        ).all()
+            .scalars()
+            .all()
+        )
         assert len(db_recipients) == 1
         assert db_recipients[0].email == "admin@example.com"
         assert db_recipients[0].name == "Admin User"
@@ -311,7 +325,7 @@ def test_delete_sales_report_request_with_recipients(test_db: SalesReportsDB):
         assert db_request is None
 
         # Check that all associated recipients are also deleted
-        db_recipients = session.exec(
+        db_recipients = session.execute(
             select(RecipientEmailModel).where(
                 RecipientEmailModel.request_id == request_id
             )

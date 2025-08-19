@@ -5,7 +5,6 @@ from src.configuration.db_models import (
     SalesGroupingsEnum,
     SalesReportRequestCreateDto,
     SalesReportRequestUpdateDto,
-    SalesReportRequest,
     RecipientEmail,
 )
 
