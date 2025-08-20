@@ -7,6 +7,40 @@ services:
         - "${SERVER_PORT:-8000}:8000"
     networks:
         - my_network
+    environment:
+        # Email Configuration
+        - EMAIL_MAILER=${EMAIL_MAILER:-smtp}
+        - EMAIL_USE_SSL=${EMAIL_USE_SSL:-0}
+        - EMAIL_FROM_ADDRESS=${EMAIL_FROM_ADDRESS:-communications@test.com}
+        - EMAIL_HOST=${EMAIL_HOST:-mailpit}
+        - EMAIL_PORT=${EMAIL_PORT:-1025}
+        - EMAIL_PASSWORD=${EMAIL_PASSWORD:-}
+        - EMAIL_USERNAME=${EMAIL_USERNAME:-}
+        
+        # Azure Identity Configuration
+        - AZURE_TENANT_ID=${AZURE_TENANT_ID:-}
+        - AZURE_CLIENT_ID=${AZURE_CLIENT_ID:-}
+        - AZURE_CLIENT_SECRET=${AZURE_CLIENT_SECRET:-}
+        
+        # Internal Database Configuration (Azure SQL)
+        - AZURE_DB_SERVER=${AZURE_DB_SERVER:-}
+        - AZURE_DB_DATABASE=${AZURE_DB_DATABASE:-}
+        - AZURE_DB_CONNECTION_TIMEOUT=${AZURE_DB_CONNECTION_TIMEOUT:-30}
+        
+        # Model Configuration
+        - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+        - AZURE_FOUNDRY_PROJECT_ENDPOINT=${AZURE_FOUNDRY_PROJECT_ENDPOINT:-}
+        - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT:-}
+        - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY:-}
+        
+        # Observability Configuration (LangSmith)
+        - LANGSMITH_TRACING=${LANGSMITH_TRACING:-true}
+        - LANGSMITH_ENDPOINT=${LANGSMITH_ENDPOINT:-}
+        - LANGSMITH_API_KEY=${LANGSMITH_API_KEY:-}
+        - LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-}
+        
+        # Run configuration
+        - IS_DATA_CURRENT=${IS_DATA_CURRENT:-false}
     develop:
         # Create a `watch` configuration to update the app
         watch:

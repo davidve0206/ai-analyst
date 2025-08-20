@@ -1,7 +1,5 @@
 from fastapi import APIRouter, Request, status, BackgroundTasks
 from fastapi.responses import HTMLResponse, RedirectResponse
-from typing import Optional
-import asyncio
 
 from src.configuration.db_service import default_db
 from src.configuration.db_models import (
@@ -10,7 +8,6 @@ from src.configuration.db_models import (
     SalesCurrencyEnum,
 )
 from src.configuration.crontab import (
-    CrontabFrequency,
     JobFrequency,
     Month,
     Weekday,
@@ -56,24 +53,23 @@ async def index(request: Request):
     )
 
 
-async def run_agent_background():
-    """Background task to run the AI agent."""
-    try:
-        from agent_main import main as agent_main
-
-        # Run the agent
-        await agent_main()
-
-    except Exception as e:
-        # Log the error but don't raise it since this is a background task
-        print(f"Error running AI Agent in background: {str(e)}")
-
-
 @router.post("/run_now")
 async def run_now(background_tasks: BackgroundTasks):
     """Execute the AI agent immediately in the background."""
     try:
         # Add the background task
+        async def run_agent_background():
+            """Background task to run the AI agent."""
+            try:
+                from agent_main import main as agent_main
+
+                # Run the agent
+                await agent_main()
+
+            except Exception as e:
+                # Log the error but don't raise it since this is a background task
+                print(f"Error running AI Agent in background: {str(e)}")
+
         background_tasks.add_task(run_agent_background)
 
         return RedirectResponse(

@@ -112,7 +112,7 @@ async def supervisor(
 
     # Log the supervisor's routing decision
     default_logger.info(
-        f"Supervisor routing decision for {state.request.name}: {goto} - {response.reasoning}"
+        f"Supervisor routing decision for {state.request.name}: {goto}"
     )
 
     # Check if we are looping back to the same speaker
