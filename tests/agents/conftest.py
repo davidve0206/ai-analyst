@@ -71,10 +71,12 @@ def data_visualization_agent(
 @pytest.fixture(scope="session")
 def default_request() -> SalesReportRequest:
     return SalesReportRequest(
-        grouping="country",
+        id=1,
+        grouping="Country",
         grouping_value="Spain",
-        period="monthly",
+        period="Monthly",
         currency="Functional currency",
+        recipients=[],
     )
 
 

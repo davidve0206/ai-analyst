@@ -35,6 +35,7 @@ class SalesReportGraphState(BaseModel):
     special_case_reason: str = ""
     sales_in_depth_analysis: str = ""
     report: str = ""
+    email_template: str = ""
 
 
 class GraphNodeNames(Enum):
@@ -44,6 +45,7 @@ class GraphNodeNames(Enum):
     REVIEW_SPECIAL_CASE = "review_special_case"
     PROCESS_SPECIAL_CASE = "process_special_case"
     GENERATE_REPORT = "generate_report"
+    GENERATE_EMAIL_TEMPLATE = "generate_email"
 
 
 async def retrieve_sales_history(state: SalesReportGraphState):
@@ -140,7 +142,7 @@ async def review_special_cases(
     Check whether there are any special cases to review in the sales data.
     """
     default_logger.info(f"Reviewing for special cases in {state.request.name}")
-    
+
     task_prompt = render_prompt_template(
         "review_special_case_step_prompt.md",
         context={
@@ -256,6 +258,24 @@ async def generate_report(state: SalesReportGraphState):
     return {"report": result["report"]}
 
 
+async def generate_email_template(state: SalesReportGraphState):
+    """
+    Generate an email template for the sales report.
+    """
+    default_logger.info(f"Generating email template for {state.request.name}.")
+
+    task_prompt = render_prompt_template(
+        "generate_email_template_step_prompt.md",
+        context={
+            "report": state.report,
+        },
+        type=MessageTypes.HUMAN,
+    )
+    response = await models_client.default_non_reasoning_model.ainvoke([task_prompt])
+
+    return {"email_template": response.content}
+
+
 async def create_report_graph(
     store_diagram: bool = False,
 ) -> CompiledStateGraph[
@@ -294,6 +314,10 @@ async def create_report_graph(
         GraphNodeNames.GENERATE_REPORT.value,
         generate_report,
     )
+    workflow.add_node(
+        GraphNodeNames.GENERATE_EMAIL_TEMPLATE.value,
+        generate_email_template,
+    )
 
     # Add edges to connect the nodes
     workflow.add_edge(START, GraphNodeNames.RETRIEVE_SALES_HISTORY.value)
@@ -316,7 +340,11 @@ async def create_report_graph(
         GraphNodeNames.PROCESS_SPECIAL_CASE.value,
         GraphNodeNames.GENERATE_REPORT.value,
     )
-    workflow.add_edge(GraphNodeNames.GENERATE_REPORT.value, END)
+    workflow.add_edge(
+        GraphNodeNames.GENERATE_REPORT.value,
+        GraphNodeNames.GENERATE_EMAIL_TEMPLATE.value,
+    )
+    workflow.add_edge(GraphNodeNames.GENERATE_EMAIL_TEMPLATE.value, END)
 
     chain = workflow.compile()
 

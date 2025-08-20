@@ -29,6 +29,10 @@ class MailingService:
         self._sender = f"AI Agent <{env.email_username}>"
         self._use_ssl = env.email_use_ssl
 
+        default_logger.info(
+            f"MailingService initialized with server: {self._server}, port: {self._port}, use_ssl: {self._use_ssl}"
+        )
+
     def send_email(
         self,
         recipients: Union[str, List[str]],
@@ -48,13 +52,6 @@ class MailingService:
         Returns:
             Boolean representing whether the email sent correctly to all recipients.
         """
-        # Debug email configuration
-        default_logger.debug(
-            f"Email server config - Host: {self._server}, Port: {self._port}, SSL: {self._use_ssl}"
-        )
-        default_logger.debug(
-            f"Username: {self._username}, Password set: {bool(self._password)}"
-        )
 
         try:
             # Normalize recipients to a list

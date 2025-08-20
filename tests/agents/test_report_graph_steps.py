@@ -347,3 +347,29 @@ async def test_sales_report_generation(
             file_path.unlink(missing_ok=True)
     # TODO: consider adding an LLM as a judge to validate the report
     # For now, we just check that the response contains the image file
+
+
+@pytest.mark.asyncio
+async def test_email_template_generation(
+    default_request: SalesReportRequest,
+    patch_graph_environment_with_fixture_csv: None,
+):
+    """Test that replicates the email template generation step."""
+    from src.agents.report_graph import generate_email_template, SalesReportGraphState
+
+    test_state = SalesReportGraphState(
+        request=default_request,
+        sales_history="The data has been retrieved successfully.",
+        sales_analysis="Sales are decreasing in the last month, by 10% compared to the previous year.",
+        report="EXECUTIVE SUMMARY: Sales are decreasing in the last month, by 10% compared to the previous year.",
+    )
+
+    step_result = await generate_email_template(test_state)
+    assert step_result is not None
+    assert "email_template" in step_result, (
+        "Step result does not contain 'email_template' key."
+    )
+    assert step_result["email_template"], "Expected the email template to be non-empty."
+    assert "RECIPIENT" in step_result["email_template"], (
+        "Expected the email template to contain the 'RECIPIENT' tag."
+    )
