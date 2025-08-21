@@ -1,29 +1,99 @@
-# ai-analyst
+# AI Analyst
 
-## Stack
+AI Analyst is a financial analysis system that generates automated sales reports using AI agents. The system processes financial data, performs research, and produces PDF reports that can be scheduled and emailed to recipients.
 
-Framework: [Microsoft's Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/)
-Database: Azure SQL
-Frontend: [Streamlit](https://docs.streamlit.io/)
+## Quick Start
+
+```bash
+# Install dependencies
+uv sync
+
+# Run frontend
+uv run fastapi dev frontend_main.py
+
+# Run agent
+uv run python agent_main.py
+```
+
+## Architecture
+
+### Core Components
+
+- **Agent System**: LangGraph-based AI agents that handle data analysis, research, and report generation
+- **Frontend**: FastAPI web application for report configuration and scheduling
+- **Email Service**: Automated delivery of generated reports
+
+### Key Technologies
+
+- **Framework**: LangGraph
+- **Frontend**: FastAPI + Jinja Templates
+- **Database**: Azure SQL (optional)
+- **AI Models**: Support for Gemini, Azure OpenAI, and Azure Foundry
+- **Authentication**: Azure Identity
+- **Observability**: LangSmith (optional)
+
+### Agent Workflow
+
+Reports are generated through a multi-step AI agent process:
+Research → Data Analysis → Report Generation (Inc. Visualizations) → Review
+
+Execution can be scheduled via cron jobs.
+
+### Data Sources
+
+- Internal financial data (CSV files in `/data/`)
+- Potentially - Database queries (Azure SQL); code exists but we don't have a database
+
+### Output
+
+- Markdown reports converted to PDF and stored locally
+- Automated email delivery
+
+## Project Structure
+
+```text
+src/
+├── agents/           # AI agents and graph workflows
+├── configuration/     # Settings, auth
+└── frontend/         # Web UI and API routes for configuration
+
+agent_main.py         # Main agent execution entry point
+frontend_main.py      # FastAPI application entry point
+data/                 # Provided datasets
+outputs/              # Generated reports
+```
 
 ## Configuration
 
-There is two types of configuration; on one side, a `.env` file, for configuration that should not change between runs of the agent (e.g., API Keys), on the other, a `sqlite` database for configuration the user can change at will (e.g., the list of websites the model is allowed to use).
+Configuration is managed through environment variables in `.env` file:
 
-The `.env` configuration is managed using `pydantic-setting`. Note that there is intentionally no functionality to include a different set of settings (for example, explicitly passing a settings object instead of just importing the default instance); this is because we need API keys for testing, and thus we need to use the same base environment.
+### Essential Settings
+
+- AI model keys (`GEMINI_API_KEY`, `AZURE_OPENAI_*`)
+- Azure authentication (`AZURE_TENANT_ID`, etc.)
+- Email configuration (`EMAIL_*`)
+
+### Optional Settings
+
+- Database connection (`AZURE_DB_*`) - currently not required
+- Observability (`LANGSMITH_TRACING`, `LANGSMITH_API_KEY`)
+
+## Documentation
+
+For detailed documentation, see the `/documentation` folder:
+
+- **[Development Setup](documentation/setup.md)** - Detailed installation and configuration
+- **[Agent System](documentation/architecture/agents.md)** - Multi-agent AI system architecture
+- **[Database Schema](documentation/architecture/database.md)** - Data models and database design
+- **[API Reference](documentation/api.md)** - REST endpoints and usage examples
+- **[Deployment Guide](documentation/deployment.md)** - Production deployment instructions
+
+## Development Notes
+
+### Testing
+
+The `tests/` folder includes both unit tests and agent evaluations. Some evaluations are fully automated while others require human evaluation.
 
 ### Authentication
 
-We will use Azure's own [identity management](https://learn.microsoft.com/en-us/python/api/overview/azure/identity-readme?view=azure-python#authenticate-with-defaultazurecredential&preserve-view=true) for authenticating. It's the user's decision to use environment variables, cli, or any of the methods Azure provides.
-
-## Running Locally
-
-For now, the project only has configuration for using Azure SQL Database; make sure your local configuration has the required ODBC Driver.
-
-## Testing
-
-We have a single tests folders; that said, this test actually include agent evaluations; some of the evaluations are fully represented in code, while others might just be a a way to run an agent with a set scenario, but the actual evaluation might be human driven.
-
-## Prompts
-
-Note that we are using Jinja templates directly for prompts, instead of using any of Sematic Kernel's built in methods; this is because 1. Our templates are relatively simple, and 2. Semantic Kernel's documentation seems to be disconnected from the current state of the package in this respect. That said, we should evaluate changing to the default structure whenever the docs are updated.
+Azure Identity integration allows flexible authentication methods (environment variables, CLI, managed identity, etc.).
