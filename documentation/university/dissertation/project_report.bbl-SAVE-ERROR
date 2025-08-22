@@ -1,0 +1,385 @@
+% $ biblatex auxiliary file $
+% $ biblatex bbl format version 3.3 $
+% Do not modify the above lines!
+%
+% This is an auxiliary file used by the 'biblatex' package.
+% This file may safely be deleted. It will be recreated by
+% biber as required.
+%
+\begingroup
+\makeatletter
+\@ifundefined{ver@biblatex.sty}
+  {\@latex@error
+     {Missing 'biblatex' package}
+     {The bibliography requires the 'biblatex' package.}
+      \aftergroup\endinput}
+  {}
+\endgroup
+
+
+\refsection{0}
+  \datalist[entry]{nty/global//global/global/global}
+    \entry{forrester2022}{report}{}{}
+      \name{author}{1}{}{%
+        {{hash=ec5cf4d09a415cc6c72648a457f15566}{%
+           family={{Forrester Consulting}},
+           familyi={F\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Forrester Research, Inc.}%
+      }
+      \strng{namehash}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{fullhash}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{fullhashraw}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{bibnamehash}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{authorbibnamehash}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{authornamehash}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{authorfullhash}{ec5cf4d09a415cc6c72648a457f15566}
+      \strng{authorfullhashraw}{ec5cf4d09a415cc6c72648a457f15566}
+      \field{sortinit}{F}
+      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{12}
+      \field{note}{Commissioned by Airtable}
+      \field{title}{The Crisis of Fractured Organizations: How Teams Can Address Organizational Misalignment \& Achieve More In The Modern Work Environment}
+      \field{type}{Thought Leadership Paper}
+      \field{year}{2022}
+      \field{dateera}{ce}
+      \verb{urlraw}
+      \verb https://www.airtable.com/lp/resources/reports/crisis-of-the-fractured-organization
+      \endverb
+      \verb{url}
+      \verb https://www.airtable.com/lp/resources/reports/crisis-of-the-fractured-organization
+      \endverb
+    \endentry
+    \entry{hu2023decipher}{misc}{}{}
+      \name{author}{6}{}{%
+        {{hash=a6304feb4ed02ca17a1240b1ef7f969b}{%
+           family={Hu},
+           familyi={H\bibinitperiod},
+           given={Yebowen},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=bab3bacffa6a8e8dae914e31d23cece1}{%
+           family={Song},
+           familyi={S\bibinitperiod},
+           given={Kaiqiang},
+           giveni={K\bibinitperiod}}}%
+        {{hash=755e0b3db9231dc0a854fc7126d07b83}{%
+           family={Cho},
+           familyi={C\bibinitperiod},
+           given={Sangwoo},
+           giveni={S\bibinitperiod}}}%
+        {{hash=4c2c66443bd221556bb807196cafa5fa}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Xiaoyang},
+           giveni={X\bibinitperiod}}}%
+        {{hash=daa1b416a063b2134b80905fe62b1c8f}{%
+           family={Foroosh},
+           familyi={F\bibinitperiod},
+           given={Hassan},
+           giveni={H\bibinitperiod}}}%
+        {{hash=0138deaf332692ced30d823b9cebc488}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Fei},
+           giveni={F\bibinitperiod}}}%
+      }
+      \strng{namehash}{70651440d90c7f64197d90c1ee8378fa}
+      \strng{fullhash}{3330b87d8d663987c70e69c18de29086}
+      \strng{fullhashraw}{3330b87d8d663987c70e69c18de29086}
+      \strng{bibnamehash}{70651440d90c7f64197d90c1ee8378fa}
+      \strng{authorbibnamehash}{70651440d90c7f64197d90c1ee8378fa}
+      \strng{authornamehash}{70651440d90c7f64197d90c1ee8378fa}
+      \strng{authorfullhash}{3330b87d8d663987c70e69c18de29086}
+      \strng{authorfullhashraw}{3330b87d8d663987c70e69c18de29086}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CL}
+      \field{eprinttype}{arXiv}
+      \field{title}{DecipherPref: Analyzing Influential Factors in Human Preference Judgments via GPT-4}
+      \field{year}{2023}
+      \verb{eprint}
+      \verb 2305.14702
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2305.14702
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2305.14702
+      \endverb
+    \endentry
+    \entry{aiebook2025}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=8c9b2fcc0f1d6298248c99d9b74308d0}{%
+           family={Huyen},
+           familyi={H\bibinitperiod},
+           given={Chip},
+           giveni={C\bibinitperiod}}}%
+      }
+      \list{location}{1}{%
+        {USA}%
+      }
+      \list{publisher}{1}{%
+        {O'Reilly Media}%
+      }
+      \strng{namehash}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{fullhash}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{fullhashraw}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{bibnamehash}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{authorbibnamehash}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{authornamehash}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{authorfullhash}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \strng{authorfullhashraw}{8c9b2fcc0f1d6298248c99d9b74308d0}
+      \field{sortinit}{H}
+      \field{sortinithash}{23a3aa7c24e56cfa16945d55545109b5}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-1801819312}
+      \field{title}{{AI Engineering}}
+      \field{year}{2025}
+    \endentry
+    \entry{krishnan2025aiagentsevolutionarchitecture}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=f7b353ce59f1f699e9cf5f3f88aeb68b}{%
+           family={Krishnan},
+           familyi={K\bibinitperiod},
+           given={Naveen},
+           giveni={N\bibinitperiod}}}%
+      }
+      \strng{namehash}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{fullhash}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{fullhashraw}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{bibnamehash}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{authorbibnamehash}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{authornamehash}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{authorfullhash}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \strng{authorfullhashraw}{f7b353ce59f1f699e9cf5f3f88aeb68b}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.AI}
+      \field{eprinttype}{arXiv}
+      \field{title}{AI Agents: Evolution, Architecture, and Real-World Applications}
+      \field{year}{2025}
+      \verb{eprint}
+      \verb 2503.12687
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2503.12687
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2503.12687
+      \endverb
+    \endentry
+    \entry{llmcausalreasoning2024}{article}{}{}
+      \name{author}{2}{}{%
+        {{hash=1f647bb6da8304b7be380ec58eb6373a}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Lei},
+           giveni={L\bibinitperiod}}}%
+        {{hash=aea988e5eafa40be9ce63732f84d876d}{%
+           family={Shen},
+           familyi={S\bibinitperiod},
+           given={Yiqing},
+           giveni={Y\bibinitperiod}}}%
+      }
+      \strng{namehash}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{fullhash}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{fullhashraw}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{bibnamehash}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{authorbibnamehash}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{authornamehash}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{authorfullhash}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \strng{authorfullhashraw}{955cad9c97c23d1e3408afd23a2e8dd0}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{abstract}{Large language models (LLMs) have shown their capabilities in numerical and logical reasoning, yet their capabilities in higher-order cognitive tasks, particularly causal reasoning, remain less explored. Current research on LLMs in causal reasoning has focused primarily on tasks such as identifying simple cause-effect relationships, answering basic “what-if” questions, and generating plausible causal explanations. However, these models often struggle with complex causal structures, confounding variables, and distinguishing correlation from causation. This work addresses these limitations by systematically evaluating LLMs’ causal reasoning abilities across three representative scenarios, namely analyzing causation from effects, tracing effects back to causes, and assessing the impact of interventions on causal relationships. These scenarios are designed to challenge LLMs beyond simple associative reasoning and test their ability to handle more nuanced causal problems. For each scenario, we construct four paradigms and employ three types of prompt scheme, namely zero-shot prompting, few-shot prompting, and Chain-of-Thought (CoT) prompting in a set of 36 test cases. Our findings reveal that most LLMs encounter challenges in causal cognition across all prompt schemes, which underscore the need to enhance the cognitive reasoning capabilities of LLMs to better support complex causal reasoning tasks. By identifying these limitations, our study contributes to guiding future research and development efforts in improving LLMs’ higher-order reasoning abilities.}
+      \field{issn}{2079-9292}
+      \field{journaltitle}{Electronics}
+      \field{number}{23}
+      \field{title}{Evaluating Causal Reasoning Capabilities of Large Language Models: A Systematic Analysis Across Three Scenarios}
+      \field{volume}{13}
+      \field{year}{2024}
+      \verb{doi}
+      \verb 10.3390/electronics13234584
+      \endverb
+      \verb{urlraw}
+      \verb https://www.mdpi.com/2079-9292/13/23/4584
+      \endverb
+      \verb{url}
+      \verb https://www.mdpi.com/2079-9292/13/23/4584
+      \endverb
+    \endentry
+    \entry{wang2025replacehumanevaluators}{article}{}{}
+      \name{author}{6}{}{%
+        {{hash=27ab4996fdc25ccf0f92cbb461a49944}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Ruiqi},
+           giveni={R\bibinitperiod}}}%
+        {{hash=f63288249af189472bbd03c5da754956}{%
+           family={Guo},
+           familyi={G\bibinitperiod},
+           given={Jiyu},
+           giveni={J\bibinitperiod}}}%
+        {{hash=4eab333ecac39ccc4074abec0c9f919b}{%
+           family={Gao},
+           familyi={G\bibinitperiod},
+           given={Cuiyun},
+           giveni={C\bibinitperiod}}}%
+        {{hash=dbe85ae04cdf3362b3ac5279d4fcfd6d}{%
+           family={Fan},
+           familyi={F\bibinitperiod},
+           given={Guodong},
+           giveni={G\bibinitperiod}}}%
+        {{hash=da2be49558e212e235eba78419c2b12d}{%
+           family={Chong},
+           familyi={C\bibinitperiod},
+           given={Chun\bibnamedelima Yong},
+           giveni={C\bibinitperiod\bibinitdelim Y\bibinitperiod}}}%
+        {{hash=389bc525f2088642cfd16749beb3312e}{%
+           family={Xia},
+           familyi={X\bibinitperiod},
+           given={Xin},
+           giveni={X\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Association for Computing Machinery (ACM)}%
+      }
+      \strng{namehash}{0d3ace353a25b8b5b2e00207b49abd93}
+      \strng{fullhash}{3bc541b1a1ef8c6989f2ac4cf168034f}
+      \strng{fullhashraw}{3bc541b1a1ef8c6989f2ac4cf168034f}
+      \strng{bibnamehash}{0d3ace353a25b8b5b2e00207b49abd93}
+      \strng{authorbibnamehash}{0d3ace353a25b8b5b2e00207b49abd93}
+      \strng{authornamehash}{0d3ace353a25b8b5b2e00207b49abd93}
+      \strng{authorfullhash}{3bc541b1a1ef8c6989f2ac4cf168034f}
+      \strng{authorfullhashraw}{3bc541b1a1ef8c6989f2ac4cf168034f}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{issn}{2994-970X}
+      \field{journaltitle}{Proceedings of the ACM on Software Engineering}
+      \field{month}{6}
+      \field{number}{ISSTA}
+      \field{title}{Can LLMs Replace Human Evaluators? An Empirical Study of LLM-as-a-Judge in Software Engineering}
+      \field{volume}{2}
+      \field{year}{2025}
+      \field{pages}{1955\bibrangedash 1977}
+      \range{pages}{23}
+      \verb{doi}
+      \verb 10.1145/3728963
+      \endverb
+      \verb{urlraw}
+      \verb http://dx.doi.org/10.1145/3728963
+      \endverb
+      \verb{url}
+      \verb http://dx.doi.org/10.1145/3728963
+      \endverb
+    \endentry
+    \entry{zhuge2024agentasajudgeevaluateagentsagents}{misc}{}{}
+      \name{author}{13}{}{%
+        {{hash=77364610487c0143544a5cc057113162}{%
+           family={Zhuge},
+           familyi={Z\bibinitperiod},
+           given={Mingchen},
+           giveni={M\bibinitperiod}}}%
+        {{hash=2e875ba8e463e459a966473a48555390}{%
+           family={Zhao},
+           familyi={Z\bibinitperiod},
+           given={Changsheng},
+           giveni={C\bibinitperiod}}}%
+        {{hash=4816f2d1cf3c4dc81daf8c5a4321eb0b}{%
+           family={Ashley},
+           familyi={A\bibinitperiod},
+           given={Dylan},
+           giveni={D\bibinitperiod}}}%
+        {{hash=95aa4420e5242ba5bf424b6aaa55763c}{%
+           family={Wang},
+           familyi={W\bibinitperiod},
+           given={Wenyi},
+           giveni={W\bibinitperiod}}}%
+        {{hash=29ba4ecedbb999db16e142dc4e2eca39}{%
+           family={Khizbullin},
+           familyi={K\bibinitperiod},
+           given={Dmitrii},
+           giveni={D\bibinitperiod}}}%
+        {{hash=0be82ecdb5e6281800254e4f693aa343}{%
+           family={Xiong},
+           familyi={X\bibinitperiod},
+           given={Yunyang},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=f7d472f100bd11b3fbb1c5f7d54960a3}{%
+           family={Liu},
+           familyi={L\bibinitperiod},
+           given={Zechun},
+           giveni={Z\bibinitperiod}}}%
+        {{hash=1b5d37f1be8b8187d233bc764e128111}{%
+           family={Chang},
+           familyi={C\bibinitperiod},
+           given={Ernie},
+           giveni={E\bibinitperiod}}}%
+        {{hash=4a691df37485846988162c4f0639d2f0}{%
+           family={Krishnamoorthi},
+           familyi={K\bibinitperiod},
+           given={Raghuraman},
+           giveni={R\bibinitperiod}}}%
+        {{hash=074caf23cc82a3b80220324f240e9327}{%
+           family={Tian},
+           familyi={T\bibinitperiod},
+           given={Yuandong},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=f11b70e99345438ef864b582c1376051}{%
+           family={Shi},
+           familyi={S\bibinitperiod},
+           given={Yangyang},
+           giveni={Y\bibinitperiod}}}%
+        {{hash=e9719c90fd2fa1ca4ab4c18990a778c7}{%
+           family={Chandra},
+           familyi={C\bibinitperiod},
+           given={Vikas},
+           giveni={V\bibinitperiod}}}%
+        {{hash=288bdbcfe1b91ad7484d7a24f74f99ed}{%
+           family={Schmidhuber},
+           familyi={S\bibinitperiod},
+           given={Jürgen},
+           giveni={J\bibinitperiod}}}%
+      }
+      \strng{namehash}{e223aac5e8a4a9e6d39e3e39c63f0644}
+      \strng{fullhash}{f233633ca3e094bede910e017255a9ac}
+      \strng{fullhashraw}{f233633ca3e094bede910e017255a9ac}
+      \strng{bibnamehash}{e223aac5e8a4a9e6d39e3e39c63f0644}
+      \strng{authorbibnamehash}{e223aac5e8a4a9e6d39e3e39c63f0644}
+      \strng{authornamehash}{e223aac5e8a4a9e6d39e3e39c63f0644}
+      \strng{authorfullhash}{f233633ca3e094bede910e017255a9ac}
+      \strng{authorfullhashraw}{f233633ca3e094bede910e017255a9ac}
+      \field{sortinit}{Z}
+      \field{sortinithash}{96892c0b0a36bb8557c40c49813d48b3}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.AI}
+      \field{eprinttype}{arXiv}
+      \field{title}{Agent-as-a-Judge: Evaluate Agents with Agents}
+      \field{year}{2024}
+      \verb{eprint}
+      \verb 2410.10934
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2410.10934
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2410.10934
+      \endverb
+    \endentry
+  \enddatalist
+\endrefsection
+\endinput
+

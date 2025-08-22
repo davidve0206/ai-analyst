@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
-        "Agentic"
+        "Agentic",
+        "Huyen",
+        "Marsal"
     ],
     "python.testing.pytestArgs": [
         "tests"
@@ -17,5 +19,4 @@
     "files.associations": {
         "*.md.j2": "markdown"
     }
-    
 }
