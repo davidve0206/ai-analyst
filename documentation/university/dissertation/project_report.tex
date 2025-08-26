@@ -7,6 +7,8 @@
 \usepackage{amsfonts}
 \usepackage{latexsym}
 \usepackage{amsmath}
+\usepackage{float}
+\usepackage{rotating}
 \usepackage[a4paper, margin = 3cm, bottom = 2.5cm]{geometry}
 \usepackage{biblatex}
 \addbibresource{bibliography.bib}
@@ -48,7 +50,7 @@ $\Box$ \end{quotation}}
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-\title{{\vspace{-14em} \includegraphics[scale=0.4]{ucl_logo.png}}\\
+\title{{\vspace{-14em} \includegraphics[scale=0.4]{images/ucl_logo.png}}\\
 {{\Huge GenAI and financial data alert systems}}\\
 {\large GenAI Insight Overlays}\\
 }
@@ -81,7 +83,7 @@ TODO: Summarise your report concisely.
 
 According to a study by Forrester Consulting, knowledge workers spend 30\% of their time - that is, 2.4 hours a day - searching for information within their own company\cite{forrester2022}. This is a significant amount of time that could be better spent making decisions and taking action. As such, the aim of this project is to explore the capabilities of Large Language Models (``LLMs") to access a company's data, extract operational figures and provide initial insights to managers, directly to their inbox, saving time from the operational task of data gathering, and allowing them to focus on the more impactful parts of their roles - making data-informed decisions.
 
-To perform this exploration, the goal is to creating a proof of concept system that acts as a junior analyst (or ``AI Analyst") that can autonomously generate reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data. In addition to the AI Agent, the system will have a simple user interface, where the user can set the KPI(s) to report on, and the interval at which their analyst should run.
+To perform this exploration, the goal is to creating a proof of concept system that acts as a junior analyst (or ``AI Analyst") who autonomously generates reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data. In addition to the AI Agent, the system will have a simple user interface, where the user can set the KPI(s) to report on, and the interval at which their analyst should run.
 
 For this, the project builds on the recent evolution of AI agents and agentic systems, as paradigms that allow the execution of complex, multi-step workflows autonomously. Nevertheless, this specific use case poses a few challenges to the current stat of the art in GenAI agents.
 
@@ -91,7 +93,7 @@ This type of work is inherently open-ended. There is no single ``correct" answer
 
 Moreover, this kind of internal analysis is not likely to be included in LLM's training sets. Companies rarely publish their internal data or reports, and the requirements of operational reports are more granular than financial reports, which might be available for public companies. This makes the task a strong candidate for fine-tuning, but due to the lack of suitable training data this is outside of the project scope.
 
-With all of this in mind, the project was executed in three consecutive stages: First, a Research stage, focused on understanding the state of the art in AI agent orchestration and prompting, as well as the software tools available; the results of this stage can be found in \autoref{chapter:research}. Second, a Requirements and Analysis stage, where together with the client, Alvarez \& Marsal, we defined the scope of the proof of concept; the results of this stage can be found on \autoref{chapter:requirements-analysis}. This was also the bases for the evaluation framework for the project, which is described in \autoref{chapter:evaluation-testing}. Third, a Design and Implementation stage, which consisted on two separate iterations based on different approaches to agentic orchestration; the details of this stage can be found on \autoref{chapter:design-implementation}. Finally, \autoref{chapter:reflections} contains the Reflections from the process of creating the proof of concept system, as well as the potential future work to create a production-ready system.
+With all of this in mind, the project was executed in three consecutive stages: First, a Research stage, focused on understanding the state of the art in AI agent orchestration and prompting, as well as the software tools available; the results of this stage can be found in \autoref{chapter:research}. Second, a Requirements and Analysis stage, where together with the client, Alvarez \& Marsal, we defined the scope of the proof of concept; the results of this stage can be found on \autoref{chapter:requirements-analysis}. This was also the bases for the evaluation framework for the project, which is described in \autoref{chapter:evaluation-testing}. Third, a Design and Implementation stage, which was performed iteratively; the details of this stage can be found on \autoref{chapter:design-implementation}. Finally, \autoref{chapter:reflections} contains the Reflections from the process of creating the proof of concept system, as well as the potential future work to create a production-ready system.
 
 \chapter{Research}
 \label{chapter:research}
@@ -116,9 +118,9 @@ Afterwards, \autoref{sec:research-tools} will describe the research performed to
 
 In AI Engineering, Chip Huyen highlights two main reasons why evaluating the outputs of LLMs is harder than evaluating traditional machine learning models.
 
-First, as tasks become more sophisticated, the more time it takes to evaluate them. As she puts it, "[y]ou can  no longer evaluate a response based on how it sounds. You'll also need to fact-check, reason, and even incorporate domain expertise".  Secondly, the open-ended and probabilistic nature of LLMs "undermines the traditional approach of evaluating a model against ground truths". There are too many correct responses, so it is impossible to have a comprehensive list of correct outputs as ground truth.
+First, as tasks become more sophisticated, the more time it takes to evaluate them. As she puts it, ``[y]ou can  no longer evaluate a response based on how it sounds. You'll also need to fact-check, reason, and even incorporate domain expertise".  Secondly, the open-ended and probabilistic nature of LLMs "undermines the traditional approach of evaluating a model against ground truths". There are too many correct responses, so it is impossible to have a comprehensive list of correct outputs as ground truth.
 
-These problems are exacerbated when it comes to AI Agents, as they tackle more complex tasks. This is an on-going research field but, according to \cite{krishnan2025aiagentsevolutionarchitecture}, the focus of evaluation so far has been "predominantly focused on accuracy metrics that measure task completion success". This focus has been criticised for many reasons, particularly for limiting the evaluation to a task being completed or not, and not included other metrics such as the efficiency of the completion.
+These problems are exacerbated when it comes to AI Agents, as they tackle more complex tasks. This is an on-going research field but, according to \cite{krishnan2025aiagentsevolutionarchitecture}, the focus of evaluation so far has been ``predominantly focused on accuracy metrics that measure task completion success". This focus has been criticised for many reasons, particularly for limiting the evaluation to a task being completed or not, and not included other metrics such as the efficiency of the completion.
 
 This type of measure is called ``exact evaluation'', because it has no ambiguity - a task is complete or it is not - and can be viewed more generally to include any type of rules-based evaluation where, as the name indicates, a set or rules are defined and the output is measured against it adherence to these rules.
 
@@ -145,39 +147,72 @@ The literature points towards using specialized model for tasks that require dom
 Nevertheless, \cite{lu2025bizfinbench} created a financial benchmark that includes finance specific tasks such as forecasting market trends, predict asset movements, or analysing causal relationships in financial events, which closely resemble the types of task required in this project. Their evaluations of general models such as OpenAI's GTP-4o or o4-mini produced strong results (above 80\%) for these tasks, and as-such, these are used for development in this project. This is in line with the client's preferences of using widely available models.
 
 \subsection{Prompt and Context Engineering}
-Prompt Engineering (CoT)
+
+According to Chip Huyen, ``[a] prompt is an instruction given to a model to perform a task''. One of the main reasons to build an evaluation framework is to be able to perform Prompt Engineering, or the process of tweaking prompts and context to get the desired outcome from an LLM. This step is so important, that model providers often provide detailed guides on how to engineer prompts for their specific models, such as \cite{openai2025promptengineering} from OpenAI, which guided the promp engineering process for this project. Most of guides, nonetheless, include two techniques that have become cornerstones for this process.
+
+First is ``few-shot'' prompting, introduced by \cite{brown2020languagemodelsfewshotlearners}. This paper, by Brown et al., demonstrated that language models can learn a desired behaviour from examples in within the prompt; in more colloquial terms, there is a benefit to providing examples in prompts.
+
+Second, there is ``Chain-of-Thought'' prompting, introduced by \cite{wei2023chainofthoughtpromptingelicitsreasoning}. In this type of prompt, the model is asked to perform a step by step process before providing an output - either steps pre-defined in the prompt or defined by the model during execution. Wei et al. where able to achieve state of the art results using this technique.
+
+Note that these techniques are not mutually exclusive, and prompts for complex tasks might include both of them, or none, depending on the specific model used (e.g., reasoning models might not need explicit chain of thought prompting).
+
 \subsubsection{Context Engineering}
-CONTEXT ENGINEERING - SUMMARIZATION?
 
-\subsection{Retrieval Augmented Generation}
-KEY - Agentic RAG; we
+Borrowing AI Engineering's definition, the context is ``the information provided to the model so that it can perform a given task''. While the instruction (Prompt) remains static for any query, the information (Context) varies.
 
-\subsection{Agent Architectures and Orchestration}
-Agents and agentic orchestration (ReAct, Reflexion, Microsoft Magentic One)
+One key pattern for context engineering is Retrieval Augmented Generation (RAG), which according to AI Engineering can be considered as "a technique to construct context specific to each query". The pattern of retrieving and then generating was first introduced by Chen et al. in \cite{chen2017readingwikipediaansweropendomain}, where their system would retrieve Wikipedia pages relevant to a question and add their content to a model's context, and then fully coined by \cite{lewis2021retrievalaugmentedgeneration}.
+
+While these two papers define the technique with the use of text, this pattern can be applied to any type of information. Most relevant to this project, tabular data can also be retrieved and provided as part of the context.
+
+Finally, adding information is not the only way to manage a task's context. In perhaps the most important finding for this project, \cite{veseli2025positionalbiasesshiftinputs} demonstrates that as the size of the context grows closer to the model's limit, retrieval and reasoning become more biased towards data that is near the end of the context, and the model more easily fails to retrieve information provided in previous parts of the context.
+
+\subsection{Agent Architectures and Agentic Orchestration}
+
+According to \cite{sapkota2025aiagentsvsagentic}, ``AI Agents can be defined as autonomous software entities engineered for goal-directed task execution within bounded digital environments'', usually with an LLM as their ``core reasoning component''. They distinguish AI Agents from Agentic AI, an ``emerging class of systems [that] extends the capabilities of traditional AI Agents by enabling multiple intelligent entities to collaboratively pursue goals through structured communication, shared memory, and dynamic role assignment''. This subsection summarizes research findings for state of the art architectures of both.
+
+\subsubsection{Agent Architecture}
+
+The basic structure of an agent is described in AI Engineering as an LLM, which can perform certain actions (through tools) in a defined environment. The LLM acts as the brain of this agent, processing the information it receives - e.g., the task given by the user or results from its own tools - and generating plans to perform the task.
+
+The plans designed by the LLM can be performed in many ways, for example, tools can be called in parallel or sequentially, or the LLM and tools call be called in a Loop until the LLM itself decides the task has been completed. This designed is generally called the Agent's Architecture.
+
+One of the key problems for any Agent Architecture is how to build in ways to adjust the plans laid out by the LLM, allowing them to correct potential errors. On this, one of the most common patterns is ReAct (Reasoning and Acting), proposed by \cite{yao2023react}. In this pattern, two steps are taken in a loop until the task is completed: a Reasoning step, which encompass both planning and reflecting on tool outputs, and an Action step, where the next step in the plan is executed.
+
+This architecture was later expanded upon in \cite{shinn2023reflexion}, in their proposed Reflexion architecture. In Reflexion, the agent has separate steps for evaluating the output of its tools and self-relect on what went wrong, on each iteration, after evaluation and reflection, the agent proposes a new plan, and then executes the next step on that plan.
+
+\subsubsection{Agentic Orchestration Architecture}
+
+As described by \cite{sapkota2025aiagentsvsagentic}, Agentic AI allows multiple AI Agents to collaborate for more complex goals. Agentic Orchestration thus refers to the way that the collaboration between agents is structured.
+
+There are numerous ways to structure this collaboration. Some of the best known are, as described as part of LangGraph's documentation in \cite{langgraphagmultiagentsystems}, Networks (or Swarms) - where all agents communicate in a single group - and Supervisor - where an LLM acts as the coordinating node. But there are numerous ways of coordinating the work across agents, according to a specific task needs.
+
+For instance, in \cite{fourney2024magenticone}, a team of Microsoft researchers described Magentic-One, a generalist system that demonstrated state of the art performance in multiple agentic benchmarks without changing how the agents collaborate. The architecture is described by them as ``a multi-agent architecture where a lead agent, the Orchestrator, plans, tracks progress, and re-plans to recover from errors. [...] Moreover, Magentic-One's modular design allows agents to be added or removed from the team without additional prompt tuning or training, easing development and making it extensible to future scenarios''.
+
+One of the most interesting parts about Magentic-One is that it applies the learnings from \cite{shinn2023reflexion} to multi-agent orchestration, that is, it has explicit steps to evaluate  outputs, analyze what went wrong and re-plan. The architecture was open sourced by Microsoft and, for these reasons, was used extensively in this project for its generalist capabilities.
 
 \section{Software Tools}
 \label{sec:research-tools}
 
-While the project involved numerous decisions about tools, such as libraries to use for certain tasks, or the type of database to use to store user preferences, this section will only detail the key decisions that had an system-architecture impact; that is: the frameworks for the user interface and agent orchestration, and the tool to schedule agent runs. They will be presented in this chapter in order of importance.
+While the project involved numerous decisions about tools, such as libraries to use for certain tasks, or the type of database to use to store user preferences, this section will only detail the key decisions that had an system-architecture impact: the frameworks used for user interface and agent orchestration, and the tool to schedule agent runs. They will be presented in this chapter in order of importance.
 
-Note that the client had a preference for using Azure/Microsoft products for any infrastructure requirements, due to its enterprise readiness. While the proof of concept will not be deployed, Azure was used as inference provider. 
+Note that the client had a preference for using Azure/Microsoft products for any infrastructure requirements, due to its enterprise readiness. While the proof of concept will not be deployed, Azure was used as inference provider (i.e., LLMs calls are performed through Azure AI Foundry). 
 
-\subsection{AI Orchestration Frameworks}
+\subsection{Agent Orchestration Frameworks}
 
-Selecting the appropriate orchestration framework was the most crucial decision for the project, and the key guiding point for this was the size of a framework's community, which is often indicated by the number of GitHub stars, as it can significantly influence the availability of resources such as documentation, tutorials, and community support. A larger community typically leads to more comprehensive examples and a broader base of shared knowledge, facilitating smoother development and troubleshooting processes.
+Selecting the appropriate orchestration framework was the most crucial decision for the project, and the key guiding point for this was the size of a framework's community, which is often indicated by the number of GitHub stars. Community size can significantly influence the availability of resources such as documentation, tutorials, and community support. A larger community typically leads to more comprehensive examples and a broader base of shared knowledge, facilitating smoother development and troubleshooting processes.
 
 As such, \autoref{tab:orchestration_frameworks_stars} compares several prominent Python frameworks for agentic orchestration, highlighting their community size and the implications for developers seeking robust support and resources.
 
 \begin{table}[h]
 \centering
 \begin{tabular}{|p{3cm}|p{3cm}|p{9cm}|}
-\hline
-\textbf{Framework} & \textbf{GitHub Stars} & \textbf{Community Notes} \\ \hline
-\textbf{LangChain / LangGraph} & 113.6k & Extensive tutorials, active forums, and a wide array of integrations. \\ \hline
-\textbf{AutoGen} & 43.1k & Used to have support from Microsoft, with growing number of examples, but currently in the process of being merged to Semantic Kernel. \\ \hline
-\textbf{OpenAI SDK} & 8.6k & Official OpenAI support, with increasing community contributions. \\ \hline
-\textbf{CrewAI} & 35.8k & Active development with a focus on multi-agent collaboration. \\ \hline
-\textbf{Semantic Kernel} & 25.8k & Backed by Microsoft, offering enterprise-grade features, but documentation focused on C\#. \\ \hline
+    \hline
+    \textbf{Framework} & \textbf{GitHub Stars} & \textbf{Community Notes} \\ \hline
+    \textbf{LangChain / LangGraph} & 113.6k & Extensive tutorials, active forums, and a wide array of integrations. \\ \hline
+    \textbf{AutoGen} & 43.1k & Used to have support from Microsoft, with growing number of examples, but currently in the process of being merged to Semantic Kernel. \\ \hline
+    \textbf{OpenAI SDK} & 8.6k & Official OpenAI support, with increasing community contributions. \\ \hline
+    \textbf{CrewAI} & 35.8k & Active development with a focus on multi-agent collaboration. \\ \hline
+    \textbf{Semantic Kernel} & 25.8k & Backed by Microsoft, offering enterprise-grade features, but documentation focused on C\#. \\ \hline
 \end{tabular}
 \caption{Comparison of Python Agentic Orchestration Frameworks}
 \label{tab:orchestration_frameworks_stars}
@@ -188,23 +223,23 @@ Additionally, the \autoref{tab:orchestration_frameworks_uses} provides some find
 \begin{table}[h]
 \centering
 \begin{tabular}{|p{3cm}|p{3cm}|p{3cm}|p{5.5cm}|}
-\hline
-\textbf{Framework} & \textbf{Functionality} & \textbf{Use Cases} & \textbf{Pros and Cons} \\ \hline
-\textbf{LangChain / LangGraph} & Modular pipeline for LLMs, embeddings, tools & Complex workflows, data pipelines & Pros: Extensive integrations, strong community support; Cons: Steep learning curve, large framework size \\ \hline
-\textbf{AutoGen} & Multi-agent orchestration with conversational agents & Multi-agent systems, collaborative tasks & Pros: Easy to implement multi-agent system, original implementation of MagenticOne; Cons: In process of being merged to Semantic Kernel \\ \hline
-\textbf{OpenAI Agents SDK} & Lightweight framework with agents, handoffs, and guardrails & Rapid prototyping, simple agent workflows & Pros: Minimal abstractions, easy to learn; Cons: Heavily geared towards using the full OpenAI ecosystem \\ \hline
-\textbf{CrewAI} & Role-based collaboration with task management & Team-based workflows, sequential tasks & Pros: Intuitive design, good for structured workflows; Cons: Less flexibility for complex scenarios, smaller community \\ \hline
-\textbf{Semantic Kernel} & Enterprise-grade framework & Enterprise applications, integration with Microsoft tools & Pros: Strong enterprise support, robust features, includes a default implementation of MagenticOne; Cons: Limited Python support, smaller community \\ \hline
+    \hline
+    \textbf{Framework} & \textbf{Functionality} & \textbf{Use Cases} & \textbf{Pros and Cons} \\ \hline
+    \textbf{LangChain / LangGraph} & Modular pipeline for LLMs, embeddings, tools & Complex workflows, data pipelines & Pros: Extensive integrations, strong community support; Cons: Steep learning curve, large framework size \\ \hline
+    \textbf{AutoGen} & Multi-agent orchestration with conversational agents & Multi-agent systems, collaborative tasks & Pros: Easy to implement multi-agent system, original implementation of Magentic-One; Cons: In process of being merged to Semantic Kernel \\ \hline
+    \textbf{OpenAI Agents SDK} & Lightweight framework with agents, handoffs, and guardrails & Rapid prototyping, simple agent workflows & Pros: Minimal abstractions, easy to learn; Cons: Heavily geared towards using the full OpenAI ecosystem \\ \hline
+    \textbf{CrewAI} & Role-based collaboration with task management & Team-based workflows, sequential tasks & Pros: Intuitive design, good for structured workflows; Cons: Less flexibility for complex scenarios, smaller community \\ \hline
+    \textbf{Semantic Kernel} & Enterprise-grade framework & Enterprise applications, integration with Microsoft tools & Pros: Strong enterprise support, robust features, includes a default implementation of Magentic-One; Cons: Limited Python support, smaller community \\ \hline
 \end{tabular}
 \caption{Comparison of Python Agentic Orchestration Frameworks}
 \label{tab:orchestration_frameworks_uses}
 \end{table}
 
-As will be explained in more detail later, the development of the project consisted of two iterations. The first iteration tried to take advantage of Microsoft's MagenticOne orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second iteration's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow.
+As will be explained in more detail later, the development of the project consisted of two iterations. The first iteration tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second iteration's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow.
 
 \subsection{Scheduling Tool}
 
-The project requires the AI agent to run at set intervals, as defined by the user preferences. Two primary scheduling alternatives were considered: Celery and cron.
+The project requires the AI agent to run at set intervals, as defined by the user preferences. Two primary scheduling alternatives were considered: Celery and cron (through the python crontab library).
 
 Celery is a distributed task queue that supports asynchronous and real-time task execution, with advanced features such as retries, task prioritization, and integration with message brokers like Redis or RabbitMQ. While powerful, Celery introduces additional system complexity and overhead, requiring configuration of worker processes and a message broker.
 
@@ -214,7 +249,7 @@ Given the project's scope as a proof of concept, and the requirement of periodic
 
 \subsection{User Interface Framework}
 
-Finally, for setting up the configuration interface, several Python frontend options were considered. The main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the prototype into a full production application.
+Finally, for setting up the configuration interface, several Python frontend options were considered. The main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the prototype into a full production application if needed.
 
 \begin{table}[h]
 \centering
@@ -229,7 +264,7 @@ Finally, for setting up the configuration interface, several Python frontend opt
 \textbf{Customization} & Limited UI customization & Limited UI customization & High; full control \\ \hline
 \textbf{Performance} & Moderate & Moderate & High; asynchronous support \\ \hline
 \textbf{Extensibility} & Limited & Limited & High; supports plugins \\ \hline
-\textbf{Deployment} & Streamlit Cloud & Gradio Hub & Flexible (e.g., Docker, Cloud) \\ \hline
+\textbf{Recommended Deployment} & Streamlit Cloud & Gradio Hub & Flexible (e.g., Docker, Cloud) \\ \hline
 \textbf{Best For} & Rapid prototyping & Quick ML demos & Scalable, production-ready apps \\ \hline
 \end{tabular}
 \caption{Comparison of Python Frontend Frameworks for AI Agent Configuration}
@@ -239,33 +274,369 @@ Finally, for setting up the configuration interface, several Python frontend opt
 \chapter{Requirements and Analysis}
 \label{chapter:requirements-analysis}
 
-\chapter{Evaluation and Testing}
-\label{chapter:evaluation-testing}
 
-This particular approach is not relevant for the aims of this project, as evaluating a report output requires reviewing the structure of the report, the relevance of the insights extracted and the correctness of the data extracted. Again, this is relevant for the type of task the AI Analyst will perform, as it would be impossible to create a comprehensive set of all possible reports that could be generated.
 
-Because this is a proof concept, we do not want to spend too long building an evaluation system that might not be used in production, hence the use of human as a judge and rules-based evaluations for automated evals.
+\section{Problem Statement}
+
+
+
+\section{User Personas}
+
+\section{Requirements}
+
+% Define counters
+\newcounter{frcounter}
+\newcounter{nfrcounter}
+
+% Formatting for IDs
+\newcommand{\frid}{FR-\arabic{frcounter}}
+\newcommand{\nfrid}{NFR-\arabic{nfrcounter}}
+
+\subsection{Functional Requirements}
+
+\subsubsection{Sales Manager}
+
+\begin{tabular}{|l|p{10cm}|l|}
+\hline
+\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\hline
+\stepcounter{frcounter}\frid & The system shall allow a Sales Manager-type user to set up their Sales scope (e.g., a specific region or product) & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to generate a Sales performance report based on the user’s preferences & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to identify “special cases” in Sales trends and perform a deeper analysis & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide simple Sales forecasts based on current trends & Should Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to recommend potential actions to remedy “special cases” in Sales trends & Should Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide simple Sales forecasts based on the remedy actions recommended by itself & Could Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide advanced Sales forecasts using regression techniques or any other statistical method & Won’t Have \\
+\hline
+\end{tabular}
+
+\subsubsection{CFO}
+
+\begin{tabular}{|l|p{10cm}|l|}
+\hline
+\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\hline
+\stepcounter{frcounter}\frid & The system shall allow a CFO-type user to set up a list of KPIs they follow & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to generate a report for the user’s KPI list & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide simple forecasts for each KPI based on current trends & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to identify “special cases” in the trend of any KPI and perform a deeper analysis & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to recommend potential actions to remedy “special cases” in each KPI’s trend & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide simple forecasts for each KPI based on the remedy actions recommended by itself & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide advanced forecasts for each KPI using regression techniques or any other statistical method & Won’t Have \\
+\hline
+\end{tabular}
+
+\subsubsection{User Type Independent Requirements}
+
+\begin{tabular}{|l|p{10cm}|l|}
+\hline
+\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\hline
+\stepcounter{frcounter}\frid & The system shall email the resulting report to the email addresses configured by the user & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall include both financial and operational information in a report & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to load information from a CSV file & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to load information from other files provided by the user & Won't Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to load information from a set of reliable online information sources & Won't Have \\ \hline
+\end{tabular}
+
+\subsection{Non-Functional Requirements}
+
+\begin{tabular}{|l|p{10cm}|l|}
+\hline
+\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\hline
+\stepcounter{nfrcounter}\nfrid & The system shall be extensible to other sources of information & Must Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall run autonomously at fixed intervals & Must Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall allow the user to update the fixed interval for runs & Must Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall provide a user interface to update its configuration & Should Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall provide a user interface that is clear and easy to use & Should Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall allow multiple users to set up their reports & Could Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall allow users to authenticate before updating their report preferences & Won’t Have \\ \hline
+\end{tabular}
 
 \chapter{Design and Implementation}
 \label{chapter:design-implementation}
 
+NOTE: Talk about the experiments here.
+
+NOTE: One of the most interesting questions is how reusable is the system that was created as proof of concept. Some of the first prompt attempts were very general, with the idea that the client could only change the description of the KPI to extend the usability - this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers - even as models have advanced. Nevertheless, it is possible to envision designing the prompt system in a way that makes it easy to inject different examples / terms depending on the request type.
+
+\chapter{Evaluation and Testing}
+\label{chapter:evaluation-testing}
+
+Evaluating task completion is not relevant for the aims of this project, as evaluating a report output requires reviewing the structure of the report, the relevance of the insights extracted and the correctness of the data extracted. Again, this is relevant for the type of task the AI Analyst will perform, as it would be impossible to create a comprehensive set of all possible reports that could be generated.
+
+Also this system can have very different requests, ex. Product vs Country, so we can't create an evaluation that is too detailed - but this has the issue of still not being able to measure how useful that specific report is for decision making.
+
+Because this is a proof concept, we do not want to spend too long building an evaluation system that might not be used in production, hence the use of human as a judge and rules-based evaluations for automated evals.
+
+Also, note that we did continue running experiments after getting to 100\%, but those were not recorded as they always resulted in 100\% eval - so no point.
+
 \chapter{Reflections}
 \label{chapter:reflections}
 
-\section{Achievements}
-Summarise the achievements to confirm the project goals have been met.
+As a refresher, the aim of this project was to explore the capabilities of LLMs to access a company's data, extract operational figures and provide initial insights to managers, which was to be done by creating a proof of concept system that acts as a junior analyst who autonomously generates reports about a specific KPI, with a simple user interface where the user can set the specific needs for their report and the interval at which the analyst should run.
 
-\section{Evaluation}
-Evaluation of the work (this may be in a separate chapter if there is substantial evaluation).
+Success, in this particular project, had two complementary angles. The more tangible angle was to successfully create the proof of concept system, with the set of requirements discussed in \autoref{chapter:requirements-analysis}. The other, more open-ended angle, was to gather insights from building the proof of concept about using LLMs for this type of task, which can be useful for the client's future projects.
+
+The project can be considered a success on both fronts. \autoref{sec:requirements-achievement} will reflect on the requirements of the proof of concept system, how many were actually included in the system and why others were not. Yet, as mentioned before, with AI Agents it is important to differentiate between a the functionality existing and it being useful, which is where Evaluations come into play. \autoref{sec:key-insights} will thus reflect on the evolution of the key Evaluation metrics, and through this will explore the question of using LLMs for this type of analysis, and the key learnings from the project. Finally, \autoref{sec:future-work} will reflect on how the proof of concept system can be improved upon to arrive at a production-level application.
+
+\section{Proof of Concept Requirements Achievement}
+\label{sec:requirements-achievement}
+
+In general terms, the proof of concept system includes all key requirements. It achieved 100\% of both Must Have and Should Have requirements, and 1 of the 2 Could Have requirements. Additional, the system can create reports for Total Sales, which is a KPI within the scope of the CFO, showing that the system as designed can be used as a base for further development of functionality for this type of user. However, implementing this type of user was outside the scope of this project.
+
+The only Could Have requirement that was excluded from the proof of concept was FR-6. This was decided as the agent does not reliably recommended remedy actions that are measurable, but could be addressed considering the insights described in \autoref{sec:key-insights} if needed as part of the production system.
+
+% Define counters
+\newcounter{ref-frcounter}
+\newcounter{ref-nfrcounter}
+
+% Formatting for IDs
+\newcommand{\rfrid}{FR-\arabic{ref-frcounter}}
+\newcommand{\rnfrid}{NFR-\arabic{ref-nfrcounter}}
+
+\subsection{Functional Requirements}
+
+\subsubsection{Sales Manager User}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|p{8cm}|l|l|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
+        \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall allow a Sales Manager-type user to set up their Sales scope & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to generate a Sales performance report based on the user’s preferences & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to identify “special cases” in Sales trends and perform a deeper analysis & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide simple Sales forecasts based on current trends & Should Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to recommend potential actions to remedy “special cases” in Sales trends & Should Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide simple Sales forecasts based on the remedy actions recommended by itself & Could Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide advanced Sales forecasts using regression techniques or any other statistical method & Won’t Have & No \\
+        \hline
+    \end{tabular}
+\caption{Sales Manager Type User Functional Requirements Achievement}
+\end{table}
+
+\subsubsection{CFO User}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|p{8cm}|l|l|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
+        \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall allow a CFO-type user to set up a list of KPIs they follow & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to generate a report for the user’s KPI list & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide simple forecasts for each KPI based on current trends & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to identify “special cases” in the trend of any KPI and perform a deeper analysis & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to recommend potential actions to remedy “special cases” in each KPI’s trend & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide simple forecasts for each KPI based on the remedy actions recommended by itself & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide advanced forecasts for each KPI using regression techniques or any other statistical method & Won’t Have & No \\
+        \hline
+    \end{tabular}
+\caption{CFO Type User Functional Requirements Achievement}
+\end{table}
+
+\subsubsection{User Type Independent Requirements}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|p{8cm}|l|l|}
+        \hline
+        \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
+        \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall email the resulting report to the email addresses configured by the user & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall include both financial and operational information in a report & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from a CSV file & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from other files provided by the user & Won't Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from a set of reliable online information sources & Won't Have & No \\ \hline
+    \end{tabular}
+\caption{User Type Independent Functional Requirements Achievement}
+\end{table}
+
+\subsection{Non-Functional Requirements}
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|p{8cm}|l|l|}
+    \hline
+    \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
+    \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall be extensible to other sources of information & Must Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall run autonomously at fixed intervals & Must Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall allow the user to update the fixed interval for runs & Must Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall provide a user interface to update its configuration & Should Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall provide a user interface that is clear and easy to use & Should Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall allow multiple users to set up their reports & Could Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall allow users to authenticate before updating their report preferences & Won’t Have & No \\ \hline
+\end{tabular}
+\caption{Non-Functional Requirements Achievement}
+\end{table}
+
+\section{Evaluation Results and Key Insights}
+\label{sec:key-insights}
+
+% Counter for the key findings
+\newcounter{kfcounter}
+\newcommand{\kfid}{\textbf{Key Insight \arabic{kfcounter}}}
+
+\autoref{fig:evals-total} displays the evolution of the total evaluation score for the system generated report \footnote{Remember the score is just the percentage of items checklist that are correct in the output.}. At first glance, there was a consistently improvement over time, nevertheless, this does not show the entire story. To complement, \autoref{fig:evals-form} shows the evolution of the score when considering only items that evaluate the form of the report and \autoref{fig:evals-content} shows the score considering only items that evaluate the content of the report. This section will break down the meaning and insights that can be extracted from these three charts.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.61\textwidth]{images/evals-total.png}
+\caption{Evolution of evaluation results}
+\label{fig:evals-total}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.61\textwidth]{images/evals-form.png}
+\caption{Evolution of evaluation results considering only form items}
+\label{fig:evals-form}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.61\textwidth]{images/evals-content.png}
+\caption{Evolution of evaluation results considering only content items}
+\label{fig:evals-content}
+\end{figure}
+
+As mentioned before, the first iteration considered a single orchestration entity, with a single task to create the entire report. As can be seen in \autoref{fig:evals-form}, this iteration could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the "current" period of data - in every case, the report analysed the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
+
+Moreover, as evidenced in \autoref{fig:evals-content}, this agentic architecture failed to score more than 60\% on the content score, despite changes to the task description or architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content.
+
+After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while iterating, the context keeps growing and growing, even if the iteration does not actually move the task forward. In this particular architecture, this growth in context also affected the context of each sub-agent, making their responses worse as the iterations progressed. This led to two insights, which drove the approach to the second iteration:
+
+\begin{itemize}
+    \item \stepcounter{kfcounter}\kfid : while LLMs can indeed perform large tasks with some success, by breaking the task into subtasks we can manage the context at each point, improving their effectiveness and reliability.
+    \item \stepcounter{kfcounter}\kfid : deep research tasks increase the context quickly, but not all intermediate findings actually add information, so they benefit for summarization steps within the workflow\footnote{As opposed to most common architectures which only summarise at the end of the task}. This is in line with the findings of \cite{veseli2025positionalbiasesshiftinputs}.
+\end{itemize}
+
+The first point can be seen clearly on \autoref{fig:evals-form}. After the change to a step-by-step workflow, fluctuations in form score reduced vastly, while the content score slowly increased as the entire workflow was rebuilt. This is also highlighted by the fact that LLM steps were not reliably recommended remedy actions that were measurable; by making the recommendations part of the single deep research task, and not a separate step, the nuance is lost within the large context the task itself creates, resulting in very general recommendations.
+
+Later on, after finishing rebuilding the workflow, the system's default model was changed to use one of OpenAI's reasoning models, leading to \stepcounter{kfcounter}\kfid : changing to a reasoning model has a smaller impact than the change to a step-by-step workflow, as the reasoning step can be approximated by the architecture of each agent within the workflow. That said, the quality of certain parts of the output, such as the graphs generated, did improve markedly by using a more powerful model.
+
+Nevertheless, as mentioned in \autoref{chapter:design-implementation} with the change to reasoning model runs became more volatile, as reasoning models do not accept configuration variables such as Temperature, Top K or Top P. This was particularly evidenced in sub-agents that work iteratively before responding, which seemed to fall into infinite loops more easily. This led to \stepcounter{kfcounter}\kfid : autonomous agents are not guaranteed to self-recover, and the system must be planned around that. Common architectures use steps to reflect and re-plan, but this assumes that the agent will at some point finalize the task. For cases such as deep research, where there might not be clear measure for the task to be ``done'', it is important to create, and properly handle, forceful ending points.
+
+Finally, as mentioned in \autoref{chapter:evaluation-testing} the evaluation score does not measure how useful the report is for decisions making. Some reports, for the same request and with access to the same data, might show detailed operational information by City and Product Family, while others might extract insights by Customer. All of these would get the same evaluation score, but might be more or less useful. This highlights \stepcounter{kfcounter}\kfid : at the current state of LLMs, they can be used to reduce the time spent in data extraction, but companies will still need a human in the loop to review the output, confirm whether additional information is needed, and decide how to act based on the extracted insights.
 
 \section{Future Work}
-How the project might be continued, but don't give the impression you ran out of time!
+\label{sec:future-work}
+
+The current system is a proof of concept. As such, it can - and should - be improved upon to create production-ready system. The most important changes to get there would be:
+
+\begin{enumerate}
+    \item Improvements to the evaluation framework:
+    \begin{itemize}
+        \item Fully automate the evaluation of outputs, to allow for quicker iterations.
+        \item Evaluate intermediate steps within a full execution, in addition to individually.
+        \item Add objective evaluation to intermediate steps when appropriate.
+    \end{itemize}
+    \item Improvements to the product readiness of the user interface for configuration:
+    \begin{itemize}
+        \item If the system will be deployed in a publicly accessible location, add authentication.
+        \item Add acceptance tests that can be run on the CI/CD pipeline.
+        \item Potentially, allow different reports to run on different cron configurations.
+    \end{itemize}
+    \item Improvements to the agent architecture and outputs:
+    \begin{itemize}
+        \item Make the corrective actions proposed by the LLM when there is a ``special case" measurable, by creating a separate step in the workflow dedicated to providing and measuring the recommendations.
+    \end{itemize}
+\end{enumerate}
 
 \appendix
 
 \printbibliography
 
-\chapter{Other appendices, e.g., code listing}
-Put your appendix sections here
+\chapter{System Manual}
+
+\chapter{User Manual}
+
+\chapter{Report Evaluation Questions}
+\label{annex:evaluation}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{14cm}|}
+    \hline
+    \textbf{Form Items} \\ \hline
+    Does the report include all the required sections? \\ \hline
+    Does the report actually address the required KPI? \\ \hline
+    Does the report include an analysis of the evolution of the KPI? \\ \hline
+    Does the report include detailed data, in addition to the high level KPI information? \\ \hline
+    Does the report include at least one graph? \\ \hline
+    Does the report include more than one graph? \\ \hline
+    Does the report include a projection of the KPI? \\ \hline
+    Is the data retrieved correct? \\ \hline
+    Does the report accurately present the last information period? \\ \hline
+    Is the content of the Executive Summary accurate to the section's description? \\ \hline
+    Is the content of the Overview accurate to the section's description? \\ \hline
+    Is the content of the Trends \& Context accurate to the section's description? \\ \hline
+    Is the content of the In Depth Analysis accurate to the section's description? \\ \hline
+    Is the content of the Forward Outlook accurate to the section's description? \\ \hline
+\end{tabular}
+\caption{Checklist of Form Items}
+\end{table}
+
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{14cm}|}
+    \hline
+    \textbf{Content Items} \\ \hline
+    Does the analysis in the report accurately represent the evolution of the KPI? \\ \hline
+    Does the report include an analysis of the detailed data? \\ \hline
+    Does the detailed analysis mention specific drivers of decline? \\ \hline
+    Are all graphs relevant to the report? \\ \hline
+    Are all graph types adequate for the data presented? \\ \hline
+    Are all projections adequate for the data presented? \\ \hline
+    Does the report accurately note any ``special case'' present? \\ \hline
+    Does the report provide next steps for any ``special case'' present? \\ \hline
+Are all statements in the report sustained with data? \\ \hline
+\end{tabular}
+\caption{Checklist of Content Items}
+\end{table}
+
+\chapter{Experiments Performed and Evaluation Results}
+\label{annex:experiments}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|p{7cm}|c|c|c|c|}
+    \hline
+    No. & Date & Notes & Default Model & Form & Content & Total \\ \hline
+    1 & 02-Jul & First test with all of my MVP Agents: Magentic One (DB, Coder) + Separate Editor & gpt-4o-mini & 50\% & 29\% & 36\% \\ \hline
+    2 & 02-Jul & Re run of previous experiment & gpt-4o-mini & 75\% & 29\% & 45\% \\ \hline
+    3 & 03-Jul & Move Editor Agent inside team, improve quant agent prompt & gpt-4o-mini & 50\% & 29\% & 36\% \\ \hline
+    4 & 04-Jul & Improve Magentic One task description & gpt-4o-mini & 75\% & 71\% & 73\% \\ \hline
+    5 & 04-Jul & Improve Editor Prompt & gpt-4o-mini & 75\% & 64\% & 68\% \\ \hline
+    6 & 09-Jul & First test with LangGraph - Minimal MVP, without in-depth analysis & gpt-4o-mini & 78\% & 78\% & 78\% \\ \hline
+    7 & 11-Jul & Add step for operational info just with the quant agent & gpt-4o-mini & 100\% & 64\% & 78\% \\ \hline
+    8 & 15-Jul & Leave plot generation for last step & gpt-4o-mini & 67\% & 64\% & 65\% \\ \hline
+    9 & 15-Jul & Re run of previous experiment  & gpt-4o-mini & 89\% & 79\% & 83\% \\ \hline
+    10 & 23-Jul & Add the agent for in-depth research & gpt-4o-mini & 89\% & 79\% & 83\% \\ \hline
+    11 & 24-Jul & Add the agent for in-depth research & o4-mini & 100\% & 79\% & 87\% \\ \hline
+    12 & 28-Jul & Change prompt: `concise' to `detailed' & o4-mini & 100\% & 86\% & 91\% \\ \hline
+    13 & 28-Jul & Re run of previous experiment & o4-mini & 100\% & 93\% & 96\% \\ \hline
+    14 & 29-Jul & Add capacity for report writing graph to load csv files & o4-mini & 100\% & 64\% & 78\% \\ \hline
+    15 & 29-Jul & Re run of previous experiment & o4-mini & 89\% & 71\% & 78\% \\ \hline
+    16 & 30-Jul & Add check for coding agent intermediate input vs final input & o4-mini & 89\% & 71\% & 78\% \\ \hline
+    17 & 30-Jul & Update prompt in quant agent to reduce intermediate requests for user input & o4-mini & 100\% & 93\% & 96\% \\ \hline
+    18 & 31-Jul & Update prompt in internal data agent to ensure all files are generated in the right folder & o4-mini & 100\% & 100\% & 100\% \\ \hline
+    \end{tabular}
+\caption{Experiments performed with Evaluation scores}
+\end{table}
+
+\begin{sidewaysfigure}
+    \centering
+    \includegraphics[width=\textheight]{images/evals-detail.png}
+    \caption{Detailed evaluation scores; empty cells are items that do not apply to that specific experiment.}
+    \label{fig:evals-detailed}
+\end{sidewaysfigure}
+
+\chapter{Generated Report - Sample}
 
 \end{document}

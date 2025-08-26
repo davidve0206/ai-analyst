@@ -1,13 +1,13 @@
 # Fdb version 4
-["biber project_report"] 1755899910.26869 "project_report.bcf" "project_report.bbl" "project_report" 1755901846.79817 0
-  "bibliography.bib" 1755894285.77154 6076 adedaf24b3551a8bb9e15a96f3c80584 ""
-  "project_report.bcf" 1755901846.7127 109489 6d6a929bd6bb4973de4faeacdad6fa11 "pdflatex"
+["biber project_report"] 1756236505.48578 "project_report.bcf" "project_report.bbl" "project_report" 1756237031.92386 0
+  "bibliography.bib" 1756235536.40792 11209 15391fac9f1b0e5fbcc0c3c6badfc864 ""
+  "project_report.bcf" 1756237031.85172 110689 28e782a4b309ec13c52bf97f2674ac99 "pdflatex"
   (generated)
   "project_report.bbl"
   "project_report.blg"
   (rewritten before read)
-["pdflatex"] 1755901845.75522 "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" "project_report.pdf" "project_report" 1755901846.79845 0
-  "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" 1755901845.59482 21608 c0f6dcc5d1eb5665d3efd0e99b622eea ""
+["pdflatex"] 1756237030.48637 "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" "project_report.pdf" "project_report" 1756237031.9241 0
+  "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" 1756237030.30878 54023 18298821359bb078daa2588a65d2c43c ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -54,6 +54,7 @@
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb" 1248133631 32722 d7379af29a190c3f453aba36302ff5a9 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb" 1248133631 32362 179c33bbf43f19adbb3825bb4e36e57a ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb" 1248133631 32734 69e00a6b65cedb993666e42eedb3d48f ""
+  "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb" 1248133631 32762 224316ccc9ad3ca0423a14971cfa7fc1 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb" 1248133631 32726 0a1aea6fcd6468ee2cf64d891f5c43c8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb" 1248133631 33993 9b89b85fd2d9df0482bd47194d1d3bf3 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb" 1248133631 37944 359e864bd06cde3b1cf57bb20757fb06 ""
@@ -99,6 +100,7 @@
   "/usr/local/texlive/2025/texmf-dist/tex/latex/biblatex/lbx/english.lbx" 1711143581 40021 daa5a82ed0967f3ac4b77cb8384cac55 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty" 1579991033 13886 d1306dcf79a944f6988e688c1785f9ce ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/etoolbox/etoolbox.sty" 1739306980 46850 d87daedc2abdc653769a6f1067849fe0 ""
+  "/usr/local/texlive/2025/texmf-dist/tex/latex/float/float.sty" 1137110151 6749 16d2656a1984957e674b149555f1ea1d ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/geometry/geometry.sty" 1578002852 41601 9cf6c5257b1bc7af01a58859749dd37a ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/color.cfg" 1459978653 1213 620bba36b25224fa9b7e1ccb4ecb76fd ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics-cfg/graphics.cfg" 1465944070 1224 978390e9c2234eab29404bc21b268d1e ""
@@ -108,6 +110,7 @@
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/graphicx.sty" 1748806692 8118 43b99e52946c33a23f5f43b52d5cc5ec ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/keyval.sty" 1748806692 2671 d9941f4bf4750e9b0603c9a2ec54693b ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/mathcolor.ltx" 1667332637 2885 9c645d672ae17285bba324998918efd8 ""
+  "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/rotating.sty" 1748806692 7280 936827f0adb7f9ec1f98fe01cba3482b ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/graphics/trig.sty" 1748806692 4023 e66acf578d6b564c4670fb57ff336a7a ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/hycolor/hycolor.sty" 1580250785 17914 4c28a13fc3d975e6e81c9bea1d697276 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/hyperref/hpdftex.def" 1752350709 48140 5e8a3a4aa88ae09b90d524926a067201 ""
@@ -131,13 +134,17 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1755792140 5528033 0c358b2aae4aa21399659c485f38b4ac ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1755792384 3605819 5f48292749b265f8095a754149c8d647 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "project_report.aux" 1755901846.71057 6979 c3cfab76aa73dcdf53d61e2290df359d "pdflatex"
-  "project_report.bbl" 1755899911.40341 22825 53582e76db507d7944292e6dfba5018d "biber project_report"
-  "project_report.out" 1755901846.71185 3160 be891fce1985734546ec0c19330719c9 "pdflatex"
-  "project_report.run.xml" 1755901846.71334 2377 457f5b043c52a36361c8ed59df280109 "pdflatex"
-  "project_report.tex" 1755901845.59482 21608 c0f6dcc5d1eb5665d3efd0e99b622eea ""
-  "project_report.toc" 1755901846.7134 1740 5b9f436df29b2036ebeb71879bda098d "pdflatex"
-  "ucl_logo.png" 1755793056.89861 6504 3df71c27b7eae94711ab3399c46f3361 ""
+  "images/evals-content.png" 1756200599.92043 251352 ced9f523119013e1c551a25b5d874cd0 ""
+  "images/evals-detail.png" 1756151976.4445 34525 684f4fc7ede8342f688b8d2e290f36dd ""
+  "images/evals-form.png" 1756200607.87687 226015 71587b29a2e359119f6b27dae31f7b7f ""
+  "images/evals-total.png" 1756200624.59751 219373 2e2742290af2c62b15d662f63cfc4b36 ""
+  "images/ucl_logo.png" 1755793056.89861 6504 3df71c27b7eae94711ab3399c46f3361 ""
+  "project_report.aux" 1756237031.84893 14671 1679c6c8f1a4d6f4a60e55ebf32502ab "pdflatex"
+  "project_report.bbl" 1756236506.88668 53410 2e7f169122ec13defa5be0f77560389a "biber project_report"
+  "project_report.out" 1756237031.85091 5056 6b0718246b78ad47425a9096206bf5ad "pdflatex"
+  "project_report.run.xml" 1756237031.85233 2377 457f5b043c52a36361c8ed59df280109 "pdflatex"
+  "project_report.tex" 1756237030.30878 54023 18298821359bb078daa2588a65d2c43c ""
+  "project_report.toc" 1756237031.85241 3185 b1ef7bdf8ae63823d48e72b4531cf8cd "pdflatex"
   (generated)
   "project_report.aux"
   "project_report.bcf"
