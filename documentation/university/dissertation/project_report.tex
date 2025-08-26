@@ -274,15 +274,106 @@ Finally, for setting up the configuration interface, several Python frontend opt
 \chapter{Requirements and Analysis}
 \label{chapter:requirements-analysis}
 
+As mentioned before, the client for this project is Alvarez \& Marsal (A\&M), a global professional services firm specializing in turnaround management, corporate restructuring, and performance improvement.
+
+A\&M clearly identified a problem to solve: Executives spend valuable hours navigating dashboards just to extract the specific information relevant to their needs. As such, they wanted to explore the capabilities of LLMs to help reduce this time by building an Agentic AI system that could access a company's data, extract operational figures and generate report about a specific KPI, delivered directly to a user's email. For this, A\&M shared bullet points with their ideal set of functionalities for the system.
+
+Nevertheless, as a professional services firm, Alvarez \& Marsal was limited in the resources they could share for the development of the system. Particularly, they were not allowed to provide anonymized data, which severely limited the functionalities that could be built - as an example, while they wanted the system to retrieve news that could explain a reduction in sales, this only makes sense if the system knows which products the company is selling.
+
+Due to this limitation, it was agreed to build a proof of concept system that could later be extended by their internal team. This chapter thus details the process for arriving to the requirements for this proof of concept system. First, the creation of user personas, and their scenarios for using the system, to help narrow the key need for users. Second, the definition of a set of requirements based on said personas.
+
+Readers will note that this process did not include the definition of Use Cases. This is intentional, as the system has a single use case - a user setting the report they want to receive, and when they want to receive it. Other than that, the system is autonomous.
+
+\section{User Personas and Scenarios}
+
+A\&M identified 2 types of users they wanted to target, based on their experience advising companies: a Sales Manager and a CFO-level user. The following are Fictional Personas, as well as a set of user scenarios where the system could improve their day to day work. The process of creating these drew heavily from \cite{ixdf_personas_2025} and \cite{ixdf_user_scenarios_2025}, and was based both on A\&M and the author's experience in industry.
+
+\subsubsection{John, the Sales Manager}
+
+\begin{tabular}{|p{3.3cm}|p{10.5cm}|}
+\hline
+\textbf{Hard Facts} & John lives in London, is 30--35 years old, and works as the Sales Manager for Germany for a car parts manufacturer. \\
+\hline
+\textbf{Computer and Internet Use} & He mainly uses a computer for work, including emails, reviewing dashboards, and browsing the internet for news and social media. He also owns an iPad and a MacBook. He is comfortable with computers but isn't particularly tech-savvy. \\
+\hline
+\textbf{A Typical Monday} & John starts his work week by reviewing unread emails to set priorities. He can spend up to two hours reviewing the company's dashboard to track sales in Germany. He then schedules follow-up meetings and spends the afternoon in meetings with his team and clients. \\
+\hline
+\textbf{Current Scenarios (As is)} & 
+\begin{minipage}[t]{\linewidth}
+    \begin{itemize}
+        \item \textbf{All good}: John navigates the dashboard to see that sales are on track and he can move on with his day.
+        \item \textbf{Issue found}: John notices a sales decline, investigates by manually filtering through different views (clients, number of active clients, churned clients), and then works with his team to create an action plan.
+        \item \textbf{Continue what's working}: John sees a better-than-expected sales increase, investigates by looking at top clients and specific products, and then finds a news article about a change in safety regulations that might be driving the trend. He then advises his team to review the regulation and try to up-sell more customers.
+    \end{itemize}
+    \vspace{0.05em}
+\end{minipage} \\
+\hline
+\textbf{Future Scenarios (To be)} & 
+\begin{minipage}[t]{\linewidth}
+    \begin{itemize}
+        \item \textbf{All good}: John receives an email with a short report showing sales are on target, skims it, and moves on with his day.
+        \item \textbf{Issue found}: John receives an email with a report attached that notes a sales decline and lists the clients who have churned, allowing him to forward the report and schedule a meeting with his team.
+        \item \textbf{Continue what's working}: John receives an email with a report pointing out a higher-than-expected increase in sales for a specific product and links to a news article about a change in safety regulations, enabling him to forward the report and advise his team.
+    \end{itemize}
+    \vspace{0.05em}
+\end{minipage} \\
+\hline
+\end{tabular}
 
 
-\section{Problem Statement}
+\subsubsection{Clara, the CFO}
 
+\begin{tabular}{|p{3.3cm}|p{10.5cm}|}
+\hline
+\textbf{Hard Facts} & Clara lives in Cambridge with her family, is 45--50 years old, and works as the CFO of John's company. \\
+\hline
+\textbf{Computer and Internet Use} & She mainly uses a computer for work, including emails, reviewing dashboards, and browsing the internet. She is "definitely not a tech-savvy person." \\
+\hline
+\textbf{A Typical Monday} & Clara starts her week by reviewing emails and spends up to an hour reviewing the company's dashboard to identify high-level trends. She has lunch with the CEO to discuss strategic planning and spends the afternoon in meetings with her team. \\
+\hline
+\textbf{Current Scenarios (As is)} & 
+\begin{minipage}[t]{\linewidth}
+    \begin{itemize}
+        \item \textbf{All good}: Clara navigates through different dashboard screens to check various KPIs and finds they are all on track.
+        \item \textbf{Issue found}: Clara notices a decline in Gross Margin, investigates by looking at sales and costs, and finds an unexpected cost increase in France, which she then notes and instructs her team to investigate.
+        \item \textbf{Continue what's working}: Clara sees a positive increase in sales growth, investigates by looking at business lines, and finds an uptick in the Brakes division. She then looks for news, finds a regulation change in Germany, and schedules a meeting with the corresponding sales team to strategize.
+    \end{itemize}
+    \vspace{0.05em}
+\end{minipage} \\
+\hline
+\textbf{Future Scenarios (To be)} & 
+\begin{minipage}[t]{\linewidth}
+    \begin{itemize}
+        \item \textbf{All good}: Clara receives an email with a short report on all the KPIs she monitors, skims it, and moves on.
+        \item \textbf{Issue found}: Clara receives an email with a report mentioning a KPI (Gross Margin) decline and a detailed explanation of the cause (increased costs in the France unit), allowing her to instruct her team to investigate immediately.
+        \item \textbf{Continue what's working}: Clara receives an email with a report that points out an increase in sales for the Brakes product group and links to a news article about the related safety regulation change in Germany. This allows her to schedule a meeting with the corresponding sales team to discuss the impact and prepare for similar changes in other countries.
+    \end{itemize}
+    \vspace{0.05em}
+\end{minipage} \\
+\hline
+\end{tabular}
 
+\subsection{Analysis}
 
-\section{User Personas}
+As put by \cite{ixdf_personas_2025}, Fictional Personas are deeply flawed. Nevertheless, they can be used as initial sketches of user needs. Based on these two particular user personas, a few things are important to drive adoption of any solution:
 
-\section{Requirements}
+\begin{enumerate}
+    \item \textbf{User interface needs to be easy to use:}
+    \begin{itemize}
+        \item Target personas are not particularly tech savvy.
+        \item They are used to the intuitive interface of dashboards.
+        \item They don’t want to spend 5 hours setting something up that only saves them a few hours per month—they want to spend 5 minutes.
+        \item The key output they need is knowing where to look in detail for their next steps, so a high-level report can be good enough.
+    \end{itemize}
+
+    \item \textbf{Our users target a different number of KPIs, and this affects the level of detail they want to see:}
+    \begin{itemize}
+        \item A Sales Manager tracks a single KPI (Sales), but they want to go into a loot of operational detail. A CFO, on the other side, follows multiple high-level KPIs, but only wants to have a general understanding of the situation.
+        \item Moreover, our target personas are used to being able to see exactly the level of operational detail they want from their dashboards. The system must be aware of that level of detail.
+    \end{itemize}
+\end{enumerate}
+
+\section{MoSCoW Requirements}
 
 % Define counters
 \newcounter{frcounter}
@@ -292,6 +383,15 @@ Finally, for setting up the configuration interface, several Python frontend opt
 \newcommand{\frid}{FR-\arabic{frcounter}}
 \newcommand{\nfrid}{NFR-\arabic{nfrcounter}}
 
+Based on the user personas, and the limitations on data availability, the following requirements were defined for the system. Nevertheless, before reviewing them in detail there are a few important things to note.
+
+First, as noted in the analysis of User Personas, the level of detail of the reports for the two types of personas are different - in practical terms, this means the prompts that are used for one type of user might not work for the other. As such, it was decided to split certain requirements related to the report content by type of users.
+
+Second, due to the nature of this project as a proof of concept, and due to the limitations in data availability mentioned before, the system will only implement a subset of all potential requirements. However, knowing what requirements might be implemented in the future can inform design decisions in the present. As such, it was deemed acceptable to have a long list of Won't Have requirements - that is, a long list of requirements that are known and wanted for the system, but that will be outside of the scope of this project.
+
+Finally, due to the limitations on data availability, it was decided that the proof of concept would only cover Sales Manager users. While A\&M could anonymize sales data with relative speed \footnote{This speed came with a cost though, as you will notice if you review the sample report, there are some drastic fluctuations in sales that can only be explained by issues with this process.}, the time needed to anonymize enough data for other KPIs was deemed too long for the project.
+
+With this in mind, the following tables reflect the requirements for the project's system.
 \subsection{Functional Requirements}
 
 \subsubsection{Sales Manager}

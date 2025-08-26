@@ -13,27 +13,29 @@
 \contentsline {subsection}{\numberline {2.2.2}Scheduling Tool}{9}{subsection.2.2.2}%
 \contentsline {subsection}{\numberline {2.2.3}User Interface Framework}{9}{subsection.2.2.3}%
 \contentsline {chapter}{\numberline {3}Requirements and Analysis}{11}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Problem Statement}{11}{section.3.1}%
-\contentsline {section}{\numberline {3.2}User Personas}{11}{section.3.2}%
-\contentsline {section}{\numberline {3.3}Requirements}{11}{section.3.3}%
-\contentsline {subsection}{\numberline {3.3.1}Functional Requirements}{11}{subsection.3.3.1}%
-\contentsline {subsubsection}{Sales Manager}{11}{section*.6}%
-\contentsline {subsubsection}{CFO}{12}{section*.7}%
-\contentsline {subsubsection}{User Type Independent Requirements}{12}{section*.8}%
-\contentsline {subsection}{\numberline {3.3.2}Non-Functional Requirements}{12}{subsection.3.3.2}%
-\contentsline {chapter}{\numberline {4}Design and Implementation}{13}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Evaluation and Testing}{14}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Reflections}{15}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Proof of Concept Requirements Achievement}{15}{section.6.1}%
-\contentsline {subsection}{\numberline {6.1.1}Functional Requirements}{16}{subsection.6.1.1}%
-\contentsline {subsubsection}{Sales Manager User}{16}{section*.9}%
-\contentsline {subsubsection}{CFO User}{16}{section*.10}%
-\contentsline {subsubsection}{User Type Independent Requirements}{17}{section*.11}%
-\contentsline {subsection}{\numberline {6.1.2}Non-Functional Requirements}{17}{subsection.6.1.2}%
-\contentsline {section}{\numberline {6.2}Evaluation Results and Key Insights}{17}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Work}{20}{section.6.3}%
-\contentsline {chapter}{\numberline {A}System Manual}{23}{appendix.A}%
-\contentsline {chapter}{\numberline {B}User Manual}{24}{appendix.B}%
-\contentsline {chapter}{\numberline {C}Report Evaluation Questions}{25}{appendix.C}%
-\contentsline {chapter}{\numberline {D}Experiments Performed and Evaluation Results}{26}{appendix.D}%
-\contentsline {chapter}{\numberline {E}Generated Report - Sample}{28}{appendix.E}%
+\contentsline {section}{\numberline {3.1}User Personas and Scenarios}{11}{section.3.1}%
+\contentsline {subsubsection}{John, the Sales Manager}{12}{section*.6}%
+\contentsline {subsubsection}{Clara, the CFO}{13}{section*.7}%
+\contentsline {subsection}{\numberline {3.1.1}Analysis}{13}{subsection.3.1.1}%
+\contentsline {section}{\numberline {3.2}MoSCoW Requirements}{14}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Functional Requirements}{15}{subsection.3.2.1}%
+\contentsline {subsubsection}{Sales Manager}{15}{section*.8}%
+\contentsline {subsubsection}{CFO}{15}{section*.9}%
+\contentsline {subsubsection}{User Type Independent Requirements}{16}{section*.10}%
+\contentsline {subsection}{\numberline {3.2.2}Non-Functional Requirements}{16}{subsection.3.2.2}%
+\contentsline {chapter}{\numberline {4}Design and Implementation}{17}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Evaluation and Testing}{18}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Reflections}{19}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Proof of Concept Requirements Achievement}{19}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Functional Requirements}{20}{subsection.6.1.1}%
+\contentsline {subsubsection}{Sales Manager User}{20}{section*.11}%
+\contentsline {subsubsection}{CFO User}{20}{section*.12}%
+\contentsline {subsubsection}{User Type Independent Requirements}{21}{section*.13}%
+\contentsline {subsection}{\numberline {6.1.2}Non-Functional Requirements}{21}{subsection.6.1.2}%
+\contentsline {section}{\numberline {6.2}Evaluation Results and Key Insights}{21}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Work}{24}{section.6.3}%
+\contentsline {chapter}{\numberline {A}System Manual}{27}{appendix.A}%
+\contentsline {chapter}{\numberline {B}User Manual}{28}{appendix.B}%
+\contentsline {chapter}{\numberline {C}Report Evaluation Questions}{29}{appendix.C}%
+\contentsline {chapter}{\numberline {D}Experiments Performed and Evaluation Results}{30}{appendix.D}%
+\contentsline {chapter}{\numberline {E}Generated Report - Sample}{32}{appendix.E}%
