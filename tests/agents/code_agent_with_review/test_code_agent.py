@@ -85,7 +85,6 @@ Here's what I need you to do step by step:
 Make sure to use proper financial formulas and validate each step. This is a complex multi-step process, so take your time and be thorough."""
 
     # Run the agent
-    path = code_agent_with_review.store_graph_as_png()
     response = await code_agent_with_review.ainvoke(
         messages=[HumanMessage(content=query)]
     )
