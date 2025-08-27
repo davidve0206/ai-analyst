@@ -125,7 +125,8 @@ async def test_report_editor_workflow(
         # Clean up the temp files
         for file in files_mentioned:
             file_path = test_temp_dir / file
-            file_path.unlink(missing_ok=True)
+            if file_path.exists() and "fixture" not in file:
+                file_path.unlink(missing_ok=True)
 
 
 @pytest.mark.asyncio

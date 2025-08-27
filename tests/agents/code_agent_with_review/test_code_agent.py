@@ -6,20 +6,17 @@ import pytest
 
 from langchain_core.messages import HumanMessage
 
-from src.agents.code_agent_with_review import (
-    CodeAgentState,
-    PreConfiguredCodeAgent,
-    is_invalid_code_tool_message,
-)
 from src.agents.models import AppChatModels
 from src.agents.utils.prompt_utils import extract_graph_response_content
 
 
 @pytest.fixture(scope="function")
-def code_agent_with_review(models_client: AppChatModels) -> PreConfiguredCodeAgent:
+def code_agent_with_review(models_client: AppChatModels):
     """
     Fixture to get the code agent with review for testing.
     """
+    from src.agents.code_agent_with_review import CodeAgentState, PreConfiguredCodeAgent
+
     return PreConfiguredCodeAgent(
         preset_state=CodeAgentState(),
         models=models_client,
@@ -29,7 +26,7 @@ def code_agent_with_review(models_client: AppChatModels) -> PreConfiguredCodeAge
 
 @pytest.mark.asyncio
 async def test_complex_data_analysis_task(
-    code_agent_with_review: PreConfiguredCodeAgent,
+    code_agent_with_review,
 ):
     """
     Test the code agent with review on a complex data analysis task that requires
@@ -100,6 +97,8 @@ Make sure to use proper financial formulas and validate each step. This is a com
     )
 
     # Review that at least one tool call was successfully made
+    from src.agents.code_agent_with_review import is_invalid_code_tool_message
+
     tool_call_results = [msg for msg in response["messages"] if msg.type == "tool"]
     successful_tool_calls = [
         call for call in tool_call_results if not is_invalid_code_tool_message(call)

@@ -12,7 +12,6 @@ from typing import Callable
 import pytest
 import pandas as pd
 
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.configuration.db_models import SalesReportRequest
 from .helpers import (
     test_temp_dir,
@@ -35,6 +34,19 @@ def patch_graph_environment(
     # Patch the TEMP_DIR - ensure its patched wherever it's used
     monkeypatch.setattr(
         "src.agents.utils.output_utils.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
+    # Also patch it in modules that import it
+    monkeypatch.setattr(
+        "src.agents.quant_agent.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
+    monkeypatch.setattr(
+        "src.agents.data_visualization_agent.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
+    monkeypatch.setattr(
+        "src.agents.internal_data_agent.get_request_temp_dir",
         patched_get_request_temp_dir,
     )
 
@@ -172,13 +184,15 @@ async def test_sales_analysis_step(
     )
 
     response_content = step_result["sales_analysis"]
-    found_files = get_all_files_mentioned_in_response(response_content)
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 
-    assert found_files, "No output files were generated in the response."
+    files_mentioned = get_all_files_mentioned_in_response(response_content)
+
+    assert files_mentioned, "No output files were generated in the response."
 
     try:
         # Check that the files mentioned exist in the temp directory
-        for file in found_files:
+        for file in files_mentioned:
             file_path = test_temp_dir / file
             assert file_path.exists(), f"Expected output file {file} does not exist."
 
@@ -187,9 +201,10 @@ async def test_sales_analysis_step(
 
     finally:
         # Clean up the temp files
-        for file in found_files:
+        for file in files_mentioned:
             file_path = test_temp_dir / file
-            file_path.unlink(missing_ok=True)
+            if file_path.exists() and "fixture" not in file:
+                file_path.unlink(missing_ok=True)
 
 
 @pytest.mark.asyncio
@@ -215,18 +230,21 @@ async def test_operational_data_retrieval_step(
     # TODO: if we improve this step to get a proper analysis of the operational data,
     # we need to evaluate it gets the right data; for now, we just check that
     # the response contains some output files
-    found_files = get_all_files_mentioned_in_response(data)
-    print(f"Found files: {found_files}")
-    assert found_files, "No output files were generated in the response."
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
+    files_mentioned = get_all_files_mentioned_in_response(data)
+    print(f"Found files: {files_mentioned}")
+    assert files_mentioned, "No output files were generated in the response."
     try:
         # Check that the files mentioned exist in the temp directory
-        for file in found_files:
+        for file in files_mentioned:
             file_path = test_temp_dir / file
             assert file_path.exists(), f"Expected output file {file} does not exist."
     finally:
-        for file in found_files:
+        for file in files_mentioned:
             file_path = test_temp_dir / file
-            file_path.unlink(missing_ok=True)
+            if file_path.exists() and "fixture" not in file:
+                file_path.unlink(missing_ok=True)
 
 
 @pytest.mark.asyncio
@@ -334,6 +352,8 @@ async def test_sales_report_generation(
 
     response_content = step_result["report"]
     print(f"Generated report content: {response_content}")
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
     files_mentioned = get_all_files_mentioned_in_response(response_content)
     pngs_mentioned = [f for f in files_mentioned if f.endswith(".png")]
     try:
@@ -344,7 +364,8 @@ async def test_sales_report_generation(
         # Clean up the temp files
         for file in files_mentioned:
             file_path = test_temp_dir / file
-            file_path.unlink(missing_ok=True)
+            if file_path.exists() and "fixture" not in file:
+                file_path.unlink(missing_ok=True)
     # TODO: consider adding an LLM as a judge to validate the report
     # For now, we just check that the response contains the image file
 

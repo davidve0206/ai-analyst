@@ -41,6 +41,11 @@ def quantitative_agent(
         "src.agents.utils.output_utils.get_request_temp_dir",
         patched_get_request_temp_dir,
     )
+    # Also patch it in the specific modules that import it
+    monkeypatch.setattr(
+        "src.agents.quant_agent.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
 
     from src.agents.quant_agent import get_quantitative_agent
 
@@ -60,6 +65,11 @@ def data_visualization_agent(
     """
     monkeypatch.setattr(
         "src.agents.utils.output_utils.get_request_temp_dir",
+        patched_get_request_temp_dir,
+    )
+    # Also patch it in the specific module that imports it
+    monkeypatch.setattr(
+        "src.agents.data_visualization_agent.get_request_temp_dir",
         patched_get_request_temp_dir,
     )
 

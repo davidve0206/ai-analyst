@@ -2,8 +2,6 @@ import pytest
 
 from langchain_core.messages import HumanMessage
 
-from src.agents.code_agent_with_review import PreConfiguredCodeAgent
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import extract_graph_response_content
 
 from .helpers import (
@@ -14,7 +12,7 @@ from .helpers import (
 
 @pytest.mark.asyncio
 async def test_task_with_intermediate_interpreter(
-    quantitative_agent: PreConfiguredCodeAgent,
+    quantitative_agent,
 ):
     """
     Test the agent with a task that requires basic code generation and execution.
@@ -41,7 +39,7 @@ async def test_task_with_intermediate_interpreter(
 
 
 @pytest.mark.asyncio
-async def test_file_creation(quantitative_agent: PreConfiguredCodeAgent):
+async def test_file_creation(quantitative_agent):
     """
     Test the agent creates at least one file in the temp directory.
     """
@@ -55,21 +53,23 @@ async def test_file_creation(quantitative_agent: PreConfiguredCodeAgent):
     response = await quantitative_agent.ainvoke(messages=[HumanMessage(content=query)])
     response_content = extract_graph_response_content(response)
 
-    files_created = get_all_files_mentioned_in_response(response_content)
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
+    files_mentioned = get_all_files_mentioned_in_response(response_content)
     try:
         # Assert that there is at least one file created in the temp directory
-        assert len(files_created) > 0, "No files were created in the temp directory."
+        assert len(files_mentioned) > 0, "No files were created in the temp directory."
         # Assert all files are csv files
-        assert all(file.endswith(".csv") for file in files_created), (
+        assert all(file.endswith(".csv") for file in files_mentioned), (
             "Not all created files are CSV files."
         )
         # Assert that the file actually exists
-        for file_name in files_created:
+        for file_name in files_mentioned:
             file_path = test_temp_dir / file_name
             assert file_path.exists(), f"File {file_name} does not exist at {file_path}"
     finally:
         # Clean up the temp directory after the test
-        for file in files_created:
+        for file in files_mentioned:
             file_path = test_temp_dir / file
-            if file_path.exists():
+            if file_path.exists() and "fixture" not in file:
                 file_path.unlink(missing_ok=True)

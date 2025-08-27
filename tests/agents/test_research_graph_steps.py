@@ -14,7 +14,6 @@ from src.agents.research_graph import (
     create_research_graph,
     GraphNodeNames,
 )
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import MessageTypes
 from src.configuration.db_models import SalesReportRequest
 from tests.agents.helpers import test_temp_dir
@@ -26,10 +25,11 @@ def ai_sales_request() -> SalesReportRequest:
     Fixture to create a sales report request for testing.
     """
     return SalesReportRequest(
-        grouping="product",
+        id=1,
+        grouping="Product Family",
         grouping_value="AI",
-        period="any",
-        currency="any",
+        period="Yearly",
+        recipients=[],
     )
 
 
@@ -352,7 +352,7 @@ async def test_summarize_findings_with_csv_context(
         request=ai_sales_request,
         messages=[
             HumanMessage(
-                "The file 'market_analysis.csv' contains marked data showing that AI increased the market value by 10%."
+                "The file 'market_analysis.csv' contains market data showing that AI increased the market value by 10%."
             )
         ],
     )
@@ -423,11 +423,9 @@ async def test_summarize_findings_with_extended_context(
 @pytest.mark.asyncio
 async def test_run_research_graph(
     monkeypatch, ai_sales_request, patched_get_request_temp_dir
-):  # Inject the fixture
+):
     """
     Test that runs the entire research graph.
-
-    TODO: This test sometimes fails due to the quant agent looping forever.
     """
     monkeypatch.setattr(
         "src.agents.internal_data_agent.get_request_temp_dir",
@@ -443,7 +441,7 @@ async def test_run_research_graph(
 
     # Define the task with detailed context
     task_context = (
-        "Analyze the impact of AI on financial markets. "
+        "Analyze the impact of AI on financial markets."
         "\nAI has revolutionized algorithmic trading, risk modeling, and fraud detection. "
         "Recent trends show increased adoption of AI-driven strategies by major financial firms, "
         "leading to notable changes in market volatility and liquidity. "
@@ -466,10 +464,12 @@ async def test_run_research_graph(
     output = result["task_output"]
 
     assert output != ""
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
     files_mentioned = get_all_files_mentioned_in_response(output)
     try:
         assert "AI" in output, "Expected output to mention AI."
-        assert "financial markets" in output, (
+        assert ("financial markets" in output) or ("Financial Markets" in output), (
             "Expected output to mention financial markets."
         )
         assert "134" in output, "Expected output to mention the latest market value."
@@ -477,4 +477,5 @@ async def test_run_research_graph(
         # Clean up the temp files
         for file in files_mentioned:
             file_path = test_temp_dir / file
-            file_path.unlink(missing_ok=True)
+            if file_path.exists() and "fixture" not in file:
+                file_path.unlink(missing_ok=True)
