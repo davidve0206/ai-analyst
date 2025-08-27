@@ -14,7 +14,6 @@ class AppChatModels:
     """
 
     gemini_2_0_flash: ChatGoogleGenerativeAI
-    gemini_2_5_pro: ChatGoogleGenerativeAI
     openai_gpt_4o_mini: AzureChatOpenAI
     openai_o4_mini: AzureChatOpenAI
     default_model: AzureChatOpenAI  # Default model has to use an Open model, as the multimodal prompt from LangChain uses the OpenAI standard.
@@ -25,13 +24,6 @@ class AppChatModels:
 
         self.gemini_2_0_flash = init_chat_model(
             "google_genai:gemini-2.0-flash",
-            api_key=app_settings.gemini_api_key,
-            temperature=DEFAULT_TEMPERATURE,
-            top_p=DEFAULT_TOP_P,
-        )
-
-        self.gemini_2_5_pro = init_chat_model(
-            "google_genai:gemini-2.5-pro",
             api_key=app_settings.gemini_api_key,
             temperature=DEFAULT_TEMPERATURE,
             top_p=DEFAULT_TOP_P,

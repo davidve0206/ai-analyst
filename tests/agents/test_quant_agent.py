@@ -1,6 +1,5 @@
 import pytest
 
-from langgraph.graph.state import CompiledStateGraph
 from langchain_core.messages import HumanMessage
 
 from src.agents.code_agent_with_review import PreConfiguredCodeAgent
