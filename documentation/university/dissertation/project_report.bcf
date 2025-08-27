@@ -2400,7 +2400,11 @@
     <bcf:citekey order="25" intorder="1">ixdf_personas_2025</bcf:citekey>
     <bcf:citekey order="26" intorder="1">ixdf_user_scenarios_2025</bcf:citekey>
     <bcf:citekey order="27" intorder="1">ixdf_personas_2025</bcf:citekey>
-    <bcf:citekey order="28" intorder="1">veseli2025positionalbiasesshiftinputs</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">aiebook2025</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">aiebook2025</bcf:citekey>
+    <bcf:citekey order="30" intorder="1">hu2023decipher</bcf:citekey>
+    <bcf:citekey order="31" intorder="1">aiebook2025</bcf:citekey>
+    <bcf:citekey order="32" intorder="1">veseli2025positionalbiasesshiftinputs</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="nty">

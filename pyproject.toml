@@ -30,3 +30,8 @@ dev = [
     "ipykernel>=6.29.5",
     "pytest>=8.4.0",
 ]
+
+[tool.coverage.run]
+branch = true  
+source = ["src"]  
+dynamic_context = "test_function"

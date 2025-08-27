@@ -81,7 +81,7 @@ TODO: Summarise your report concisely.
 \chapter{Introduction}
 \label{chapter:introduction}
 
-According to a study by Forrester Consulting, knowledge workers spend 30\% of their time - that is, 2.4 hours a day - searching for information within their own company\cite{forrester2022}. This is a significant amount of time that could be better spent making decisions and taking action. As such, the aim of this project is to explore the capabilities of Large Language Models (``LLMs") to access a company's data, extract operational figures and provide initial insights to managers, directly to their inbox, saving time from the operational task of data gathering, and allowing them to focus on the more impactful parts of their roles - making data-informed decisions.
+According to a study by Forrester Consulting, knowledge workers spend 30\% of their time --- that is, 2.4 hours a day --- searching for information within their own company\cite{forrester2022}. This is a significant amount of time that could be better spent making decisions and taking action. As such, the aim of this project is to explore the capabilities of Large Language Models (``LLMs") to access a company's data, extract operational figures and provide initial insights to managers, directly to their inbox, saving time from the operational task of data gathering, and allowing them to focus on the more impactful parts of their roles --- making data-informed decisions.
 
 To perform this exploration, the goal is to creating a proof of concept system that acts as a junior analyst (or ``AI Analyst") who autonomously generates reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data. In addition to the AI Agent, the system will have a simple user interface, where the user can set the KPI(s) to report on, and the interval at which their analyst should run.
 
@@ -122,13 +122,13 @@ First, as tasks become more sophisticated, the more time it takes to evaluate th
 
 These problems are exacerbated when it comes to AI Agents, as they tackle more complex tasks. This is an on-going research field but, according to \cite{krishnan2025aiagentsevolutionarchitecture}, the focus of evaluation so far has been ``predominantly focused on accuracy metrics that measure task completion success". This focus has been criticised for many reasons, particularly for limiting the evaluation to a task being completed or not, and not included other metrics such as the efficiency of the completion.
 
-This type of measure is called ``exact evaluation'', because it has no ambiguity - a task is complete or it is not - and can be viewed more generally to include any type of rules-based evaluation where, as the name indicates, a set or rules are defined and the output is measured against it adherence to these rules.
+This type of measure is called ``exact evaluation'', because it has no ambiguity --- a task is complete or it is not --- and can be viewed more generally to include any type of rules-based evaluation where, as the name indicates, a set or rules are defined and the output is measured against it adherence to these rules.
 
-The alternatives to this type of evaluation are what has been called ``objective evaluations'', where an external validator that reviews the agent's output and ``judges'' it, assigning it a score based on some type of defined criteria - for example completeness or clarity. So far, studies such as \cite{wang2025replacehumanevaluators} have found that this judgment can be performed by either LLMs (LLM as a judge) or Humans (Human as a judge), with high correlations in the scores given. Nevertheless, \cite{hu2023decipher} has also found that human's personal preferences can affect the score given to an output.
+The alternatives to this type of evaluation are what has been called ``objective evaluations'', where an external validator that reviews the agent's output and ``judges'' it, assigning it a score based on some type of defined criteria --- for example completeness or clarity. So far, studies such as \cite{wang2025replacehumanevaluators} have found that this judgment can be performed by either LLMs (LLM as a judge) or Humans (Human as a judge), with high correlations in the scores given. Nevertheless, \cite{hu2023decipher} has also found that human's personal preferences can affect the score given to an output.
 
 Moreover, other authors such as \cite{zhuge2024agentasajudgeevaluateagentsagents} criticize any approach for evaluating Agents that relies solely on the final output of their process. They believe that agents shouldn't only be evaluated on their final output but on the intermediate steps taken, and thus propose agent as a judge -a methodology that uses agents to enable intermediate feedback- as a better alternative.
 
-Evidently, despite the lack of a clear "best" strategy, evaluation remains a key ingredient in creating AI systems to ensure their reliability. The AI Engineering book goes as far as proposing a development methodology called Evaluation Driven Design (EDD). Similarly to Test Driven Design, in EDD the evaluation criteria for the application are defined before building the application, allowing safe iterations. Moreover, her recommendations align with \cite{zhuge2024agentasajudgeevaluateagentsagents} in the need to not only evaluate the final output, but also every component of the system. As will be discussed in detail in \autoref{chapter:evaluation-testing}, this project followed the recommendations of said book.
+Evidently, despite the lack of a clear ``best" strategy, evaluation remains a key ingredient in creating AI systems to ensure their reliability. The AI Engineering book goes as far as proposing a development methodology called Evaluation Driven Design (EDD). Similarly to Test Driven Design, in EDD the evaluation criteria for the application are defined before building the application, allowing safe iterations. Moreover, her recommendations align with \cite{zhuge2024agentasajudgeevaluateagentsagents} in the need to not only evaluate the final output, but also every component of the system. As will be discussed in detail in \autoref{chapter:evaluation-testing}, this project followed the book's recommendations.
 
 But how do you define said evaluation criteria? Huyen proposes thinking in three categories which, despite being targeted for evaluating LLMs and not agents, can be adapted as follows:
 
@@ -140,7 +140,7 @@ But how do you define said evaluation criteria? Huyen proposes thinking in three
 
 \subsubsection{Choosing the Right Model}
 
-The difficulty in evaluation of LLMs and Agents highlights one specific buy key issue - how do you choose the right model, or at the very least model family, to power an agent?
+The difficulty in evaluation of LLMs and Agents highlights one specific buy key issue --- how do you choose the right model, or at the very least model family, to power an agent?
 
 The literature points towards using specialized model for tasks that require domain specific capabilities, such as data analysis, and more general models for task that are common in the general training data, such as coding, tool calling or general summarization (e.g., writing the final report). Studies such as \cite{ke2025demystifyingdomainadaptiveposttrainingfinancial} and \cite{tanabe2024enhancingfinancialdomainadaptation} have shown that smaller models specifically trained for financial tasks outperform larger models in financial benchmarks.
 
@@ -152,7 +152,7 @@ According to Chip Huyen, ``[a] prompt is an instruction given to a model to perf
 
 First is ``few-shot'' prompting, introduced by \cite{brown2020languagemodelsfewshotlearners}. This paper, by Brown et al., demonstrated that language models can learn a desired behaviour from examples in within the prompt; in more colloquial terms, there is a benefit to providing examples in prompts.
 
-Second, there is ``Chain-of-Thought'' prompting, introduced by \cite{wei2023chainofthoughtpromptingelicitsreasoning}. In this type of prompt, the model is asked to perform a step by step process before providing an output - either steps pre-defined in the prompt or defined by the model during execution. Wei et al. where able to achieve state of the art results using this technique.
+Second, there is ``Chain-of-Thought'' prompting, introduced by \cite{wei2023chainofthoughtpromptingelicitsreasoning}. In this type of prompt, the model is asked to perform a step by step process before providing an output --- either steps pre-defined in the prompt or defined by the model during execution. Wei et al. where able to achieve state of the art results using this technique.
 
 Note that these techniques are not mutually exclusive, and prompts for complex tasks might include both of them, or none, depending on the specific model used (e.g., reasoning models might not need explicit chain of thought prompting).
 
@@ -172,7 +172,7 @@ According to \cite{sapkota2025aiagentsvsagentic}, ``AI Agents can be defined as 
 
 \subsubsection{Agent Architecture}
 
-The basic structure of an agent is described in AI Engineering as an LLM, which can perform certain actions (through tools) in a defined environment. The LLM acts as the brain of this agent, processing the information it receives - e.g., the task given by the user or results from its own tools - and generating plans to perform the task.
+The basic structure of an agent is described in AI Engineering as an LLM, which can perform certain actions (through tools) in a defined environment. The LLM acts as the brain of this agent, processing the information it receives --- e.g., the task given by the user or results from its own tools --- and generating plans to perform the task.
 
 The plans designed by the LLM can be performed in many ways, for example, tools can be called in parallel or sequentially, or the LLM and tools call be called in a Loop until the LLM itself decides the task has been completed. This designed is generally called the Agent's Architecture.
 
@@ -184,7 +184,7 @@ This architecture was later expanded upon in \cite{shinn2023reflexion}, in their
 
 As described by \cite{sapkota2025aiagentsvsagentic}, Agentic AI allows multiple AI Agents to collaborate for more complex goals. Agentic Orchestration thus refers to the way that the collaboration between agents is structured.
 
-There are numerous ways to structure this collaboration. Some of the best known are, as described as part of LangGraph's documentation in \cite{langgraphagmultiagentsystems}, Networks (or Swarms) - where all agents communicate in a single group - and Supervisor - where an LLM acts as the coordinating node. But there are numerous ways of coordinating the work across agents, according to a specific task needs.
+There are numerous ways to structure this collaboration. Some of the best known are, as described as part of LangGraph's documentation in \cite{langgraphagmultiagentsystems}, Networks (or Swarms) --- where all agents communicate in a single group --- and Supervisor --- where an LLM acts as the coordinating node. But there are numerous ways of coordinating the work across agents, according to a specific task needs.
 
 For instance, in \cite{fourney2024magenticone}, a team of Microsoft researchers described Magentic-One, a generalist system that demonstrated state of the art performance in multiple agentic benchmarks without changing how the agents collaborate. The architecture is described by them as ``a multi-agent architecture where a lead agent, the Orchestrator, plans, tracks progress, and re-plans to recover from errors. [...] Moreover, Magentic-One's modular design allows agents to be added or removed from the team without additional prompt tuning or training, easing development and making it extensible to future scenarios''.
 
@@ -195,7 +195,7 @@ One of the most interesting parts about Magentic-One is that it applies the lear
 
 While the project involved numerous decisions about tools, such as libraries to use for certain tasks, or the type of database to use to store user preferences, this section will only detail the key decisions that had an system-architecture impact: the frameworks used for user interface and agent orchestration, and the tool to schedule agent runs. They will be presented in this chapter in order of importance.
 
-Note that the client had a preference for using Azure/Microsoft products for any infrastructure requirements, due to its enterprise readiness. While the proof of concept will not be deployed, Azure was used as inference provider (i.e., LLMs calls are performed through Azure AI Foundry). 
+An important note is that the client had a preference for using Azure/Microsoft products for any infrastructure requirements, due to its enterprise readiness. Azure was thus used as inference provider (i.e., LLMs calls are performed through Azure AI Foundry). The client could not provide access to their own instances though, so the Azure student subscription was used independently of some of its limitations in model access and rate limiting.
 
 \subsection{Agent Orchestration Frameworks}
 
@@ -278,11 +278,11 @@ As mentioned before, the client for this project is Alvarez \& Marsal (A\&M), a 
 
 A\&M clearly identified a problem to solve: Executives spend valuable hours navigating dashboards just to extract the specific information relevant to their needs. As such, they wanted to explore the capabilities of LLMs to help reduce this time by building an Agentic AI system that could access a company's data, extract operational figures and generate report about a specific KPI, delivered directly to a user's email. For this, A\&M shared bullet points with their ideal set of functionalities for the system.
 
-Nevertheless, as a professional services firm, Alvarez \& Marsal was limited in the resources they could share for the development of the system. Particularly, they were not allowed to provide anonymized data, which severely limited the functionalities that could be built - as an example, while they wanted the system to retrieve news that could explain a reduction in sales, this only makes sense if the system knows which products the company is selling.
+Nevertheless, as a professional services firm, Alvarez \& Marsal was limited in the resources they could share for the development of the system. Particularly, they were not allowed to provide anonymized data, which severely limited the functionalities that could be built --- as an example, while they wanted the system to retrieve news that could explain a reduction in sales, this only makes sense if the system knows which products the company is selling.
 
 Due to this limitation, it was agreed to build a proof of concept system that could later be extended by their internal team. This chapter thus details the process for arriving to the requirements for this proof of concept system. First, the creation of user personas, and their scenarios for using the system, to help narrow the key need for users. Second, the definition of a set of requirements based on said personas.
 
-Readers will note that this process did not include the definition of Use Cases. This is intentional, as the system has a single use case - a user setting the report they want to receive, and when they want to receive it. Other than that, the system is autonomous.
+Readers will note that this process did not include the definition of Use Cases. This is intentional, as the system has a single use case --- a user setting the report they want to receive, and when they want to receive it. Other than that, the system is autonomous.
 
 \section{User Personas and Scenarios}
 
@@ -371,6 +371,10 @@ As put by \cite{ixdf_personas_2025}, Fictional Personas are deeply flawed. Never
         \item A Sales Manager tracks a single KPI (Sales), but they want to go into a loot of operational detail. A CFO, on the other side, follows multiple high-level KPIs, but only wants to have a general understanding of the situation.
         \item Moreover, our target personas are used to being able to see exactly the level of operational detail they want from their dashboards. The system must be aware of that level of detail.
     \end{itemize}
+    \item \textbf{Our users want a quick way of knowing if they need to review the report in detail:}
+    \begin{itemize}
+        \item This can be addressed in two ways. First, the report must contain an Executive Summary. Second, the email for the report should include the key findings.
+    \end{itemize}
 \end{enumerate}
 
 \section{MoSCoW Requirements}
@@ -385,9 +389,9 @@ As put by \cite{ixdf_personas_2025}, Fictional Personas are deeply flawed. Never
 
 Based on the user personas, and the limitations on data availability, the following requirements were defined for the system. Nevertheless, before reviewing them in detail there are a few important things to note.
 
-First, as noted in the analysis of User Personas, the level of detail of the reports for the two types of personas are different - in practical terms, this means the prompts that are used for one type of user might not work for the other. As such, it was decided to split certain requirements related to the report content by type of users.
+First, as noted in the analysis of User Personas, the level of detail of the reports for the two types of personas are different --- in practical terms, this means the prompts that are used for one type of user might not work for the other. As such, it was decided to split certain requirements related to the report content by type of users.
 
-Second, due to the nature of this project as a proof of concept, and due to the limitations in data availability mentioned before, the system will only implement a subset of all potential requirements. However, knowing what requirements might be implemented in the future can inform design decisions in the present. As such, it was deemed acceptable to have a long list of Won't Have requirements - that is, a long list of requirements that are known and wanted for the system, but that will be outside of the scope of this project.
+Second, due to the nature of this project as a proof of concept, and due to the limitations in data availability mentioned before, the system will only implement a subset of all potential requirements. However, knowing what requirements might be implemented in the future can inform design decisions in the present. As such, it was deemed acceptable to have a long list of Won't Have requirements --- that is, a long list of requirements that are known and wanted for the system, but that will be outside of the scope of this project.
 
 Finally, due to the limitations on data availability, it was decided that the proof of concept would only cover Sales Manager users. While A\&M could anonymize sales data with relative speed \footnote{This speed came with a cost though, as you will notice if you review the sample report, there are some drastic fluctuations in sales that can only be explained by issues with this process.}, the time needed to anonymize enough data for other KPIs was deemed too long for the project.
 
@@ -433,6 +437,7 @@ With this in mind, the following tables reflect the requirements for the project
 \textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
 \hline
 \stepcounter{frcounter}\frid & The system shall email the resulting report to the email addresses configured by the user & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall customize the email with the key findings of the report & Should Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall include both financial and operational information in a report & Must Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to load information from a CSV file & Must Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to load information from other files provided by the user & Won't Have \\ \hline
@@ -459,18 +464,89 @@ With this in mind, the following tables reflect the requirements for the project
 
 NOTE: Talk about the experiments here.
 
-NOTE: One of the most interesting questions is how reusable is the system that was created as proof of concept. Some of the first prompt attempts were very general, with the idea that the client could only change the description of the KPI to extend the usability - this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers - even as models have advanced. Nevertheless, it is possible to envision designing the prompt system in a way that makes it easy to inject different examples / terms depending on the request type.
+NOTE: One of the most interesting questions is how reusable is the system that was created as proof of concept. Some of the first prompt attempts were very general, with the idea that the client could only change the description of the KPI to extend the usability --- this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers --- even as models have advanced. Nevertheless, it is possible to envision designing the prompt system in a way that makes it easy to inject different examples / terms depending on the request type.
 
 \chapter{Evaluation and Testing}
 \label{chapter:evaluation-testing}
 
-Evaluating task completion is not relevant for the aims of this project, as evaluating a report output requires reviewing the structure of the report, the relevance of the insights extracted and the correctness of the data extracted. Again, this is relevant for the type of task the AI Analyst will perform, as it would be impossible to create a comprehensive set of all possible reports that could be generated.
+As mentioned before, this project followed \cite{aiebook2025}'s recommendations regarding LLM evaluations. This included following Evaluation Driven Design, or the practice of writing the evaluations before working on the agent. As such, \autoref{sec:agent-evals} will discuss the evaluation framework designed for the AI Analyst's final output across experiments, which was defined before the start of implementation. Moreover, also following the recommendations of \cite{aiebook2025}, each of the agent's components was evaluated separately. The approach taken to the evaluation of the components is described in \autoref{sec:components-evals}. Finally, \autoref{sec:other-tests} discussed the approach taken to tests for the non-agentic parts of the code, such as the configuration module.
 
-Also this system can have very different requests, ex. Product vs Country, so we can't create an evaluation that is too detailed - but this has the issue of still not being able to measure how useful that specific report is for decision making.
+\section{Agent Output Evaluation}
+\label{sec:agent-evals}
 
-Because this is a proof concept, we do not want to spend too long building an evaluation system that might not be used in production, hence the use of human as a judge and rules-based evaluations for automated evals.
+Evaluating the outputs of the AI Analyst was an essential part of the project. Knowing the complexities of Prompt and Context Engineering, it was essential for the development to have a defined evaluation for the AI Analyst's outputs to ensure that iterations could be performed safely, and improvements, or regressions, could be objectively defined.
 
-Also, note that we did continue running experiments after getting to 100\%, but those were not recorded as they always resulted in 100\% eval - so no point.
+Nevertheless, in line with some of the research described in \autoref{sec:research-llms}, evaluating the AI Analyst posed a series of challenges.
+
+First, even for a single type of Sales Request, it would be impossible to create a comprehensive set of all possible reports that could be generated, so the traditional Machine Learning strategy of evaluating against ground truths was not viable.
+
+Second, evaluating task completion was not relevant. With the current state of LLMs, obtaining a report is relatively straightforward; the greater challenge lies in ensuring that the report is actually what the users would expect, that is, it has the structure expected, the data extracted is correct and the insights are relevant.
+
+Finally, because the scope of the project is only a proof of concept, the evaluations defined are unlikely to be used in production, so it was important to limit the effort dedicated to creating an evaluation framework.
+
+Considering these challenges, it was clear that the best path forward was an ``subjective evaluation''. That is, having an external validator that would take the report generated, review it and grade it. This grading could consider the particularities of the task, and could act as north star for development: higher scores could mean forward progress.
+
+Moreover, the final constraint about limiting effort made it easy to decide to use a Human Judge as evaluator. While AI Judges have advantages, particularly the potential of running them autonomously and thus increase the number of potential iterations, setting up an AI Evaluator added unnecessary complexity at this stage, namely the need to set up an additional evaluation --- you have to ``evaluate the evaluator'' to make sure that its grading is accurate.
+
+Knowing that outputs would be evaluated by a human, the key challenge became ensuring that the score accurately reflected the needs of the task, specially considering the findings of \cite{hu2023decipher} regarding potential biases in human evaluation. The solution was to use a tried-and-tested framework from the education industry --- a grading rubric\footnote{Thanks to Professor Griffin for his comments that pointed in this direction.}. In essence, this grading rubric could contain the most relevant aspects of the report and assign a grade to each, thus producing an overall grade for the result. 
+
+\subsubsection{Rubric Definition}
+
+As mentioned before, when evaluating an Agent \cite{aiebook2025} recommends thinking of three groups: Domain-Specific Capacity, Generation Capacity and Instruction-Following Capacity.
+
+In the context of a report, it is possible to think about both Instruction-Following as the capacity of the agent to follow the structure of the report, while Generation as the capacity to retrieve and present the correct data. Both of these can be considered as part of the ``Form'' of the report --- does the report include the right sections, is the data correct, is the data presented graphically.
+
+Defining a grading rubric for these thus required defining the structure of the output report. While this was not considered part of the requirements elicitation process, as the structure of the report is a variable within the system and not a requirement, it was agreed with Alvarez \& Marsal during the same process, arriving at:
+
+\begin{enumerate}
+    \item Executive Summary: A quick glance of the key findings.
+    \item Overview: An overview of the value of the KPI for the period.
+    \item Trends and Context: An overview of the trend for the KPI and high-level operational metrics.
+    \item In depth analysis: A detailed analysis of operational metrics that drive the trend.
+    \item Forward Outlook and Recommendations: A projection of the KPI and potential ways to correct negative trends.
+\end{enumerate}
+
+On the contrary, Domain-Specific Capacity on this context can be considered the capacity of the model to perform financial analysis. This is things like accurately representing an evolution instead of just mentioning values or only presenting relevant data. These are more reflective of the Content of the report, not its form.
+
+Finally, in addition to defining the types of questions, it was important to define the level of specificity. If questions became too specific, for example expecting a per-product analysis, the evaluation only becomes usable to one type of Sales Request, but very open ended questions lead to subjective grading.
+
+This was solved by defining questions that are wide in scope, but allowing only a Yes or No answer, in the style of "Does the analysis in the report accurately represent the evolution of the KPI?". While this question requires reviewing the entire report and subjectively defining what accurate is, there is less risk that the same evaluator can have different responses to similar outputs, unlike if required to provide a specific grade.
+
+Moreover, this type of questions had two added benefits. First, it made it easier, and thus quicker, to evaluate a specific report. Second, it simplified the score definition --- the total evaluation score could be calculated as the percentage of positive responses over the total questions.
+
+Thus, the final rubric, which can be found in \autoref{annex:evaluation}, consists of a list of 23 Yes or No questions --- 14 questions focused on the Form of the report, as this covers two types of capacity analysis, and 9 questions focused on its Content.
+
+\section{Components Evaluation}
+\label{sec:components-evals}
+
+In addition to evaluating the final output, evaluating an Agent's components can help spot issues earlier in the development or identify the causes of unexpected behaviour. Nevertheless, it has most of the same challenges described before.
+
+There is one exception to this though, just evaluating the intermediate steps completion does add valuable information, specially for development, as it allows to confidently build the system modularly without the need to run full experiments on every change --- a relevant issue when considering that full experiments could take up to one hour when the system was complete.
+
+Moreover, in many cases there is one aspect to the intermediate step that can act as a proxy for its utility to the system, such as making sure that a file is generated or that the output has a certain shape.
+
+For these reasons, it was decided to use ``exact evaluation'' for the Agent's components. Whats better, using strict rules to evaluate the results, such as confirming completion or that a file was generated, makes the evaluations similar to a regular automated test, and can be expressed as such in \texttt{pytest}, meaning they can run automatically. In total, 37 evaluations were written with this structure. You can find an example on \autoref{annex:sample-eval}.
+
+One of the biggest challenges of this approach is that while the evaluations are \textbf{expressed} as tests, they are not actual tests and should be interpreted differently. In some cases, the evaluation rule might check that a specific word or numeric value is included in the test, this is specially useful when evaluating summarization steps. That expected text might not always be present due to the probabilistic nature of LLMs. In such cases, a failing ``test" does not mean the system is not working; instead, it means that a more detailed experiment needs to be run for this specific component.
+
+A solution to this issue is to use a subjective evaluation, but as mentioned before this has additional challenges which, for the scope of this project as proof of concept, are considered an unnecessary effort.
+
+Another unexpected challenge of using this strategy was handling the file system. As defined before, one of the most important aspects of an agent is its capacity to perform actions on its environment. In this project, that mostly meant reading and writing files to store intermediate data, mostly in a temporary folder that is created for each request, all handled in a central module.
+
+Ideally, the testing environment is isolated from the rest of the application, which meant that it needed its own temporary folder, something that sounds easy but becomes difficult with the way \texttt{pytest} manages patching imported modules. Because modules in python are resolved the first time they are imported on a process, patching a central module requires special care --- things like never importing at the module level, and transitively patching when a module imports a module that imports the patched module. While this was solved, if development of the system will continue it is probably worth the time to streamline this.
+
+Finally, the biggest challenge of this approach is how long it takes to run the test suite. Evaluations expressed as tests are essentially integration tests; they perform real calls to the model provider, facing latency, and evaluated subagents perform real, if reduced, tasks, which take time. This discourages running the entire evaluation suit on code changes, thus sometimes voiding the benefit of identifying unexpected regressions from a change. A production version of the system might benefit from splitting pure tests and evaluations as two suites that do not have to run together.
+
+\section{Other Tests}
+\label{sec:other-tests}
+
+Functionality that only uses external packages, such as the generation of PDF files from markdown or sending emails, were not tested as these packages have their own testing suite.
+
+Coverage irrelevant
+
+23 Configuration Tests, 5 Routes Tests, 4 Agent Main, 2 Tools, 3 Integration with Model Providers, 8 utils = 45
+
+\autoref{annex:test-results}
 
 \chapter{Reflections}
 \label{chapter:reflections}
@@ -547,6 +623,7 @@ The only Could Have requirement that was excluded from the proof of concept was 
         \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
         \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall email the resulting report to the email addresses configured by the user & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall customize the email with the key findings of the report & Should Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall include both financial and operational information in a report & Must Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from a CSV file & Must Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from other files provided by the user & Won't Have & No \\ \hline
@@ -604,7 +681,7 @@ The only Could Have requirement that was excluded from the proof of concept was 
 \label{fig:evals-content}
 \end{figure}
 
-As mentioned before, the first iteration considered a single orchestration entity, with a single task to create the entire report. As can be seen in \autoref{fig:evals-form}, this iteration could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the "current" period of data - in every case, the report analysed the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
+As mentioned before, the first iteration considered a single orchestration entity, with a single task to create the entire report. As can be seen in \autoref{fig:evals-form}, this iteration could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the "current" period of data --- in every case, the report analysed the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
 
 Moreover, as evidenced in \autoref{fig:evals-content}, this agentic architecture failed to score more than 60\% on the content score, despite changes to the task description or architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content.
 
@@ -626,7 +703,7 @@ Finally, as mentioned in \autoref{chapter:evaluation-testing} the evaluation sco
 \section{Future Work}
 \label{sec:future-work}
 
-The current system is a proof of concept. As such, it can - and should - be improved upon to create production-ready system. The most important changes to get there would be:
+The current system is a proof of concept. As such, it can --- and should --- be improved upon to create production-ready system. The most important changes to get there would be:
 
 \begin{enumerate}
     \item Improvements to the evaluation framework:
@@ -713,7 +790,7 @@ Are all statements in the report sustained with data? \\ \hline
     3 & 03-Jul & Move Editor Agent inside team, improve quant agent prompt & gpt-4o-mini & 50\% & 29\% & 36\% \\ \hline
     4 & 04-Jul & Improve Magentic One task description & gpt-4o-mini & 75\% & 71\% & 73\% \\ \hline
     5 & 04-Jul & Improve Editor Prompt & gpt-4o-mini & 75\% & 64\% & 68\% \\ \hline
-    6 & 09-Jul & First test with LangGraph - Minimal MVP, without in-depth analysis & gpt-4o-mini & 78\% & 78\% & 78\% \\ \hline
+    6 & 09-Jul & First test with LangGraph --- Minimal MVP, without in-depth analysis & gpt-4o-mini & 78\% & 78\% & 78\% \\ \hline
     7 & 11-Jul & Add step for operational info just with the quant agent & gpt-4o-mini & 100\% & 64\% & 78\% \\ \hline
     8 & 15-Jul & Leave plot generation for last step & gpt-4o-mini & 67\% & 64\% & 65\% \\ \hline
     9 & 15-Jul & Re run of previous experiment  & gpt-4o-mini & 89\% & 79\% & 83\% \\ \hline
@@ -737,6 +814,70 @@ Are all statements in the report sustained with data? \\ \hline
     \label{fig:evals-detailed}
 \end{sidewaysfigure}
 
-\chapter{Generated Report - Sample}
+\chapter{Sample Automated Evaluation}
+\label{annex:sample-eval}
+
+\begin{verbatim}
+async def test_file_creation(quantitative_agent):
+    """
+    Test the agent creates at least one file in the temp directory.
+    """
+
+    query = f"""The company's sales for the last three years are as follows:' 
+    
+    {california_monthly_sales_in_db}
+    
+    Perform a detailed analysis of the sales data, including trends, patterns, and insights."""
+
+    response = await quantitative_agent.ainvoke(messages=[HumanMessage(content=query)])
+    response_content = extract_graph_response_content(response)
+
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
+    files_mentioned = get_all_files_mentioned_in_response(response_content)
+    try:
+        # Assert that there is at least one file created in the temp directory
+        assert len(files_mentioned) > 0, "No files were created in the temp directory."
+        # Assert all files are csv files
+        assert all(file.endswith(".csv") for file in files_mentioned), (
+            "Not all created files are CSV files."
+        )
+        # Assert that the file actually exists
+        for file_name in files_mentioned:
+            file_path = test_temp_dir / file_name
+            assert file_path.exists(), f"File {file_name} does not exist at {file_path}"
+    finally:
+        # Clean up the temp directory after the test
+        for file in files_mentioned:
+            file_path = test_temp_dir / file
+            file_path.unlink(missing_ok=True)
+\end{verbatim}
+
+\chapter{Automated Testing Suite Results}
+\label{annex:test-results}
+
+The following are the results of the last run of the testing suite. Please note the interpretation of failed tests mentioned on \autoref{sec:components-evals}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.61\textwidth]{images/test-results.png}
+\caption{Test results by test file}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1\textwidth]{images/test-results-bottom.png}
+\caption{Test results summary and failures}
+\label{fig:evals-form}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.61\textwidth]{images/test-coverage.png}
+\caption{Test coverage output}
+\label{fig:evals-form}
+\end{figure}
+
+\chapter{Generated Report --- Sample}
 
 \end{document}
