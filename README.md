@@ -54,7 +54,7 @@ Execution can be scheduled via cron jobs.
 ```text
 src/
 ├── agents/           # AI agents and graph workflows
-├── configuration/     # Settings, auth
+├── configuration/     # Settings
 └── frontend/         # Web UI and API routes for configuration
 
 agent_main.py         # Main agent execution entry point
@@ -65,7 +65,7 @@ outputs/              # Generated reports
 
 ## Configuration
 
-Configuration is managed through environment variables in `.env` file:
+Configuration is managed through environment variables in a `.env` file:
 
 ### Essential Settings
 

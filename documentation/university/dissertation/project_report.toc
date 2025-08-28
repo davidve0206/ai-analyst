@@ -24,24 +24,31 @@
 \contentsline {subsubsection}{User Type Independent Requirements}{16}{section*.10}%
 \contentsline {subsection}{\numberline {3.2.2}Non-Functional Requirements}{16}{subsection.3.2.2}%
 \contentsline {chapter}{\numberline {4}Design and Implementation}{17}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Evaluation and Testing}{18}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Agent Output Evaluation}{18}{section.5.1}%
-\contentsline {subsubsection}{Rubric Definition}{19}{section*.11}%
-\contentsline {section}{\numberline {5.2}Components Evaluation}{20}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Other Tests}{21}{section.5.3}%
-\contentsline {chapter}{\numberline {6}Reflections}{22}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Proof of Concept Requirements Achievement}{22}{section.6.1}%
-\contentsline {subsection}{\numberline {6.1.1}Functional Requirements}{23}{subsection.6.1.1}%
-\contentsline {subsubsection}{Sales Manager User}{23}{section*.12}%
-\contentsline {subsubsection}{CFO User}{23}{section*.13}%
-\contentsline {subsubsection}{User Type Independent Requirements}{24}{section*.14}%
-\contentsline {subsection}{\numberline {6.1.2}Non-Functional Requirements}{24}{subsection.6.1.2}%
-\contentsline {section}{\numberline {6.2}Evaluation Results and Key Insights}{24}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Future Work}{27}{section.6.3}%
-\contentsline {chapter}{\numberline {A}System Manual}{30}{appendix.A}%
-\contentsline {chapter}{\numberline {B}User Manual}{31}{appendix.B}%
-\contentsline {chapter}{\numberline {C}Report Evaluation Questions}{32}{appendix.C}%
-\contentsline {chapter}{\numberline {D}Experiments Performed and Evaluation Results}{33}{appendix.D}%
-\contentsline {chapter}{\numberline {E}Sample Automated Evaluation}{35}{appendix.E}%
-\contentsline {chapter}{\numberline {F}Automated Testing Suite Results}{36}{appendix.F}%
-\contentsline {chapter}{\numberline {G}Generated Report --- Sample}{38}{appendix.G}%
+\contentsline {section}{\numberline {4.1}System Design}{17}{section.4.1}%
+\contentsline {section}{\numberline {4.2}Implementation}{18}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}AI Analyst Agent}{18}{subsection.4.2.1}%
+\contentsline {subsubsection}{Single Task Architecture}{18}{section*.11}%
+\contentsline {subsubsection}{Workflow Driven Architecture}{18}{section*.12}%
+\contentsline {subsection}{\numberline {4.2.2}Configuration Service and Interface}{18}{subsection.4.2.2}%
+\contentsline {subsubsection}{User Interface}{19}{section*.13}%
+\contentsline {chapter}{\numberline {5}Evaluation and Testing}{21}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Agent Output Evaluation}{21}{section.5.1}%
+\contentsline {subsubsection}{Rubric Definition}{22}{section*.14}%
+\contentsline {section}{\numberline {5.2}Components Evaluation}{23}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Other Tests}{24}{section.5.3}%
+\contentsline {chapter}{\numberline {6}Reflections}{25}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Proof of Concept Requirements Achievement}{25}{section.6.1}%
+\contentsline {subsection}{\numberline {6.1.1}Functional Requirements}{26}{subsection.6.1.1}%
+\contentsline {subsubsection}{Sales Manager User}{26}{section*.15}%
+\contentsline {subsubsection}{CFO User}{26}{section*.16}%
+\contentsline {subsubsection}{User Type Independent Requirements}{27}{section*.17}%
+\contentsline {subsection}{\numberline {6.1.2}Non-Functional Requirements}{27}{subsection.6.1.2}%
+\contentsline {section}{\numberline {6.2}Evaluation Results and Key Insights}{27}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Future Work}{30}{section.6.3}%
+\contentsline {chapter}{\numberline {A}System Manual}{33}{appendix.A}%
+\contentsline {chapter}{\numberline {B}User Manual}{34}{appendix.B}%
+\contentsline {chapter}{\numberline {C}Report Evaluation Questions}{35}{appendix.C}%
+\contentsline {chapter}{\numberline {D}Experiments Performed and Evaluation Results}{36}{appendix.D}%
+\contentsline {chapter}{\numberline {E}Sample Automated Evaluation}{38}{appendix.E}%
+\contentsline {chapter}{\numberline {F}Automated Testing Suite Results}{39}{appendix.F}%
+\contentsline {chapter}{\numberline {G}Generated Report --- Sample}{41}{appendix.G}%

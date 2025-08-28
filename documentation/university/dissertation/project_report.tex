@@ -93,7 +93,7 @@ This type of work is inherently open-ended. There is no single ``correct" answer
 
 Moreover, this kind of internal analysis is not likely to be included in LLM's training sets. Companies rarely publish their internal data or reports, and the requirements of operational reports are more granular than financial reports, which might be available for public companies. This makes the task a strong candidate for fine-tuning, but due to the lack of suitable training data this is outside of the project scope.
 
-With all of this in mind, the project was executed in three consecutive stages: First, a Research stage, focused on understanding the state of the art in AI agent orchestration and prompting, as well as the software tools available; the results of this stage can be found in \autoref{chapter:research}. Second, a Requirements and Analysis stage, where together with the client, Alvarez \& Marsal, we defined the scope of the proof of concept; the results of this stage can be found on \autoref{chapter:requirements-analysis}. This was also the bases for the evaluation framework for the project, which is described in \autoref{chapter:evaluation-testing}. Third, a Design and Implementation stage, which was performed iteratively; the details of this stage can be found on \autoref{chapter:design-implementation}. Finally, \autoref{chapter:reflections} contains the Reflections from the process of creating the proof of concept system, as well as the potential future work to create a production-ready system.
+With all of this in mind, the project was executed in three consecutive stages: First, a Research stage, focused on understanding the state of the art in AI agent orchestration and prompting, as well as the software tools available; the results of this stage can be found in \autoref{chapter:research}. Second, a Requirements and Analysis stage, where together with the client, Alvarez \& Marsal, we defined the scope of the proof of concept; the results of this stage can be found in \autoref{chapter:requirements-analysis}. This was also the bases for the evaluation framework for the project, which is described in \autoref{chapter:evaluation-testing}. Third, a Design and Implementation stage, which was performed iteratively; the details of this stage can be found in \autoref{chapter:design-implementation}. Finally, \autoref{chapter:reflections} contains the Reflections from the process of creating the proof of concept system, as well as the potential future work to create a production-ready system.
 
 \chapter{Research}
 \label{chapter:research}
@@ -118,7 +118,7 @@ Afterwards, \autoref{sec:research-tools} will describe the research performed to
 
 In AI Engineering, Chip Huyen highlights two main reasons why evaluating the outputs of LLMs is harder than evaluating traditional machine learning models.
 
-First, as tasks become more sophisticated, the more time it takes to evaluate them. As she puts it, ``[y]ou can  no longer evaluate a response based on how it sounds. You'll also need to fact-check, reason, and even incorporate domain expertise".  Secondly, the open-ended and probabilistic nature of LLMs "undermines the traditional approach of evaluating a model against ground truths". There are too many correct responses, so it is impossible to have a comprehensive list of correct outputs as ground truth.
+First, as tasks become more sophisticated, the more time it takes to evaluate them. As she puts it, ``[y]ou can  no longer evaluate a response based on how it sounds. You'll also need to fact-check, reason, and even incorporate domain expertise".  Secondly, the open-ended and probabilistic nature of LLMs ``undermines the traditional approach of evaluating a model against ground truths". There are too many correct responses, so it is impossible to have a comprehensive list of correct outputs as ground truth.
 
 These problems are exacerbated when it comes to AI Agents, as they tackle more complex tasks. This is an on-going research field but, according to \cite{krishnan2025aiagentsevolutionarchitecture}, the focus of evaluation so far has been ``predominantly focused on accuracy metrics that measure task completion success". This focus has been criticised for many reasons, particularly for limiting the evaluation to a task being completed or not, and not included other metrics such as the efficiency of the completion.
 
@@ -160,7 +160,7 @@ Note that these techniques are not mutually exclusive, and prompts for complex t
 
 Borrowing AI Engineering's definition, the context is ``the information provided to the model so that it can perform a given task''. While the instruction (Prompt) remains static for any query, the information (Context) varies.
 
-One key pattern for context engineering is Retrieval Augmented Generation (RAG), which according to AI Engineering can be considered as "a technique to construct context specific to each query". The pattern of retrieving and then generating was first introduced by Chen et al. in \cite{chen2017readingwikipediaansweropendomain}, where their system would retrieve Wikipedia pages relevant to a question and add their content to a model's context, and then fully coined by \cite{lewis2021retrievalaugmentedgeneration}.
+One key pattern for context engineering is Retrieval Augmented Generation (RAG), which according to AI Engineering can be considered as ``a technique to construct context specific to each query". The pattern of retrieving and then generating was first introduced by Chen et al. in \cite{chen2017readingwikipediaansweropendomain}, where their system would retrieve Wikipedia pages relevant to a question and add their content to a model's context, and then fully coined by \cite{lewis2021retrievalaugmentedgeneration}.
 
 While these two papers define the technique with the use of text, this pattern can be applied to any type of information. Most relevant to this project, tabular data can also be retrieved and provided as part of the context.
 
@@ -235,7 +235,7 @@ Additionally, the \autoref{tab:orchestration_frameworks_uses} provides some find
 \label{tab:orchestration_frameworks_uses}
 \end{table}
 
-As will be explained in more detail later, the development of the project consisted of two iterations. The first iteration tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second iteration's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow.
+As will be explained in more detail later, the development of the project consisted of two iterations. The first iteration tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second iteration's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow. LangChain has its own observability platform (LangSmith), which was also used as it integrates easily with the framework.
 
 \subsection{Scheduling Tool}
 
@@ -249,7 +249,7 @@ Given the project's scope as a proof of concept, and the requirement of periodic
 
 \subsection{User Interface Framework}
 
-Finally, for setting up the configuration interface, several Python frontend options were considered. The main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the prototype into a full production application if needed.
+Finally, for setting up the configuration interface, several Python frontend options were considered. The main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the proof of concept into a full production application if needed.
 
 \begin{table}[h]
 \centering
@@ -327,7 +327,7 @@ A\&M identified 2 types of users they wanted to target, based on their experienc
 \hline
 \textbf{Hard Facts} & Clara lives in Cambridge with her family, is 45--50 years old, and works as the CFO of John's company. \\
 \hline
-\textbf{Computer and Internet Use} & She mainly uses a computer for work, including emails, reviewing dashboards, and browsing the internet. She is "definitely not a tech-savvy person." \\
+\textbf{Computer and Internet Use} & She mainly uses a computer for work, including emails, reviewing dashboards, and browsing the internet. She is definitely not a tech-savvy person. \\
 \hline
 \textbf{A Typical Monday} & Clara starts her week by reviewing emails and spends up to an hour reviewing the company's dashboard to identify high-level trends. She has lunch with the CEO to discuss strategic planning and spends the afternoon in meetings with her team. \\
 \hline
@@ -462,9 +462,94 @@ With this in mind, the following tables reflect the requirements for the project
 \chapter{Design and Implementation}
 \label{chapter:design-implementation}
 
-NOTE: Talk about the experiments here.
+As an exploratory proof of concept, the project's system exactly as built will likely never be used in production, and as such, at the time of writing it is not deployed. Nevertheless, its implementation followed a two guiding principles that should make it easy for the client to either build upon it or take useful parts: Modularity and Extensibility.
 
+These principles were followed not only in the high-level design, explained in \autoref{sec:system-design}, but in the detailed implementation, detailed in \autoref{sec:implementation}.
+
+\section{System Design}
+\label{sec:system-design}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1\textwidth]{images/system-diagram.png}
+\caption{System Design Diagram}
+\label{fig:system-diagram}
+\end{figure}
+
+Following the principle of modularity, as can be seen in \autoref{fig:system-diagram} the system is composed of three main parts.
+
+First, at the core of the system is a Configuration Service. This service is responsible for managing the user's configuration for the AI Analyst --- how often it runs, which sets the Cron scheduler, and the topics of the reports it generates, called SalesReportRequest within the system, which are stored in a local SQLite Database. This Configuration Service is used by both the Frontend and Agent services.
+
+Second, the user interface, which is served to the user through a FastAPI application. This user interface has a single functionality, that is, allowing the user to set up the configuration for their AI Analyst. 
+
+Third, the Agent service, where the AI Analyst is defined. This service uses the Configuration Service to retrieve the SalesReportRequests it must execute, and while executing, makes extensive use of the File System to store and retrieve data. Additionally, as inference is provided by Azure, the Agent Service communicates with Azure AI Foundry through HTTP.
+
+Finally, the system has been designed to run in a single container, implemented in Docker. The intention of the containerization is that the AI Analyst needs access to a company's private data, and as such should be easily deployed inside each company's private cloud, not as a stand-alone product.
+
+\section{Implementation}
+\label{sec:implementation}
+
+The process of implementing the system was divided in two parts, both of which will be explored in detail in this section.
+
+First and most importantly, the implementation of the AI Analyst as an Agentic system. As an exploratory proof of concept, this was implemented  through an iterative process, defined by a series of experiments with both agent architecture and prompt contents which form the backbone of the reflections in \autoref{chapter:reflections}.
+
+Separately, the implementation of the Configuration Service, as well as the user interface to update the configuration, which was a one-off implementation.
+
+\subsection{AI Analyst Agent}
+
+MODULARITY
+
+NOTE: Talk about the experiments here.
+NOTE: Talk about the initial expectation of connecting to a company database.
 NOTE: One of the most interesting questions is how reusable is the system that was created as proof of concept. Some of the first prompt attempts were very general, with the idea that the client could only change the description of the KPI to extend the usability --- this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers --- even as models have advanced. Nevertheless, it is possible to envision designing the prompt system in a way that makes it easy to inject different examples / terms depending on the request type.
+
+\subsubsection{Single Task Architecture}
+
+\subsubsection{Workflow Driven Architecture}
+
+\subsection{Configuration Service and Interface}
+
+The Configuration Service is, in reality, a module within the system. This module is responsible for three things:
+
+First, is is responsible for loading the system's settings, such as API keys, from the environment, ensuring they are available for the rest of the system. As FastAPI uses Pydantic for type validation, it was an easy decision to use Pydantic's \texttt{pydantic\_settings} library to validate the presence and types of environment variable --- using this package ensure the system will fail on startup if the environment is set incorrectly. Similarly, this module is used to set up any system-wide constant, such as the location of data and temporary files.
+
+Second, it is responsible for handling setting and updating the Cron job that runs the AI Analyst according to the user's preferences. The system uses the \texttt{python-crontab} library for this purpose.
+
+Finally, the service is responsible for storing, retrieving and updating user preferences regarding the report to be generated.
+
+The preferences are represented in code as a Pydantic model (essentially a class that represents data) called SalesReportRequest, which included within it not only the characteristics of the request --- such as the ``grouping'', that is, if the report should be about total sales or sales for a specific country, product, etc. --- but the list of emails that should receive the report when generated.
+
+The key decision to make, though, was how to persist these classes. While it was clear that setting up an external database was unnecessary overhead for storing local configuration, two alternatives were contemplated: serializing the data and storing as files or storing in a sqlite database within the same container.
+
+Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof of concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of a file becoming corrupt through two concurrent attempts at updating.
+
+With this in mind, a simple database was defined with two tables: \texttt{sales\_report\_requests} and \texttt{recipient\_emails}, sharing a one to many relation (one report request can have many recipients). Additionally, following the principle of extensibility, it was decided to use an ORM (\texttt{sqlalchemy}) for handling this database, as it would make the system easier to connect to a different database or add additional configuration if needed --- for example, some type of user authentication.
+
+\subsubsection{User Interface}
+
+To update the Configuration, a frontend was implemented as a FastAPI web application using Jinja2 templates. This implementation follows a modular router-based architecture that separates concerns --- templates can easily be changed to suite the style of a company that will use the AI Analyst internally. The initial templates created consider the analysis in \autoref{chapter:requirements-analysis} and as such try to be simple and intuitive, using Bootstrap 5 to speed implementation.
+
+The FastAPI application consists of three main router modules as detailed in Table \ref{tab:frontend-routes}:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|p{3cm}|p{5.5cm}|p{6cm}|}
+\hline
+\textbf{Router} & \textbf{Routes} & \textbf{Functionality} \\ \hline
+\textbf{Index Router} & 
+\texttt{GET /} \newline \texttt{POST /run\_now} & 
+Main dashboard displaying existing sales report requests and cron schedule configuration. \\ \hline
+\textbf{Sales Report Router} & 
+\texttt{GET /sales\_report/create} \newline \texttt{POST /sales\_report/create} \newline \texttt{GET /sales\_report/edit/\{id\}} \newline \texttt{POST /sales\_report/edit/\{id\}} \newline \texttt{POST /sales\_report/delete/\{id\}} & 
+Complete CRUD operations for sales report requests. Handles form validation, data persistence, and user feedback with proper error handling and success messages. \\ \hline
+
+\textbf{Cronjob Router} & 
+\texttt{POST /crontab/update} & 
+Manages the cron schedule configuration for automated report generation. Interfaces with the system's crontab to set execution intervals. \\ \hline
+\end{tabular}
+\caption{Frontend Router Structure and Functionality}
+\label{tab:frontend-routes}
+\end{table}
 
 \chapter{Evaluation and Testing}
 \label{chapter:evaluation-testing}
@@ -478,7 +563,7 @@ Evaluating the outputs of the AI Analyst was an essential part of the project. K
 
 Nevertheless, in line with some of the research described in \autoref{sec:research-llms}, evaluating the AI Analyst posed a series of challenges.
 
-First, even for a single type of Sales Request, it would be impossible to create a comprehensive set of all possible reports that could be generated, so the traditional Machine Learning strategy of evaluating against ground truths was not viable.
+First, even for a single type of Sales Report Request, it would be impossible to create a comprehensive set of all possible reports that could be generated, so the traditional Machine Learning strategy of evaluating against ground truths was not viable.
 
 Second, evaluating task completion was not relevant. With the current state of LLMs, obtaining a report is relatively straightforward; the greater challenge lies in ensuring that the report is actually what the users would expect, that is, it has the structure expected, the data extracted is correct and the insights are relevant.
 
@@ -508,9 +593,9 @@ Defining a grading rubric for these thus required defining the structure of the 
 
 On the contrary, Domain-Specific Capacity on this context can be considered the capacity of the model to perform financial analysis. This is things like accurately representing an evolution instead of just mentioning values or only presenting relevant data. These are more reflective of the Content of the report, not its form.
 
-Finally, in addition to defining the types of questions, it was important to define the level of specificity. If questions became too specific, for example expecting a per-product analysis, the evaluation only becomes usable to one type of Sales Request, but very open ended questions lead to subjective grading.
+Finally, in addition to defining the types of questions, it was important to define the level of specificity. If questions became too specific, for example expecting a per-product analysis, the evaluation only becomes usable to one type of Sales Report Request, but very open ended questions lead to subjective grading.
 
-This was solved by defining questions that are wide in scope, but allowing only a Yes or No answer, in the style of "Does the analysis in the report accurately represent the evolution of the KPI?". While this question requires reviewing the entire report and subjectively defining what accurate is, there is less risk that the same evaluator can have different responses to similar outputs, unlike if required to provide a specific grade.
+This was solved by defining questions that are wide in scope, but allowing only a Yes or No answer, in the style of ``Does the analysis in the report accurately represent the evolution of the KPI?". While this question requires reviewing the entire report and subjectively defining what accurate is, there is less risk that the same evaluator can have different responses to similar outputs, unlike if required to provide a specific grade.
 
 Moreover, this type of questions had two added benefits. First, it made it easier, and thus quicker, to evaluate a specific report. Second, it simplified the score definition --- the total evaluation score could be calculated as the percentage of positive responses over the total questions.
 
@@ -525,7 +610,7 @@ There is one exception to this though, just evaluating the intermediate steps co
 
 Moreover, in many cases there is one aspect to the intermediate step that can act as a proxy for its utility to the system, such as making sure that a file is generated or that the output has a certain shape.
 
-For these reasons, it was decided to use ``exact evaluation'' for the Agent's components. Whats better, using strict rules to evaluate the results, such as confirming completion or that a file was generated, makes the evaluations similar to a regular automated test, and can be expressed as such in \texttt{pytest}, meaning they can run automatically. In total, 37 evaluations were written with this structure. You can find an example on \autoref{annex:sample-eval}.
+For these reasons, it was decided to use ``exact evaluation'' for the Agent's components. Whats better, using strict rules to evaluate the results, such as confirming completion or that a file was generated, makes the evaluations similar to a regular automated test, and can be expressed as such in \texttt{pytest}, meaning they can run automatically. In total, 37 evaluations were written with this structure. You can find an example in \autoref{annex:sample-eval}.
 
 One of the biggest challenges of this approach is that while the evaluations are \textbf{expressed} as tests, they are not actual tests and should be interpreted differently. In some cases, the evaluation rule might check that a specific word or numeric value is included in the test, this is specially useful when evaluating summarization steps. That expected text might not always be present due to the probabilistic nature of LLMs. In such cases, a failing ``test" does not mean the system is not working; instead, it means that a more detailed experiment needs to be run for this specific component.
 
@@ -540,13 +625,19 @@ Finally, the biggest challenge of this approach is how long it takes to run the 
 \section{Other Tests}
 \label{sec:other-tests}
 
-Functionality that only uses external packages, such as the generation of PDF files from markdown or sending emails, were not tested as these packages have their own testing suite.
+While the LLM components of the system need to be evaluated, an Agent is also composed of parts that are indeed subject to traditional tests; for example, the tools it uses or the integration with model providers. Furthermore, the entire system goes beyond the actual AI Analyst Agent. These more traditional software components also need testing.
 
-Coverage irrelevant
+Nevertheless, as mentioned a few times already, as a proof of concept, iteration speed outweighed testing completeness, as this system might face significant changes before becoming production-ready. As such, the approach taken to testing can be summarized as:
 
-23 Configuration Tests, 5 Routes Tests, 4 Agent Main, 2 Tools, 3 Integration with Model Providers, 8 utils = 45
+\begin{enumerate}
+    \item Focus on unit testing, with some narrow integration tests.
+    \item Avoid writing tests for functionalities that only wrap external libraries, such as email sending or pdf generation. It is assumed that the libraries themselves are well tested.
+    \item For the most important functionalities, such as the configuration modules, 100\% coverage was ensured.
+    \item For less critical functionalities, only testing the ``happy path" was considered acceptable.
+    \item For the frontend, as it is expected to completely change when integrated to a company's systems, manual acceptance testing was considered acceptable.
+\end{enumerate}
 
-\autoref{annex:test-results}
+With all of these in mind, 23 test between unit and integration were written for the configuration module, which was considered the most critical, 17 tests were written for functionalities related to the agent execution, such as tools and utilities, and 5 unit test for the frontend. The result of those test, as well as the coverage summary, can be found in \autoref{annex:test-results}.
 
 \chapter{Reflections}
 \label{chapter:reflections}
@@ -681,7 +772,7 @@ The only Could Have requirement that was excluded from the proof of concept was 
 \label{fig:evals-content}
 \end{figure}
 
-As mentioned before, the first iteration considered a single orchestration entity, with a single task to create the entire report. As can be seen in \autoref{fig:evals-form}, this iteration could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the "current" period of data --- in every case, the report analysed the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
+As mentioned before, the first iteration considered a single orchestration entity, with a single task to create the entire report. As can be seen in \autoref{fig:evals-form}, this iteration could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the ``current" period of data --- in every case, the report analysed the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
 
 Moreover, as evidenced in \autoref{fig:evals-content}, this agentic architecture failed to score more than 60\% on the content score, despite changes to the task description or architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content.
 
@@ -692,7 +783,7 @@ After an in-depth review of the intermediate steps taken by the system, the reas
     \item \stepcounter{kfcounter}\kfid : deep research tasks increase the context quickly, but not all intermediate findings actually add information, so they benefit for summarization steps within the workflow\footnote{As opposed to most common architectures which only summarise at the end of the task}. This is in line with the findings of \cite{veseli2025positionalbiasesshiftinputs}.
 \end{itemize}
 
-The first point can be seen clearly on \autoref{fig:evals-form}. After the change to a step-by-step workflow, fluctuations in form score reduced vastly, while the content score slowly increased as the entire workflow was rebuilt. This is also highlighted by the fact that LLM steps were not reliably recommended remedy actions that were measurable; by making the recommendations part of the single deep research task, and not a separate step, the nuance is lost within the large context the task itself creates, resulting in very general recommendations.
+The first point can be seen clearly in \autoref{fig:evals-form}. After the change to a step-by-step workflow, fluctuations in form score reduced vastly, while the content score slowly increased as the entire workflow was rebuilt. This is also highlighted by the fact that LLM steps were not reliably recommended remedy actions that were measurable; by making the recommendations part of the single deep research task, and not a separate step, the nuance is lost within the large context the task itself creates, resulting in very general recommendations.
 
 Later on, after finishing rebuilding the workflow, the system's default model was changed to use one of OpenAI's reasoning models, leading to \stepcounter{kfcounter}\kfid : changing to a reasoning model has a smaller impact than the change to a step-by-step workflow, as the reasoning step can be approximated by the architecture of each agent within the workflow. That said, the quality of certain parts of the output, such as the graphs generated, did improve markedly by using a more powerful model.
 
@@ -856,7 +947,7 @@ async def test_file_creation(quantitative_agent):
 \chapter{Automated Testing Suite Results}
 \label{annex:test-results}
 
-The following are the results of the last run of the testing suite. Please note the interpretation of failed tests mentioned on \autoref{sec:components-evals}.
+The following are the results of the last run of the testing suite. Please note that, as \autoref{sec:components-evals} notes, this includes both evaluations and actual test, and thus failing tests do not necessarily represent a system failure.
 
 \begin{figure}[H]
 \centering
