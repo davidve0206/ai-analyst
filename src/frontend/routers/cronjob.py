@@ -6,53 +6,10 @@ from src.configuration.crontab import (
     CrontabFrequency,
     JobFrequency,
     Month,
-    Weekday,
     set_crontab,
 )
 
 router = APIRouter()
-
-
-@router.post("/daily")
-async def setup_daily_cron(
-    request: Request,
-    hour: Annotated[int, Form()],
-    days_of_week: Annotated[List[str], Form()] = [],
-):
-    """Set up daily crontab schedule."""
-    try:
-        if not days_of_week:
-            return RedirectResponse(
-                url="/?error=Please select at least one day of the week",
-                status_code=status.HTTP_303_SEE_OTHER,
-            )
-
-        # Convert string days to Weekday enums
-        try:
-            weekday_enums = [Weekday(day) for day in days_of_week]
-        except ValueError as e:
-            return RedirectResponse(
-                url=f"/?error=Invalid day selection: {str(e)}",
-                status_code=status.HTTP_303_SEE_OTHER,
-            )
-
-        # Set up daily cron job
-        config = CrontabFrequency(
-            hour=hour, days_of_week=weekday_enums, frequency=JobFrequency.DAY
-        )
-        set_crontab(config, write=True)
-        result = f"Agent set up to run {config}."
-
-        return RedirectResponse(
-            url=f"/?success={result}",
-            status_code=status.HTTP_303_SEE_OTHER,
-        )
-    except Exception as e:
-        return RedirectResponse(
-            url=f"/?error=Error setting up daily cron: {str(e)}",
-            status_code=status.HTTP_303_SEE_OTHER,
-        )
-
 
 @router.post("/monthly")
 async def setup_monthly_cron(

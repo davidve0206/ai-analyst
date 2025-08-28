@@ -10,7 +10,6 @@ from src.configuration.db_models import (
 from src.configuration.crontab import (
     JobFrequency,
     Month,
-    Weekday,
     get_existing_agent_cronjob,
 )
 from src.frontend.templates_config import templates
@@ -36,8 +35,6 @@ async def index(request: Request):
         "periods": list(KpiPeriodsEnum),
         "groupings": list(SalesGroupingsEnum),
         "currencies": list(SalesCurrencyEnum),
-        "job_frequencies": list(JobFrequency),
-        "weekdays": list(Weekday),
         "months": list(Month),
         "hours": list(range(0, 24)),
         "days_of_month": list(range(1, 32)),
