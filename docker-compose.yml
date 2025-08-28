@@ -11,7 +11,6 @@ services:
         # Email Configuration
         - EMAIL_MAILER=${EMAIL_MAILER:-smtp}
         - EMAIL_USE_SSL=${EMAIL_USE_SSL:-0}
-        - EMAIL_FROM_ADDRESS=${EMAIL_FROM_ADDRESS:-communications@test.com}
         - EMAIL_HOST=${EMAIL_HOST:-mailpit}
         - EMAIL_PORT=${EMAIL_PORT:-1025}
         - EMAIL_PASSWORD=${EMAIL_PASSWORD:-}

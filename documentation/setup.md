@@ -27,7 +27,6 @@ AZURE_OPENAI_ENDPOINT=your-openai-endpoint
 EMAIL_HOST=smtp.your-provider.com
 EMAIL_PORT=587
 EMAIL_USE_SSL=true
-EMAIL_FROM_ADDRESS=reports@yourcompany.com
 EMAIL_USERNAME=your-username
 EMAIL_PASSWORD=your-password
 
