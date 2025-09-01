@@ -17,7 +17,7 @@ from src.configuration.settings import app_settings
 
 async def execute_sales_report_request(request: SalesReportRequest) -> None:
     default_logger.info(f"Starting research task for KPI: {request.name}")
-    retry_count = 0  # TODO: Add tests for retry logic
+    retry_count = 0
     result: dict | None = None
     while retry_count < app_settings.retry_limit:
         try:
