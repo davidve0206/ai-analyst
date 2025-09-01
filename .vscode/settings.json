@@ -3,7 +3,8 @@
         "Agentic",
         "Huyen",
         "Magentic",
-        "Marsal"
+        "Marsal",
+        "Pydantic"
     ],
     "python.testing.pytestArgs": [
         "tests"

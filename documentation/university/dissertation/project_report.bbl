@@ -653,6 +653,35 @@
       \verb https://arxiv.org/abs/2503.12687
       \endverb
     \endentry
+    \entry{langchain2025buildAgent}{online}{}{}
+      \name{author}{1}{}{%
+        {{hash=8de59538e5206b848891f2b0e1898dfb}{%
+           family={{LangChain}},
+           familyi={L\bibinitperiod}}}%
+      }
+      \strng{namehash}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{fullhash}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{fullhashraw}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{bibnamehash}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{authorbibnamehash}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{authornamehash}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{authorfullhash}{8de59538e5206b848891f2b0e1898dfb}
+      \strng{authorfullhashraw}{8de59538e5206b848891f2b0e1898dfb}
+      \field{sortinit}{L}
+      \field{sortinithash}{7c47d417cecb1f4bd38d1825c427a61a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{month}{7}
+      \field{note}{Last Accessed: 2025-08-26}
+      \field{title}{How to Build an Agent}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://blog.langchain.com/how-to-build-an-agent/
+      \endverb
+      \verb{url}
+      \verb https://blog.langchain.com/how-to-build-an-agent/
+      \endverb
+    \endentry
     \entry{langgraphagmultiagentsystems}{online}{}{}
       \name{author}{1}{}{%
         {{hash=43c7d3ea7dada63b2e49a34753207f92}{%
@@ -822,6 +851,34 @@
       \endverb
       \verb{url}
       \verb https://arxiv.org/abs/2505.19457
+      \endverb
+    \endentry
+    \entry{wideworldimporters2025}{dataset}{}{}
+      \name{author}{1}{}{%
+        {{hash=b9a8b868588ad4bc6b36c29936e26423}{%
+           family={{Microsoft Corporation}},
+           familyi={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{fullhash}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{fullhashraw}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{bibnamehash}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{authorbibnamehash}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{authornamehash}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{authorfullhash}{b9a8b868588ad4bc6b36c29936e26423}
+      \strng{authorfullhashraw}{b9a8b868588ad4bc6b36c29936e26423}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{note}{Sample database for Microsoft SQL Server and Azure SQL, retrieved from Microsoft documentation}
+      \field{title}{WideWorldImporters Sample Database}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://learn.microsoft.com/en-us/sql/samples/wide-world-importers-what-is?view=sql-server-ver17
+      \endverb
+      \verb{url}
+      \verb https://learn.microsoft.com/en-us/sql/samples/wide-world-importers-what-is?view=sql-server-ver17
       \endverb
     \endentry
     \entry{openai2025promptengineering}{online}{}{}

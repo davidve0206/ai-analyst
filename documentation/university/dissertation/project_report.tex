@@ -278,7 +278,7 @@ As mentioned before, the client for this project is Alvarez \& Marsal (A\&M), a 
 
 A\&M clearly identified a problem to solve: Executives spend valuable hours navigating dashboards just to extract the specific information relevant to their needs. As such, they wanted to explore the capabilities of LLMs to help reduce this time by building an Agentic AI system that could access a company's data, extract operational figures and generate report about a specific KPI, delivered directly to a user's email. For this, A\&M shared bullet points with their ideal set of functionalities for the system.
 
-Nevertheless, as a professional services firm, Alvarez \& Marsal was limited in the resources they could share for the development of the system. Particularly, they were not allowed to provide anonymized data, which severely limited the functionalities that could be built --- as an example, while they wanted the system to retrieve news that could explain a reduction in sales, this only makes sense if the system knows which products the company is selling.
+Nevertheless, as a professional services firm, Alvarez \& Marsal was limited in the resources they could share for the development of the system. Particularly, due to client confidentiality clauses, they were only allowed to provide anonymized data, which severely limited the functionalities that could be built --- as an example, while they wanted the system to retrieve news that could explain a reduction in sales, this only makes sense if the system knows which products the company is selling.
 
 Due to this limitation, it was agreed to build a proof of concept system that could later be extended by their internal team. This chapter thus details the process for arriving to the requirements for this proof of concept system. First, the creation of user personas, and their scenarios for using the system, to help narrow the key need for users. Second, the definition of a set of requirements based on said personas.
 
@@ -497,15 +497,65 @@ Separately, the implementation of the Configuration Service, as well as the user
 
 \subsection{AI Analyst Agent}
 
-MODULARITY
+Before detailing the process of building the AI Analyst, it is important to note some practical challenges that influenced some key decisions. These limitation mostly came from the client's restrictions to provide certain resources for developing the system, as mentioned in \autoref{chapter:requirements-analysis}.
 
-NOTE: Talk about the experiments here.
-NOTE: Talk about the initial expectation of connecting to a company database.
-NOTE: One of the most interesting questions is how reusable is the system that was created as proof of concept. Some of the first prompt attempts were very general, with the idea that the client could only change the description of the KPI to extend the usability --- this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers --- even as models have advanced. Nevertheless, it is possible to envision designing the prompt system in a way that makes it easy to inject different examples / terms depending on the request type.
+First, the system needed to be developed using Azure's student subscription, which provides a total of USD100 in credits to be used across their platform, independently of the resources needed. Moreover, this subscription limited the LLMs that could be used; some of the highest-performing models, such as OpenAI's o3, were not available for testing.
+
+Second, while the client reviewed if they could share data for testing, it was initially agreed to use \cite{wideworldimporters2025}, a public dataset that simulates entries a company's database, as the production system would be expected to access a company's actual database. Due to Microsoft's restrictions this dataset had to be hosted on Azure, and ran a the relatively high cost of USD1/day while it was being used.
+
+The client was later able to provide anonymized sales data in the form of a CSV file. Thus, the database was turned off and the evaluations and integration tests that used it were removed from the repository, but the agent created for extracting data from it was kept in the repository for the client's future reference --- thus, you will see that code related to the database agent has 0\% coverage. 
+
+Finally, due to the high cost of the database it was decided to use a lower cost LLM to develop the system, as to reduce the risk of reaching the account's spending cap. As such, the system was built using OpenAI's gpt-4o-mini model, and only when the full structure was created was the model changed to OpenAI's o4-mini, a reasoning model, as it was more than 10 times more expensive per token.
 
 \subsubsection{Single Task Architecture}
 
+Considering the advances in agentic architectures mentioned in \autoref{sec:research-llms}, the first group of experiments aimed to use \cite{fourney2024magenticone}'s Magentic-One orchestration architecture, without modifications, for the entire task. This was done using Microsoft's Semantic Kernel framework, which exposes its own implementation of the Magentic-One architecture but, for reference, \autoref{fig:magentic-one-architecture} depicts its general structure. The key objective of this approach was extensibility. With this orchestration, adding new sources of information to the analysis should be as easy as adding a new member to the team of subagents, with everything else remaining as it was.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.4\textwidth]{images/mangentic-one-simplified.png}
+\caption{Magentic-One Orchestration Architecture}
+\label{fig:magentic-one-architecture}
+\end{figure}
+
+For this group of experiments, three initial subagents were defined:
+
+\begin{enumerate}
+    \item A \textbf{Database Agent}, which had access to a tool to explore the tables in a database and execute arbitrary SQL queries. This agent used SemanticKernel's default ChatCompletionAgent.
+    \item A \textbf{Coder (or Quantitative) Agent}, which had access to a code interpreter tool and thus could run arbitrary code. This agent used Azure's pre-defined agents, as this is the default way to access a code interpreter tool in the framework.
+    \item An \textbf{Editor Agent}, who's system prompt detailed the structure and editing guidelines of the report. This agent also used SemanticKernel's default ChatCompletionAgent, without tools.
+\end{enumerate}
+
+The first challenge with this architecture, which became apparent as the first few attempts to run an experiment where unsuccessful, was the interaction with the Database Agent. It quickly became apparent that the Database Agent was essentially a text-to-sql agent, and thus needed request to be defined as queries for information. Magentic-One, however, defines the requests to the next subagent as tasks --- to give an idea, the request might be something like "Investigate the main contributors to sales", but the Database Agent worked best with something like "Retrieve sales by product family". Moreover, the default implementation of Magentic-One passes the entire conversation history as context to every subagent, but the Database Agent worked best with a minimal context.
+
+The solution to this was to create another agent, an \textbf{Internal Data Agent}, which could access the Database Agent as a tool. In this architecture, the Internal Data Agent could receive a task, including the entire conversation, break the task down into a set of natural language queries, and request them one by one to the Database Agent. The advantage of using the agent-as-tool architecture was that the Internal Data Agent need not know how the queries were executed, increasing the modularity of the design.
+
+Another interesting question was where to use the Editor Agent, that is, whether to include it in the team of subagents for the Magentic-One task, or as a separate step that would take the results from the research task and generate the formatted report from it (similar to a traditional RAG architecture). After experimenting with both, including the Editor Agent within the Magentic-One task resulted in reports that did not follow the editing guidelines. Again, it seemed like the culprit was the increased context included in each request, in line with \cite{veseli2025positionalbiasesshiftinputs}'s findings.
+
+This then set the architecture for the Single Task approach: first, a Magentic-One task for retrieving all the information required, using a team of the Internal Data Agent, who in turn used the Database Agent as tool, and the Quantitative Agent; second, the results from this task were formatted by the Editor Agent.
+
+But setting the architecture is just one step in the process of creating an agent. As described in \autoref{sec:research-llms} the agent's output can also be improved with Prompt Engineering. While the experiments with prompts were limited in this stage, as it was quickly clear that the system would need a different architecture, one interesting question that would translate to the following stage arose: How reusable should prompts be? Some of the first prompt attempts were very general, without specific examples, with the idea that the client could change the description of the KPI and easily extend the functionality of the AI Analyst from Sales to any KPI --- this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers; the results were easily improved just by adding specific examples about detailed sales data that could be retrieved. It is possible to envision a prompt module that is designed in a way that makes it easy to inject different examples or terms depending on the requested KPI; but as the proof of concept only needed to extract Sales information, this was not implemented.
+
 \subsubsection{Workflow Driven Architecture}
+
+After a few experiments with the prompts for the Single Task Architecture, it was clear that some of the key nuances of the task were not being properly conveyed in the output. As such, the next stage of the project was to design a workflow that the agent could follow which reflected the ``standard operating procedure (SOP), with step-by-step instructions for how a human would perform the task or process'', as recommended by LangChain in \cite{langchain2025buildAgent}. \autoref{fig:workflow} presents the workflow designed as the SOP.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.3\textwidth]{images/workflow.png}
+\caption{AI Analyst workflow, including agent or workflow that implements each step}
+\label{fig:workflow}
+\end{figure}
+
+As the new workflow would not use Magentic-One as the basis of its implementation, an important decision had to be made: continue building using Microsoft's Semantic Kernel framework or move to a different framework. Moving to a different framework would mean losing work and manually implementing Magentic-One like architectures for some of the steps in the workflow, but working with Semantic Kernel had already shown some issues --- it was not particularly intuitive for fine-grained control of agent's context, and it lacked examples for use cases that did not fall within its pre-defined structures. LangGraph, in contrast, is specifically designed for this kind of agentic workflow, and due to its popularity there is extensive community content. As such, it was decided to use LangGraph from this point forward.
+
+Furthermore, due to this change the new workflow was implemented progressively, starting with a version that only included retrieving the sale's history, processing it and creating a report, and adding additional steps one at a time. Each time a step was added or altered significantly, a full experiment and evaluation was performed, so that the impact of each change on the overall output was clear.
+
+It was also close to this point that the client was able to provide anonymized sales data for testing. As mentioned before, this was provided as a CSV file and, as such, the Database Agent was not necessary any more. Its function could be replaced by an agent that could write and execute code in the environment that contained the CSV file.
+
+CODING AGENT - EXPLAIN KEY REASONING FOR THE WORKFLOW
+
+RESEARCH AGENT - SUMMARIZATION STEP BECAUSE OF THE LEARNINGS RE LONG CONTEXT
 
 \subsection{Configuration Service and Interface}
 
@@ -812,6 +862,7 @@ The current system is a proof of concept. As such, it can --- and should --- be 
     \item Improvements to the agent architecture and outputs:
     \begin{itemize}
         \item Make the corrective actions proposed by the LLM when there is a ``special case" measurable, by creating a separate step in the workflow dedicated to providing and measuring the recommendations.
+        \item Improve retry logic so that the entire workflow is not repeated when one of its steps fails.
     \end{itemize}
 \end{enumerate}
 
@@ -978,10 +1029,10 @@ Are all statements in the report sustained with data? \\ \hline
 \begin{tabular}{|c|c|p{7cm}|c|c|c|c|}
     \hline
     No. & Date & Notes & Default Model & Form & Content & Total \\ \hline
-    1 & 02-Jul & First test with all of my MVP Agents: Magentic One (DB, Coder) + Separate Editor & gpt-4o-mini & 50\% & 29\% & 36\% \\ \hline
+    1 & 02-Jul & First test with all of my MVP Agents: Magentic-One (DB, Coder) + Separate Editor & gpt-4o-mini & 50\% & 29\% & 36\% \\ \hline
     2 & 02-Jul & Re run of previous experiment & gpt-4o-mini & 75\% & 29\% & 45\% \\ \hline
     3 & 03-Jul & Move Editor Agent inside team, improve quant agent prompt & gpt-4o-mini & 50\% & 29\% & 36\% \\ \hline
-    4 & 04-Jul & Improve Magentic One task description & gpt-4o-mini & 75\% & 71\% & 73\% \\ \hline
+    4 & 04-Jul & Improve Magentic-One task description & gpt-4o-mini & 75\% & 71\% & 73\% \\ \hline
     5 & 04-Jul & Improve Editor Prompt & gpt-4o-mini & 75\% & 64\% & 68\% \\ \hline
     6 & 09-Jul & First test with LangGraph --- Minimal MVP, without in-depth analysis & gpt-4o-mini & 78\% & 78\% & 78\% \\ \hline
     7 & 11-Jul & Add step for operational info just with the quant agent & gpt-4o-mini & 100\% & 64\% & 78\% \\ \hline
