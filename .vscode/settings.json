@@ -4,7 +4,7 @@
         "Huyen",
         "Magentic",
         "Marsal",
-        "Pydantic"
+        "Pydantic",
     ],
     "python.testing.pytestArgs": [
         "tests"

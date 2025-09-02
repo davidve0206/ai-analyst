@@ -178,7 +178,7 @@ The plans designed by the LLM can be performed in many ways, for example, tools 
 
 One of the key problems for any Agent Architecture is how to build in ways to adjust the plans laid out by the LLM, allowing them to correct potential errors. On this, one of the most common patterns is ReAct (Reasoning and Acting), proposed by \cite{yao2023react}. In this pattern, two steps are taken in a loop until the task is completed: a Reasoning step, which encompass both planning and reflecting on tool outputs, and an Action step, where the next step in the plan is executed.
 
-This architecture was later expanded upon in \cite{shinn2023reflexion}, in their proposed Reflexion architecture. In Reflexion, the agent has separate steps for evaluating the output of its tools and self-relect on what went wrong, on each iteration, after evaluation and reflection, the agent proposes a new plan, and then executes the next step on that plan.
+This architecture was later expanded upon in \cite{shinn2023reflexion}, in their proposed Reflexion architecture. In Reflexion, the agent has separate steps for evaluating the output of its tools and self-relect on what went wrong, on each loop, after evaluation and reflection, the agent proposes a new plan, and then executes the next step on that plan.
 
 \subsubsection{Agentic Orchestration Architecture}
 
@@ -235,7 +235,7 @@ Additionally, the \autoref{tab:orchestration_frameworks_uses} provides some find
 \label{tab:orchestration_frameworks_uses}
 \end{table}
 
-As will be explained in more detail later, the development of the project consisted of two iterations. The first iteration tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second iteration's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow. LangChain has its own observability platform (LangSmith), which was also used as it integrates easily with the framework.
+As will be explained in more detail later, the development of the project consisted of two stages. The first stage tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second stage's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow. LangChain has its own observability platform (LangSmith), which was also used as it integrates easily with the framework.
 
 \subsection{Scheduling Tool}
 
@@ -549,13 +549,45 @@ After a few experiments with the prompts for the Single Task Architecture, it wa
 
 As the new workflow would not use Magentic-One as the basis of its implementation, an important decision had to be made: continue building using Microsoft's Semantic Kernel framework or move to a different framework. Moving to a different framework would mean losing work and manually implementing Magentic-One like architectures for some of the steps in the workflow, but working with Semantic Kernel had already shown some issues --- it was not particularly intuitive for fine-grained control of agent's context, and it lacked examples for use cases that did not fall within its pre-defined structures. LangGraph, in contrast, is specifically designed for this kind of agentic workflow, and due to its popularity there is extensive community content. As such, it was decided to use LangGraph from this point forward.
 
-Furthermore, due to this change the new workflow was implemented progressively, starting with a version that only included retrieving the sale's history, processing it and creating a report, and adding additional steps one at a time. Each time a step was added or altered significantly, a full experiment and evaluation was performed, so that the impact of each change on the overall output was clear.
+It was also close to this point that the client was able to provide anonymized sales data for testing. As mentioned before, this was provided as a CSV file and, as such, the Database Agent was not necessary any more. Its function could be replaced by an agent that could write and execute code in the environment that contained the CSV file.\footnote{Though as mentioned before the code for the Database Agent was kept in the repository for the client's reference.} As the files were stored in the filesystem of the AI Agent's container, all agents that need code are allowed to execute it directly in the container's environment. This also made it easier to share data between steps; any intermediate outputs could be stored as CSV files within a temporary folder, and other agents would have access to them if needed.
 
-It was also close to this point that the client was able to provide anonymized sales data for testing. As mentioned before, this was provided as a CSV file and, as such, the Database Agent was not necessary any more. Its function could be replaced by an agent that could write and execute code in the environment that contained the CSV file.
+Furthermore, considering the change in both framework and data access, the new workflow was implemented iteratively, starting with a version that only included retrieving the sale's history, processing it and creating a report, and adding additional steps one at a time. Each time a step was added or altered significantly, a full experiment and evaluation was performed, so that the impact of each change on the overall output was clear. This also confirmed the extensibility of the design, as additional steps could be added without breaking the existing functionality.
 
-CODING AGENT - EXPLAIN KEY REASONING FOR THE WORKFLOW
+Following this iterative process, the first versions of the workflow used LangGraph's pre-set implementation of the ReAct architecture for any agent that required tool usage, such as the \textbf{Internal Data Agent}, which now used a tool to run arbitrary code to retrieve data from the provided CSV file, and the \textbf{Quantitative Agent}. Additionally, while the Magentic-One architecture did not generate the expected results for the entire task, it was clear that it had value due to its extensibility and deep research capabilities, so it was used for the \textbf{Research Workflow} in the Research Special Case step --- that is, the step to explore the available data and find potential reasons for special cases, such as sales reductions --- when it was added to the workflow.
 
-RESEARCH AGENT - SUMMARIZATION STEP BECAUSE OF THE LEARNINGS RE LONG CONTEXT
+Moreover, in early iterations the instruction for analysing data given to the Quantitative Agent included creating visualizations, but this resulted in visualizations that were poorly formatted despite iterations on the prompts. As the analysis task would only become more complex due to the in-depth research for special cases, the plot generation was moved to the end of the workflow. It then made sense to create a separate workflow for the generation of the report, the \textbf{Report Editor Workflow}, which consists of a Supervisor, which ensured task completion, a Report Writer, a Data Loader agent, which is actually code to load a CSV's file contents to the workflow's context from a plain text instruction, and a Data Visualization agent, which uses LangGraph's ReAct implementation.
+
+With this, the system's development was complete, and it was time to use the more expensive reasoning model, o4-mini, for evaluation and prompt engineering. As expected, reasoning models are better at complex tasks, resulting in more detailed analysis even before optimizing the prompts, but they come with a drawback: configurations that limit the range of potential results from the LLM, such as Temperature, Top P or Top K are not available for reasoning models. This resulted in an increased likelihood of agents getting stuck in infinite loops, trying to perform more in depth analysis, find more data than available or attempting to run code with errors without being able to fix it between loops.
+
+Some of these issues were improved upon with prompt engineering, such as providing clearer instructions from when to stop, but the stochastic component of LLMs meant there was no way of ensuring this won't happen on any given experiment. As such, changes to the agent's architecture were needed.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.4\textwidth]{images/research-workflow.png}
+\caption{Research Workflow representation.}
+\label{fig:research-workflow}
+\end{figure}
+
+First, for the Research Workflow, which used the Magentic-One architecture, the main issue was that the model could not consistently decide when the task was considered complete. While a human would execute a judgment call considering that they have ``enough'' findings for the report, an LLM needs a clear stopping rule. Thus, it was decided to add a forceful exit condition, where the workflow would break the execution loop after a number of plan updates (note that this is different to progress ledger updates, which happen every time a sub-agent returns a response, plan updates only happen when the execution is deemed stalled by the orchestrator). This approach is in line with Semantic Kernel's implementation.
+
+Additionally, building from the learnings of the first implementation stage, a Summarize Findings step was added to the Magentic-One workflow. Without this step, the best way to share the findings from the task would be to share the entire conversation, adding a large amount of context to the report generation step. Instead, by summarizing the findings, only the actually relevant parts of this conversation, such as findings and files generated, are shared with the main agent, maintaining the total size of the context contained. The final architecture for the Research Workflow can be seen in \autoref{fig:research-workflow}.
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.4\textwidth]{images/coding-workflow.png}
+\caption{Coding Agent workflow representation.}
+\label{fig:coding-workflow}
+\end{figure}
+
+Second, both the Internal Data Agent and the Quantitative Agent generate code that needs to be executed in the local environment, using a Python Read-Evaluate-Print-Loop (REPL) Tool. For these agents, which first used a basic ReAct architecture, the issues were twofold. On one side, the LLM had a hard time recovering when the code generated had issues, such as not receiving any outputs due to a lack of print statement or error messages. On the other side, it would sometimes return an intermediate thinking step without code generated, which in a default ReAct agent is taken as a final response.
+
+To improve the agent's self recovery capabilities, the workflow includes a step where the code outputs are reviewed for errors. If errors are present, a separate LLM is requested to provide a code review, which is added to the agent's context before looping. Additionally, when an error is detected several times in a row (5 by default) or the agent has looped more than a certain threshold of times (25 by default), the prompt for the next loop is changed for one that requires the LLM to review its attempts, analyse what went wrong and provide the analysis as final response. This approach was particularly for use within the Magentic-One orchestrator, as it can provide information for the orchestration for either retrying the request or replanning.
+
+To avoid early returns due to thinking steps, the workflow includes a step where that reviews the response from the agent. If the response includes a tool call for code execution, it moves to the next step. If the response is only text, it is reviewed by an LLM to decide whether it is meant as a final response, in which case it is returned, or as an intermediate thinking step, in which case the loop starts again.
+
+These additional steps have a key trade off, they make the agent more expensive and slower to run, but reduce errors. Nevertheless, as the system is designed to run as a background task, adding latency does not affect user experience. The extra cost could be reduced by using a non-reasoning model for these additional reviews, as neither is a complex task, so gpt-4o-mini was used.
+
+The final architecture, which can be seen in \autoref{fig:coding-workflow}, was implemented as a reusable agent that can be initiated with a different system prompt depending on if it is needed as an Internal Data or a Quantitative Agent, reducing potential duplications.
 
 \subsection{Configuration Service and Interface}
 
@@ -565,9 +597,7 @@ First, is is responsible for loading the system's settings, such as API keys, fr
 
 Second, it is responsible for handling setting and updating the Cron job that runs the AI Analyst according to the user's preferences. The system uses the \texttt{python-crontab} library for this purpose.
 
-Finally, the service is responsible for storing, retrieving and updating user preferences regarding the report to be generated.
-
-The preferences are represented in code as a Pydantic model (essentially a class that represents data) called SalesReportRequest, which included within it not only the characteristics of the request --- such as the ``grouping'', that is, if the report should be about total sales or sales for a specific country, product, etc. --- but the list of emails that should receive the report when generated.
+Finally, the service is responsible for storing, retrieving and updating user preferences regarding the report to be generated. The preferences are represented in code as a Pydantic model (essentially a class that represents data) called SalesReportRequest, which included attributed for the characteristics of the request --- such as the ``grouping'', that is, if the report should be about total sales or sales for a specific country, product, etc. --- and for the list of emails that should receive the report when generated.
 
 The key decision to make, though, was how to persist these classes. While it was clear that setting up an external database was unnecessary overhead for storing local configuration, two alternatives were contemplated: serializing the data and storing as files or storing in a sqlite database within the same container.
 
@@ -826,7 +856,7 @@ As mentioned before, the first iteration considered a single orchestration entit
 
 Moreover, as evidenced in \autoref{fig:evals-content}, this agentic architecture failed to score more than 60\% on the content score, despite changes to the task description or architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content.
 
-After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while iterating, the context keeps growing and growing, even if the iteration does not actually move the task forward. In this particular architecture, this growth in context also affected the context of each sub-agent, making their responses worse as the iterations progressed. This led to two insights, which drove the approach to the second iteration:
+After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while the agent loops, the context keeps growing and growing, even if the steps taken in that loop do not actually move the task forward. In this particular architecture, this growth in context also affected the context of each sub-agent, making their responses worse as more loops took place. This led to two insights, which drove the approach to the second iteration:
 
 \begin{itemize}
     \item \stepcounter{kfcounter}\kfid : while LLMs can indeed perform large tasks with some success, by breaking the task into subtasks we can manage the context at each point, improving their effectiveness and reliability.
@@ -835,7 +865,7 @@ After an in-depth review of the intermediate steps taken by the system, the reas
 
 The first point can be seen clearly in \autoref{fig:evals-form}. After the change to a step-by-step workflow, fluctuations in form score reduced vastly, while the content score slowly increased as the entire workflow was rebuilt. This is also highlighted by the fact that LLM steps were not reliably recommended remedy actions that were measurable; by making the recommendations part of the single deep research task, and not a separate step, the nuance is lost within the large context the task itself creates, resulting in very general recommendations.
 
-Later on, after finishing rebuilding the workflow, the system's default model was changed to use one of OpenAI's reasoning models, leading to \stepcounter{kfcounter}\kfid : changing to a reasoning model has a smaller impact than the change to a step-by-step workflow, as the reasoning step can be approximated by the architecture of each agent within the workflow. That said, the quality of certain parts of the output, such as the graphs generated, did improve markedly by using a more powerful model.
+Later on, after finishing rebuilding the workflow, the system's default model was changed to use one of OpenAI's reasoning models, leading to \stepcounter{kfcounter}\kfid : changing to a reasoning model has a smaller impact than the change to a step-by-step workflow, as the reasoning step can be approximated by the architecture of each agent within the workflow. That said, the quality of certain parts of the output, such as the visualizations generated, did improve markedly by using a more powerful model.
 
 Nevertheless, as mentioned in \autoref{chapter:design-implementation} with the change to reasoning model runs became more volatile, as reasoning models do not accept configuration variables such as Temperature, Top K or Top P. This was particularly evidenced in sub-agents that work iteratively before responding, which seemed to fall into infinite loops more easily. This led to \stepcounter{kfcounter}\kfid : autonomous agents are not guaranteed to self-recover, and the system must be planned around that. Common architectures use steps to reflect and re-plan, but this assumes that the agent will at some point finalize the task. For cases such as deep research, where there might not be clear measure for the task to be ``done'', it is important to create, and properly handle, forceful ending points.
 
@@ -1011,7 +1041,7 @@ If you have already set up one or more reports to receive, you will be able to s
     Does the analysis in the report accurately represent the evolution of the KPI? \\ \hline
     Does the report include an analysis of the detailed data? \\ \hline
     Does the detailed analysis mention specific drivers of decline? \\ \hline
-    Are all graphs relevant to the report? \\ \hline
+    Are all graphs (visualisations) relevant to the report? \\ \hline
     Are all graph types adequate for the data presented? \\ \hline
     Are all projections adequate for the data presented? \\ \hline
     Does the report accurately note any ``special case'' present? \\ \hline
