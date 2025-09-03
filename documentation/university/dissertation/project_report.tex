@@ -51,8 +51,7 @@ $\Box$ \end{quotation}}
 
 
 \title{{\vspace{-14em} \includegraphics[scale=0.4]{images/ucl_logo.png}}\\
-{{\Huge GenAI and financial data alert systems}}\\
-{\large GenAI Insight Overlays}\\
+{{\Huge AI Analyst: GenAI and financial data alert systems}}\\
 }
 \date{Submission date: 8 September 2025}
 \author{Candidate Number: KYHL7\thanks{
@@ -60,7 +59,8 @@ $\Box$ \end{quotation}}
 This report is submitted as part requirement for the MSc. Computer Science at UCL. It is substantially the result of my own work except where explicitly indicated in the text. The report may be freely copied and distributed provided the source is explicitly acknowledged.}
 \\ \\
 MSc. Computer Science\\ \\
-Internal Supervisor: Prof. Lewis D. Griffin}
+Internal Supervisor: Prof. Lewis D. Griffin\\ \\
+Repository: \url{https://github.com/davidve0206/ai-analyst}}
 
 
 
@@ -69,187 +69,188 @@ Internal Supervisor: Prof. Lewis D. Griffin}
 \onehalfspacing
 
 \maketitle
-\begin{abstract}
-TODO: Summarise your report concisely.
-\end{abstract}
+
 
 \tableofcontents
 
 \setcounter{page}{1}
+\begin{abstract}
+This project set out to explore whether Large Language Model (LLM) agents can act as a junior data analyst in a corporate setting. The aim was to build a proof-of-concept “AI Analyst” that could access sales data, extract insights, and automatically generate reports on key performance indicators (KPIs). As such, the main challenge was to go beyond surface-level summaries and produce reports with the level of operational detail and causal reasoning that managers actually need, which are some of the weaknesses of LLMs.
 
+The project combined research on agent architectures, orchestration frameworks, and evaluation methods with hands-on experimentation. Experiments were evaluated by a human judge guided by an explicit rubric, with reports graded on both \textit{form} and \textit{content}, alongside component-level automated evaluations and test to ensure reliability.
+
+Initial experiments using Microsoft’s Magentic-One architecture highlighted issues with context and task definition, leading to the development of a modular, workflow-driven system built in LangGraph. As such, the project provided two outputs: first, the prototype successfully delivered scheduled reports with relevant findings and operational insights, achieving all core requirements and demonstrating the feasibility of agentic AI for this use case; second, and perhaps more importantly, a set of key lessons for the client's future work with Agentic AI systems.
+\end{abstract}
 
 \chapter{Introduction}
 \label{chapter:introduction}
 
-According to a study by Forrester Consulting, knowledge workers spend 30\% of their time --- that is, 2.4 hours a day --- searching for information within their own company\cite{forrester2022}. This is a significant amount of time that could be better spent making decisions and taking action. As such, the aim of this project is to explore the capabilities of Large Language Models (``LLMs") to access a company's data, extract operational figures and provide initial insights to managers, directly to their inbox, saving time from the operational task of data gathering, and allowing them to focus on the more impactful parts of their roles --- making data-informed decisions.
+According to \cite{forrester2022}, by Forrester Consulting, knowledge workers spend 30\% of their time --- that is, 2.4 hours a day --- searching for information within their own company. This is not just critical due to time spent, but due to the impact on the business. As the same study puts it "Teams are making poor or slow decisions based on the limited information in front of them, unaware of critical insights hiding in different tools". In the past, companies have invested on reducing time spent in this type of task by allow each each team to build their own apps and dashboards according to their needs, sometimes bringing external advisors to support the creation and roll out of these specialized tools. One of these external advisors is Alvarez \& Marsal (A\&M), a global professional services firm specializing in turnaround management, corporate restructuring, and performance improvement, who are the client for this project.
 
-To perform this exploration, the goal is to creating a proof of concept system that acts as a junior analyst (or ``AI Analyst") who autonomously generates reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data. In addition to the AI Agent, the system will have a simple user interface, where the user can set the KPI(s) to report on, and the interval at which their analyst should run.
+However, in recent years a radically new option has arisen. With the explosion of Large Language Models (LLMs), and subsequently of LLM-driven Agentic AI systems, a new family of task automation has become available, they allow the execution of complex, multi-step workflows autonomously. As such, the aim of this project is to explore the capabilities of AI Agents to act as a junior data analyst within a company.
 
-For this, the project builds on the recent evolution of AI agents and agentic systems, as paradigms that allow the execution of complex, multi-step workflows autonomously. Nevertheless, this specific use case poses a few challenges to the current stat of the art in GenAI agents.
+The potential of AI Agents to perform this kind of data analysis is widely know. Agentic data retrieval, with tools like text-to-SQL agents, are already being widely used in industry, and there are benchmarks for LLM financial tasks such as stock price or earnings analysis. Still, there is still uncertainty about whether the quality and robustness that they could achieve in practice is actually at the level where such a system would actually be a benefit to a company. To gain a better understanding of this, the goal of this project is to create a proof of concept system, an ``AI Analyst", that can autonomously access a company's data, retrieve operational figures, extract initial insights from these figures and generate a reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data.
 
-For these reports, the AI Analyst must go beyond simply retrieving high-level KPIs. Instead, it must also provide granular details that uncover deeper operational insights. For example, rather than merely reporting that sales are down by 10\%, the Analyst should also identify which products or regions are driving this decline.
+This specific use case poses a few challenges to the current stat of the art in GenAI agents. For these reports, the AI Analyst must go beyond simply retrieving high-level data for the KPIs, it must also provide granular details that uncover deeper operational insights. For example, rather than merely reporting that sales are down by 10\%, the Analyst should also identify which products or regions are driving this decline.
 
-This type of work is inherently open-ended. There is no single ``correct" answer, or even path to an answer, nor a clear point to stop, and the AI Analyst must adapt its approach depending on its own intermediate findings. Crucially, for the reports to be truly useful, the agent must not just report the data, but drawing causal inferences that can point the manager in the right direction to solve any issues found, something that remains a known challenge for LLMs \cite{llmcausalreasoning2024}.
+This type of work is inherently open-ended. There is no single ``correct" answer, or even path to an answer, nor a clear point to stop, and the AI Analyst must adapt its approach depending on its own intermediate findings. Crucially, for the reports to be truly useful, the agent must not just report the data, but drawing causal inferences that can point the manager in the right direction to solve any issues found, something that remains a known challenge for LLMs, as shown by studies such as \cite{llmcausalreasoning2024}.
 
-Moreover, this kind of internal analysis is not likely to be included in LLM's training sets. Companies rarely publish their internal data or reports, and the requirements of operational reports are more granular than financial reports, which might be available for public companies. This makes the task a strong candidate for fine-tuning, but due to the lack of suitable training data this is outside of the project scope.
+Moreover, this kind of internal analysis is not likely to be included in LLM's training sets because of confidentiality. Companies rarely publish their internal data or reports, and certainly not the background of working notes that are preliminary to the final report. The closest likely data would be financial reports to investors, which might be available for public companies, but the requirements are different. Internal reports require more granularity, and usually include deep dives into specific operational findings.
 
-With all of this in mind, the project was executed in three consecutive stages: First, a Research stage, focused on understanding the state of the art in AI agent orchestration and prompting, as well as the software tools available; the results of this stage can be found in \autoref{chapter:research}. Second, a Requirements and Analysis stage, where together with the client, Alvarez \& Marsal, we defined the scope of the proof of concept; the results of this stage can be found in \autoref{chapter:requirements-analysis}. This was also the bases for the evaluation framework for the project, which is described in \autoref{chapter:evaluation-testing}. Third, a Design and Implementation stage, which was performed iteratively; the details of this stage can be found in \autoref{chapter:design-implementation}. Finally, \autoref{chapter:reflections} contains the Reflections from the process of creating the proof of concept system, as well as the potential future work to create a production-ready system.
+A possible path to overcome these limitations would be to fine-tune a model on  company's internal data, such as their internal working notes and reports. Unfortunately this was not a possibility for this project as it would violate confidentiality clauses between A\&M and its client. As such, the focus of the project remained on using Agentic AI systems with general models.
+
+This report is structured as follows. \autoref{chapter:research} reviews the state of the art in AI Agents orchestration, evaluation and prompting, along with the software tools available for building such systems. \autoref{chapter:requirements-analysis} outlines the process of defining project requirements in collaboration with Alvarez \& Marsal. \autoref{chapter:design-implementation} discusses the key implementation decisions, developed through a series of experiments with agent architectures and prompts. \autoref{chapter:evaluation-testing} describes the evaluation framework defined to assess these experiments. Finally, \autoref{chapter:reflections} reflects on the development of the proof-of-concept system, highlighting the main lessons learned and the potential future work towards a production-ready system.
 
 \chapter{Research}
 \label{chapter:research}
 
-Research for this project was be split in two main lines. First, understanding the fundamentals of building applications with Large Language Models. For this, the project was largely influenced by Chip Huyen's book, AI Engineering, which ``provides a framework for adapting foundation models, which include both large language models (LLMs) and large multimodal models (LMMs), to specific applications"\cite{aiebook2025}. In particular, a few learnings from the book were crucial in the development stage, which give structure to \autoref{sec:research-llms}:
+As this project takes a practical approach to exploring the capabilities of LLM-driven Agentic AI systems, its development was largely influenced by \cite{aiebook2025}, which ``provides a framework for adapting foundation models, which include both large language models (LLMs) and large multimodal models (LMMs), to specific applications". While this chapter does not intend to replicate the book's content, it will describe the most important learnings grasped from it, and add information from other relevant information sources.
 
-\begin{enumerate}
-    \item Its highlight of the importance, and difficulty, of evaluating AI systems
-    \item Its guideline of Prompt Engineering best practices
-    \item Its guideline of Retrieval Augmented Generation
-    \item Its overview of AI Agents
-\end{enumerate}
-
-That said, this chapter does not intend to replicate the book's content, instead it will describe the most important learnings grasped from it, and add the learnings from other relevant information sources.
-
-Afterwards, \autoref{sec:research-tools} will describe the research performed to define the technology stack used to develop the proof of concept, which per the client's request was built in a python environment.
+The chapter is divided in two sections. \autoref{sec:research-llms} details findings about the fundamental practical concepts for building Agentic AI applications. It describes what AI Agents and Agentic Systems are, the key concepts of prompt and context and explores the complexities of evaluating this type of systems. \autoref{sec:research-tools}, on the other hand, describes the technology stack alternatives explored for building agents, scheduling, and building the basic frontend needed.
 
 \section{Large Language Models and Agents Learnings}
 \label{sec:research-llms}
 
-\subsection{AI System Evaluation}
+\subsection{Agent Architectures and Agentic Orchestration}
 
-In AI Engineering, Chip Huyen highlights two main reasons why evaluating the outputs of LLMs is harder than evaluating traditional machine learning models.
+According to \cite{sapkota2025aiagentsvsagentic}, ``AI Agents can be defined as autonomous software entities engineered for goal-directed task execution within bounded digital environments'', usually with an LLM as their ``core reasoning component''. They distinguish AI Agents from Agentic AI, an ``emerging class of systems [that] extends the capabilities of traditional AI Agents by enabling multiple intelligent entities to collaboratively pursue goals through structured communication, shared memory, and dynamic role assignment''.
 
-First, as tasks become more sophisticated, the more time it takes to evaluate them. As she puts it, ``[y]ou can  no longer evaluate a response based on how it sounds. You'll also need to fact-check, reason, and even incorporate domain expertise".  Secondly, the open-ended and probabilistic nature of LLMs ``undermines the traditional approach of evaluating a model against ground truths". There are too many correct responses, so it is impossible to have a comprehensive list of correct outputs as ground truth.
+\subsubsection{Agent Architecture}
 
-These problems are exacerbated when it comes to AI Agents, as they tackle more complex tasks. This is an on-going research field but, according to \cite{krishnan2025aiagentsevolutionarchitecture}, the focus of evaluation so far has been ``predominantly focused on accuracy metrics that measure task completion success". This focus has been criticised for many reasons, particularly for limiting the evaluation to a task being completed or not, and not included other metrics such as the efficiency of the completion.
+The basic structure of a single agent is described in \cite{aiebook2025} as an LLM which can perform certain actions in a defined environment through a set of defined tools. The LLM acts as the brain of this agent, processing the information it receives --- e.g., the task given by the user or results from its own tools --- and generating plans to perform the task. In this context, a plan can be imagined as a series of instruction to for tool calls.
 
-This type of measure is called ``exact evaluation'', because it has no ambiguity --- a task is complete or it is not --- and can be viewed more generally to include any type of rules-based evaluation where, as the name indicates, a set or rules are defined and the output is measured against it adherence to these rules.
+The plans designed by the LLM can be performed in many ways. Tools calls can be executed in parallel or sequentially, the LLM and its requested tools can be called in a Loop until the LLM itself decides the task has been completed, etc. The design for how to perform this plan is generally called the Agent's architecture.
 
-The alternatives to this type of evaluation are what has been called ``objective evaluations'', where an external validator that reviews the agent's output and ``judges'' it, assigning it a score based on some type of defined criteria --- for example completeness or clarity. So far, studies such as \cite{wang2025replacehumanevaluators} have found that this judgment can be performed by either LLMs (LLM as a judge) or Humans (Human as a judge), with high correlations in the scores given. Nevertheless, \cite{hu2023decipher} has also found that human's personal preferences can affect the score given to an output.
+One of the key problems for any Agent Architecture is how to include ways to adjust the initial plans laid out by the LLM, allowing them to correct potential errors. \cite{yao2023react} proposed the ReAct (Reasoning and Acting) pattern. In this pattern, two steps are taken in a loop until the task is completed: a reasoning step, which encompass both reflecting on tool outputs and creating or updating the plan, and an Action step, where the plan laid out in the reasoning step is executed --- that is, the tools are called according to the provided instructions.
 
-Moreover, other authors such as \cite{zhuge2024agentasajudgeevaluateagentsagents} criticize any approach for evaluating Agents that relies solely on the final output of their process. They believe that agents shouldn't only be evaluated on their final output but on the intermediate steps taken, and thus propose agent as a judge -a methodology that uses agents to enable intermediate feedback- as a better alternative.
+This architecture was later expanded in \cite{shinn2023reflexion}, in their proposed Reflexion architecture. In this architecture, the agent has separate steps for (i) evaluating the output of its tools and (ii) self-reflect on what went wrong or deem the task as completed. On each loop, after the evaluation and reflection steps, the agent proposes a new plan, which is executed before returning to (i).
 
-Evidently, despite the lack of a clear ``best" strategy, evaluation remains a key ingredient in creating AI systems to ensure their reliability. The AI Engineering book goes as far as proposing a development methodology called Evaluation Driven Design (EDD). Similarly to Test Driven Design, in EDD the evaluation criteria for the application are defined before building the application, allowing safe iterations. Moreover, her recommendations align with \cite{zhuge2024agentasajudgeevaluateagentsagents} in the need to not only evaluate the final output, but also every component of the system. As will be discussed in detail in \autoref{chapter:evaluation-testing}, this project followed the book's recommendations.
+Most single-agent architectures follow one of these two general structures, with the focus of developing individual agents being on defining the tools for the agent to use and their system prompts --- which will be discussed in \autoref{sec:prompt-enginering}.
 
-But how do you define said evaluation criteria? Huyen proposes thinking in three categories which, despite being targeted for evaluating LLMs and not agents, can be adapted as follows:
+\subsubsection{Agentic Orchestration Architecture}
+
+As described by \cite{sapkota2025aiagentsvsagentic}, Agentic AI systems are composed of multiple AI Agents that collaborate for more complex goals. Agentic Orchestration thus refers to the way that the collaboration between agents is structured.
+
+Some of the best known ways to structure this collaboration, as described in \cite{langgraphagmultiagentsystems}, are Networks (or Swarms), where all agents communicate in a single group, and Supervisor (or Orchestrator) architectures, where an LLM acts as the coordinating node. However, agents can be coordinated in arbitrary ways depending on the needs of a specific task.
+
+For instance, in \cite{fourney2024magenticone} a team of Microsoft researchers described Magentic-One, a generalist open-source system that demonstrated state of the art performance in multiple agentic benchmarks. Their proposed architecture applies \cite{shinn2023reflexion}'s learning to multi-agent orchestration by implementing ``a multi-agent architecture where a lead agent, the Orchestrator, plans, tracks progress, and re-plans to recover from errors". Moreover, according to \cite{fourney2024magenticone} ``Magentic-One's modular design allows agents to be added or removed from the team without additional prompt tuning or training, easing development and making it extensible to future scenarios''.
+
+Due to its general capabilities, high performance in agentic benchmarks, ease of development and extensibility, the Magentic-One architecture was used extensively in this project.
+
+\subsection{Prompt and Context Engineering}
+\label{sec:prompt-enginering}
+
+According to Chip Huyen in \cite{aiebook2025}, ``[a] prompt is an instruction given to a model to perform a task''. This instruction is usually split in a System (or Developer) Prompt and a User Prompt. The System Prompt defines the way the LLM should approach the task, it contains general instructions that are relevant for any task that the LLM receives. The User Prompt, on the other hand, describes the specific task that the LLM needs to perform. As described by \cite{wallace2024instructionhierarchytrainingllms}, some LLMs are post-trained to pay special attention to the System Prompt.
+
+Thus, Prompt Engineering refers to the process of tweaking prompts to get the desired outcome from an LLM. This step is so important that model providers often provide detailed guides on how to write prompts for their specific models, such as \cite{openai2025promptengineering} from OpenAI, which guided the Prompt Engineering process for this project.
+
+Most of guides, nonetheless, include two techniques that have become cornerstones for this process. First is ``few-shot'' prompting, introduced by \cite{brown2020languagemodelsfewshotlearners}, which demonstrated that language models can learn a desired behaviour from examples within the prompt. This technique is called as such in contrast to ``zero-shot'' prompts, which describe a task without providing any examples.
+
+Second, there is ``Chain-of-Thought'' prompting, introduced by \cite{wei2023chainofthoughtpromptingelicitsreasoning}. In this type of prompt, the model is asked to perform a step by step process before providing an output --- the steps can be pre-defined in the prompt, or the model can be requested to defined its own steps to follow during execution. Wei et al. where able to achieve state of the art results using this technique.
+
+Note that these techniques are not mutually exclusive, and prompts for complex tasks might include both of them, or none. This is particularly dependent on the specific model used, for instance, some reasoning models might not need explicit chain of thought prompting.
+
+\subsubsection{Context Engineering}
+
+Borrowing \cite{aiebook2025}'s definition, the context is ``the information provided to the model so that it can perform a given task''. Context, thus, is all the information that is sent to the LLM when it is invoked, for example, the conversation history with the user, or background information included within the prompt.
+
+One key pattern for context engineering is Retrieval Augmented Generation (RAG), which according to AI Engineering can be considered as ``a technique to construct context specific to each query". The pattern of retrieving and then generating was first introduced by Chen et al. in \cite{chen2017readingwikipediaansweropendomain}, where their system would retrieve Wikipedia pages relevant to a question and add their content to a model's context, and then fully coined by \cite{lewis2021retrievalaugmentedgeneration}.
+
+While these two papers define the technique by adding text to the context, this pattern can be applied to any type of information, such as images or documents for multimodal models. Most relevant to this project, however, tabular data can also be retrieved and provided as part of the context.
+
+But adding information is not the only way to manage a task's context. In perhaps the most important finding for this project, \cite{veseli2025positionalbiasesshiftinputs} demonstrates that as the size of the context grows closer to the model's limit, retrieval and reasoning become more biased towards data that is near the end of the context, and the model more easily fails to retrieve information provided in previous parts of the context.
+
+\subsection{LLM-Driven Systems Evaluation}
+\label{sec:llm-evaluation}
+
+Evaluation is a key aspect of developing any system, as it provides a way to control the quality of its outputs. However, this is particularly hard for LLM systems, \cite{aiebook2025} highlights two main reasons why: First, as tasks become more sophisticated, it takes more effort to evaluate them. As she puts it, ``[y]ou can  no longer evaluate a response based on how it sounds. You'll also need to fact-check, reason, and even incorporate domain expertise".  Second, the open-ended and probabilistic nature of LLMs ``undermines the traditional approach of evaluating a model against ground truths". There are too many potential correct responses, and thus it is impossible to have a comprehensive list of correct outputs as ground truths.
+
+These problems are exacerbated when it comes to AI Agents, as they tackle more complex tasks. This is an on-going research field but, according to \cite{krishnan2025aiagentsevolutionarchitecture}, the evaluation metrics so far are ``predominantly focused on accuracy metrics that measure task completion success". This focus has been criticised for many reasons, particularly for its narrow-sightedness. Limiting the evaluation to a task being completed or not ignores other important aspects of a system, such as its efficiency.
+
+This type of measure, which is often called ``exact evaluation'' because it has no ambiguity --- a task is complete or it is not ---, can be viewed more generally to include any type of rules-based evaluation where, as the name indicates, a set or rules are defined and the output is measured against its adherence to these rules, and they are popular due to their ease of definition.
+
+The alternatives to this type of evaluation are what has been called ``objective evaluations'', where an external validator reviews the agent's output and ``judges'' it, assigning it a score based on some type of defined criteria --- for example completeness or clarity. So far, studies such as \cite{wang2025replacehumanevaluators} have found that this judgment can be performed by either LLMs (called LLM as a judge) or Humans (called Human as a judge), with high correlations in the scores given. Although \cite{hu2023decipher} found that personal preferences can affect the score given a human evaluator gives to an output, which might prove there is an advantage to using LLMs for this.
+
+Still, these approaches rely solely on the final output for evaluation, something that is criticised by studies such as \cite{zhuge2024agentasajudgeevaluateagentsagents}. They believe that agents shouldn't only be evaluated on their final output but on the intermediate steps taken, and thus propose agent as a judge, a methodology that uses agents to extract and evaluate intermediate outputs, as a better alternative.
+
+Despite the lack of a clear ``best" strategy, evaluation is one of the most important parts of developing an Agentic AI system. \cite{aiebook2025} goes as far as proposing a development methodology called Evaluation Driven Design (EDD) which, similarly to Test Driven Design, defines the evaluation criteria for the application before building the application, allowing safe iterations from the beginning. But how do you define these evaluation criteria? Huyen proposes thinking in three categories for evaluating LLMs, which can be adapted as follows for Agentic systems:
 
 \begin{itemize}
-    \item Domain-Specific Capacity: Evaluate the ability of the agent to perform tasks specific to the problem domain, such as coding or finance.
-    \item Generation Capacity: Evaluate the quality of the text being generated, including the factual consistency of the outputs (that is, that the facts in the response are correct).
+    \item Domain-Specific Capacity: Evaluating the ability of the agent to perform tasks specific to the problem domain, such as coding or finance.
+    \item Generation Capacity: Evaluating the quality of the text being generated, such as its factual consistency.
     \item Instruction-Following Capacity: Evaluate how well the specific instructions of a prompt are followed.
 \end{itemize}
 
 \subsubsection{Choosing the Right Model}
 
-The difficulty in evaluation of LLMs and Agents highlights one specific buy key issue --- how do you choose the right model, or at the very least model family, to power an agent?
+The difficulty in evaluation of LLMs and Agents highlights a key challenge, choosing the right model, or models, to power the agent. In theory, the best alternative would be to evaluate the system with different models, but this adds complexity in how the system must be build --- different models can have different APIs, work better with different prompt structures, etc. In practice, thus, models are selected before developing the system, either through narrow testing, benchmarks or a project's specific needs.
 
-The literature points towards using specialized model for tasks that require domain specific capabilities, such as data analysis, and more general models for task that are common in the general training data, such as coding, tool calling or general summarization (e.g., writing the final report). Studies such as \cite{ke2025demystifyingdomainadaptiveposttrainingfinancial} and \cite{tanabe2024enhancingfinancialdomainadaptation} have shown that smaller models specifically trained for financial tasks outperform larger models in financial benchmarks.
+For example, if compute efficiency is a key need, the literature regarding model selection suggest using specialized models for tasks that require domain specific capabilities, such as data analysis, and more general models for task that are common in the general training data, such as coding, tool calling or general summarization (e.g., writing the final report). For the use case of this project, studies such as \cite{ke2025demystifyingdomainadaptiveposttrainingfinancial} and \cite{tanabe2024enhancingfinancialdomainadaptation} have shown that smaller models specifically trained for financial tasks outperform larger models in financial benchmarks.
 
-Nevertheless, \cite{lu2025bizfinbench} created a financial benchmark that includes finance specific tasks such as forecasting market trends, predict asset movements, or analysing causal relationships in financial events, which closely resemble the types of task required in this project. Their evaluations of general models such as OpenAI's GTP-4o or o4-mini produced strong results (above 80\%) for these tasks, and as-such, these are used for development in this project. This is in line with the client's preferences of using widely available models.
-
-\subsection{Prompt and Context Engineering}
-
-According to Chip Huyen, ``[a] prompt is an instruction given to a model to perform a task''. One of the main reasons to build an evaluation framework is to be able to perform Prompt Engineering, or the process of tweaking prompts and context to get the desired outcome from an LLM. This step is so important, that model providers often provide detailed guides on how to engineer prompts for their specific models, such as \cite{openai2025promptengineering} from OpenAI, which guided the promp engineering process for this project. Most of guides, nonetheless, include two techniques that have become cornerstones for this process.
-
-First is ``few-shot'' prompting, introduced by \cite{brown2020languagemodelsfewshotlearners}. This paper, by Brown et al., demonstrated that language models can learn a desired behaviour from examples in within the prompt; in more colloquial terms, there is a benefit to providing examples in prompts.
-
-Second, there is ``Chain-of-Thought'' prompting, introduced by \cite{wei2023chainofthoughtpromptingelicitsreasoning}. In this type of prompt, the model is asked to perform a step by step process before providing an output --- either steps pre-defined in the prompt or defined by the model during execution. Wei et al. where able to achieve state of the art results using this technique.
-
-Note that these techniques are not mutually exclusive, and prompts for complex tasks might include both of them, or none, depending on the specific model used (e.g., reasoning models might not need explicit chain of thought prompting).
-
-\subsubsection{Context Engineering}
-
-Borrowing AI Engineering's definition, the context is ``the information provided to the model so that it can perform a given task''. While the instruction (Prompt) remains static for any query, the information (Context) varies.
-
-One key pattern for context engineering is Retrieval Augmented Generation (RAG), which according to AI Engineering can be considered as ``a technique to construct context specific to each query". The pattern of retrieving and then generating was first introduced by Chen et al. in \cite{chen2017readingwikipediaansweropendomain}, where their system would retrieve Wikipedia pages relevant to a question and add their content to a model's context, and then fully coined by \cite{lewis2021retrievalaugmentedgeneration}.
-
-While these two papers define the technique with the use of text, this pattern can be applied to any type of information. Most relevant to this project, tabular data can also be retrieved and provided as part of the context.
-
-Finally, adding information is not the only way to manage a task's context. In perhaps the most important finding for this project, \cite{veseli2025positionalbiasesshiftinputs} demonstrates that as the size of the context grows closer to the model's limit, retrieval and reasoning become more biased towards data that is near the end of the context, and the model more easily fails to retrieve information provided in previous parts of the context.
-
-\subsection{Agent Architectures and Agentic Orchestration}
-
-According to \cite{sapkota2025aiagentsvsagentic}, ``AI Agents can be defined as autonomous software entities engineered for goal-directed task execution within bounded digital environments'', usually with an LLM as their ``core reasoning component''. They distinguish AI Agents from Agentic AI, an ``emerging class of systems [that] extends the capabilities of traditional AI Agents by enabling multiple intelligent entities to collaboratively pursue goals through structured communication, shared memory, and dynamic role assignment''. This subsection summarizes research findings for state of the art architectures of both.
-
-\subsubsection{Agent Architecture}
-
-The basic structure of an agent is described in AI Engineering as an LLM, which can perform certain actions (through tools) in a defined environment. The LLM acts as the brain of this agent, processing the information it receives --- e.g., the task given by the user or results from its own tools --- and generating plans to perform the task.
-
-The plans designed by the LLM can be performed in many ways, for example, tools can be called in parallel or sequentially, or the LLM and tools call be called in a Loop until the LLM itself decides the task has been completed. This designed is generally called the Agent's Architecture.
-
-One of the key problems for any Agent Architecture is how to build in ways to adjust the plans laid out by the LLM, allowing them to correct potential errors. On this, one of the most common patterns is ReAct (Reasoning and Acting), proposed by \cite{yao2023react}. In this pattern, two steps are taken in a loop until the task is completed: a Reasoning step, which encompass both planning and reflecting on tool outputs, and an Action step, where the next step in the plan is executed.
-
-This architecture was later expanded upon in \cite{shinn2023reflexion}, in their proposed Reflexion architecture. In Reflexion, the agent has separate steps for evaluating the output of its tools and self-relect on what went wrong, on each loop, after evaluation and reflection, the agent proposes a new plan, and then executes the next step on that plan.
-
-\subsubsection{Agentic Orchestration Architecture}
-
-As described by \cite{sapkota2025aiagentsvsagentic}, Agentic AI allows multiple AI Agents to collaborate for more complex goals. Agentic Orchestration thus refers to the way that the collaboration between agents is structured.
-
-There are numerous ways to structure this collaboration. Some of the best known are, as described as part of LangGraph's documentation in \cite{langgraphagmultiagentsystems}, Networks (or Swarms) --- where all agents communicate in a single group --- and Supervisor --- where an LLM acts as the coordinating node. But there are numerous ways of coordinating the work across agents, according to a specific task needs.
-
-For instance, in \cite{fourney2024magenticone}, a team of Microsoft researchers described Magentic-One, a generalist system that demonstrated state of the art performance in multiple agentic benchmarks without changing how the agents collaborate. The architecture is described by them as ``a multi-agent architecture where a lead agent, the Orchestrator, plans, tracks progress, and re-plans to recover from errors. [...] Moreover, Magentic-One's modular design allows agents to be added or removed from the team without additional prompt tuning or training, easing development and making it extensible to future scenarios''.
-
-One of the most interesting parts about Magentic-One is that it applies the learnings from \cite{shinn2023reflexion} to multi-agent orchestration, that is, it has explicit steps to evaluate  outputs, analyze what went wrong and re-plan. The architecture was open sourced by Microsoft and, for these reasons, was used extensively in this project for its generalist capabilities.
+Nevertheless, \cite{lu2025bizfinbench} created a financial benchmark that includes finance specific tasks such as forecasting market trends, predict asset movements, or analysing causal relationships in financial events, which closely resemble the types of task required in this project. Their evaluations of general models such as OpenAI's GTP-4o or o4-mini produced some of the highest results in their sample --- above 80\% --- for these tasks. While these are less efficient, they are more easily available and thus can be a good choice.
 
 \section{Software Tools}
 \label{sec:research-tools}
 
-While the project involved numerous decisions about tools, such as libraries to use for certain tasks, or the type of database to use to store user preferences, this section will only detail the key decisions that had an system-architecture impact: the frameworks used for user interface and agent orchestration, and the tool to schedule agent runs. They will be presented in this chapter in order of importance.
+While the project involved numerous decisions about tools, such as libraries to use for certain functionalities, or the type of database to use to store user preferences, this section will only detail the research performed to make decisions that had an impact on system architecture: the frameworks used for user interface and agent orchestration, and the tool to schedule agent runs. These will be presented in order of importance.
 
-An important note is that the client had a preference for using Azure/Microsoft products for any infrastructure requirements, due to its enterprise readiness. Azure was thus used as inference provider (i.e., LLMs calls are performed through Azure AI Foundry). The client could not provide access to their own instances though, so the Azure student subscription was used independently of some of its limitations in model access and rate limiting.
+An important note is that the client had a preference for using Azure/Microsoft products for any infrastructure requirements, due to its enterprise readiness. Azure was thus used as inference provider (i.e., LLMs calls are performed through Azure AI Foundry). The client could not provide access to their own instances though, so the Azure student subscription was used independently of some of its limitations in model access and rate limiting. They also preferred to use Python as the development language, thus no alternative language was explored.
 
 \subsection{Agent Orchestration Frameworks}
 
-Selecting the appropriate orchestration framework was the most crucial decision for the project, and the key guiding point for this was the size of a framework's community, which is often indicated by the number of GitHub stars. Community size can significantly influence the availability of resources such as documentation, tutorials, and community support. A larger community typically leads to more comprehensive examples and a broader base of shared knowledge, facilitating smoother development and troubleshooting processes.
+Selecting the appropriate orchestration framework was the most impactful stack decision for the project. As there are hundreds of options, the first criteria to narrow down the list was the size of a framework's community, which is often indicated by the number of GitHub stars. Community size can significantly influence the availability of resources such as documentation, tutorials, and community support. A larger community typically leads to more comprehensive examples and a broader base of shared knowledge, facilitating smoother development and troubleshooting processes.
 
-As such, \autoref{tab:orchestration_frameworks_stars} compares several prominent Python frameworks for agentic orchestration, highlighting their community size and the implications for developers seeking robust support and resources.
+As such, \autoref{tab:orchestration_frameworks_stars} compares several prominent Python frameworks for agentic orchestration, highlighting their community size and the implications in terms of support and resources, while \autoref{tab:orchestration_frameworks_uses} provides some findings on the same frameworks' functionality, ideal use cases, and the pros and cons associated with each.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|p{3cm}|p{3cm}|p{9cm}|}
+\begin{tabular}{|p{3cm}|p{2.5cm}|p{8.2cm}|}
     \hline
-    \textbf{Framework} & \textbf{GitHub Stars} & \textbf{Community Notes} \\ \hline
-    \textbf{LangChain / LangGraph} & 113.6k & Extensive tutorials, active forums, and a wide array of integrations. \\ \hline
+    \textbf{Framework} & \textbf{GitHub Stars} & \textbf{Support and Resources Notes} \\ \hline
+    \textbf{LangChain and \newline LangGraph} & 113.6k \newline (LangChain) & Actively maintained open-source framework. Extensive tutorials, active forums, and a wide array of integrations. \\ \hline
+    \textbf{LlamaIndex} & 44k & Well-maintained open-source framework. Good documentation, data-centric, growing ecosystem including LlamaHub, Discord, and examples. \\ \hline
     \textbf{AutoGen} & 43.1k & Used to have support from Microsoft, with growing number of examples, but currently in the process of being merged to Semantic Kernel. \\ \hline
-    \textbf{OpenAI SDK} & 8.6k & Official OpenAI support, with increasing community contributions. \\ \hline
-    \textbf{CrewAI} & 35.8k & Active development with a focus on multi-agent collaboration. \\ \hline
-    \textbf{Semantic Kernel} & 25.8k & Backed by Microsoft, offering enterprise-grade features, but documentation focused on C\#. \\ \hline
+    \textbf{CrewAI} & 35.8k & Active development. Fewer community resources than LangChain but more than Microsoft's frameworks. \\ \hline
+    \textbf{Semantic Kernel} & 25.8k & Backed by Microsoft, in active development. Documentation and community resources focused on C\#. \\ \hline
 \end{tabular}
 \caption{Comparison of Python Agentic Orchestration Frameworks}
 \label{tab:orchestration_frameworks_stars}
 \end{table}
 
-Additionally, the \autoref{tab:orchestration_frameworks_uses} provides some findings on the same frameworks' functionality, ideal use cases, and the pros and cons associated with each.
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|p{3cm}|p{3cm}|p{3cm}|p{5.5cm}|}
+\begin{tabular}{|p{3cm}|p{3cm}|p{2.5cm}|p{5.5cm}|}
     \hline
     \textbf{Framework} & \textbf{Functionality} & \textbf{Use Cases} & \textbf{Pros and Cons} \\ \hline
-    \textbf{LangChain / LangGraph} & Modular pipeline for LLMs, embeddings, tools & Complex workflows, data pipelines & Pros: Extensive integrations, strong community support; Cons: Steep learning curve, large framework size \\ \hline
-    \textbf{AutoGen} & Multi-agent orchestration with conversational agents & Multi-agent systems, collaborative tasks & Pros: Easy to implement multi-agent system, original implementation of Magentic-One; Cons: In process of being merged to Semantic Kernel \\ \hline
-    \textbf{OpenAI Agents SDK} & Lightweight framework with agents, handoffs, and guardrails & Rapid prototyping, simple agent workflows & Pros: Minimal abstractions, easy to learn; Cons: Heavily geared towards using the full OpenAI ecosystem \\ \hline
-    \textbf{CrewAI} & Role-based collaboration with task management & Team-based workflows, sequential tasks & Pros: Intuitive design, good for structured workflows; Cons: Less flexibility for complex scenarios, smaller community \\ \hline
-    \textbf{Semantic Kernel} & Enterprise-grade framework & Enterprise applications, integration with Microsoft tools & Pros: Strong enterprise support, robust features, includes a default implementation of Magentic-One; Cons: Limited Python support, smaller community \\ \hline
+    \textbf{LangChain and \newline LangGraph} & Modular pipeline for LLMs, embeddings, tools & Complex workflows, data pipelines & Pros: Extensive integrations, strong community support \newline Cons: Steep learning curve, large framework size \\ \hline
+    \textbf{LlamaIndex} & Data-centric framework for indexing, retrieval, and RAG; supports many formats and flexible APIs & Chatbots, retrieval systems, knowledge-base querying & Pros: Excellent data ingestion and RAG strategies, rapid setup, good documentation \newline Cons: Smaller community than LangChain, scalability challenges for very large datasets \\ \hline
+    \textbf{AutoGen} & Multi-agent orchestration with conversational agents & Multi-agent systems, collaborative tasks & Pros: Easy to implement multi-agent system, original implementation of Magentic-One \newline Cons: In process of deprecation in favour of Semantic Kernel \\
+    \hline
+    \textbf{CrewAI} & Role-based collaboration with task management & Team-based workflows, sequential tasks & Pros: Intuitive design, good for structured workflows \newline Cons: Less flexibility for complex scenarios, smaller community \\
+    \hline
+    \textbf{Semantic Kernel} & Enterprise-grade framework & Enterprise applications, integration with Microsoft tools & Pros: Strong enterprise support, robust features, includes a default implementation of Magentic-One \newline Cons: Limited Python support, smaller community \\
+    \hline
 \end{tabular}
 \caption{Comparison of Python Agentic Orchestration Frameworks}
 \label{tab:orchestration_frameworks_uses}
 \end{table}
 
-As will be explained in more detail later, the development of the project consisted of two stages. The first stage tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second stage's approach is to build a detailed workflow with careful management of the data used in context, thus making LangChain/LangGraph a better fit, not just for its functionality but for the amount of documentation and examples available to support building this more detailed workflow. LangChain has its own observability platform (LangSmith), which was also used as it integrates easily with the framework.
+As will be explained in more detail later, the development of the project consisted of two stages. The first stage tried to take advantage of Microsoft's Magentic-One orchestration architecture, and that, in combination with the use of Azure as inference provider, made it an easy choice to use Semantic Kernel. On the contrary, the second stage's approach was to build a detailed workflow with careful management of the data used in each step's context, thus making LangChain/LangGraph a better fit in functionality. Moreover, the amount of documentation and community resources available could provide additional support in building this more detailed workflow. LangChain also has its own observability platform (LangSmith), which was used in this stage as it integrates easily with the framework.
 
 \subsection{Scheduling Tool}
 
-The project requires the AI agent to run at set intervals, as defined by the user preferences. Two primary scheduling alternatives were considered: Celery and cron (through the python crontab library).
+The project requires the AI agent to run at set intervals, defined by the user. As such, two scheduling alternatives were considered: Celery and cron (through the python-crontab library).
 
 Celery is a distributed task queue that supports asynchronous and real-time task execution, with advanced features such as retries, task prioritization, and integration with message brokers like Redis or RabbitMQ. While powerful, Celery introduces additional system complexity and overhead, requiring configuration of worker processes and a message broker.
 
 In contrast, cron is a native, time-based scheduler available on Unix-like systems, designed specifically for executing tasks at fixed intervals. Cron is straightforward to configure, persistent across system reboots, and does not require any additional services.
 
-Given the project's scope as a proof of concept, and the requirement of periodic execution at set intervals, cron was selected as the more practical solution.
+Given the project's scope as a proof of concept, and the fact that the requirement was only periodic execution at set intervals, cron was selected as the more practical solution.
 
 \subsection{User Interface Framework}
 
-Finally, for setting up the configuration interface, several Python frontend options were considered. The main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the proof of concept into a full production application if needed.
+Finally, several Python frontend options were considered for the configuration interface. As shown in \autoref{tab:framework_comparison}, the main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the proof of concept into a full production application if needed.
 
 \begin{table}[h]
 \centering
@@ -497,7 +498,7 @@ Separately, the implementation of the Configuration Service, as well as the user
 
 \subsection{AI Analyst Agent}
 
-Before detailing the process of building the AI Analyst, it is important to note some practical challenges that influenced some key decisions. These limitation mostly came from the client's restrictions to provide certain resources for developing the system, as mentioned in \autoref{chapter:requirements-analysis}.
+Before detailing the process of building the AI Analyst, it is important to note a few practical challenges that influenced some key decisions, mostly related from the client's restrictions to provide certain resources for developing the system, as mentioned in \autoref{chapter:requirements-analysis}.
 
 First, the system needed to be developed using Azure's student subscription, which provides a total of USD100 in credits to be used across their platform, independently of the resources needed. Moreover, this subscription limited the LLMs that could be used; some of the highest-performing models, such as OpenAI's o3, were not available for testing.
 
@@ -564,7 +565,7 @@ Some of these issues were improved upon with prompt engineering, such as providi
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.4\textwidth]{images/research-workflow.png}
-\caption{Research Workflow representation.}
+\caption{Research Workflow architecture.}
 \label{fig:research-workflow}
 \end{figure}
 
@@ -575,13 +576,13 @@ Additionally, building from the learnings of the first implementation stage, a S
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.4\textwidth]{images/coding-workflow.png}
-\caption{Coding Agent workflow representation.}
+\caption{Coding Agent architecture.}
 \label{fig:coding-workflow}
 \end{figure}
 
 Second, both the Internal Data Agent and the Quantitative Agent generate code that needs to be executed in the local environment, using a Python Read-Evaluate-Print-Loop (REPL) Tool. For these agents, which first used a basic ReAct architecture, the issues were twofold. On one side, the LLM had a hard time recovering when the code generated had issues, such as not receiving any outputs due to a lack of print statement or error messages. On the other side, it would sometimes return an intermediate thinking step without code generated, which in a default ReAct agent is taken as a final response.
 
-To improve the agent's self recovery capabilities, the workflow includes a step where the code outputs are reviewed for errors. If errors are present, a separate LLM is requested to provide a code review, which is added to the agent's context before looping. Additionally, when an error is detected several times in a row (5 by default) or the agent has looped more than a certain threshold of times (25 by default), the prompt for the next loop is changed for one that requires the LLM to review its attempts, analyse what went wrong and provide the analysis as final response. This approach was particularly for use within the Magentic-One orchestrator, as it can provide information for the orchestration for either retrying the request or replanning.
+To improve the agent's self recovery capabilities, a new architecture,inspired by \cite{shinn2023reflexion} was defined. This architecture includes a step where the code outputs are reviewed for errors. If errors are present, a separate LLM is requested to provide a code review, which is added to the agent's context before looping. Additionally, when an error is detected several times in a row (5 by default) or the agent has looped more than a certain threshold of times (25 by default), the prompt for the next loop is changed for one that requires the LLM to review its attempts, analyse what went wrong and provide the analysis as final response. This approach was particularly for use within the Magentic-One orchestrator, as it can provide information for the orchestration for either retrying the request or replanning.
 
 To avoid early returns due to thinking steps, the workflow includes a step where that reviews the response from the agent. If the response includes a tool call for code execution, it moves to the next step. If the response is only text, it is reviewed by an LLM to decide whether it is meant as a final response, in which case it is returned, or as an intermediate thinking step, in which case the loop starts again.
 
@@ -601,7 +602,7 @@ Finally, the service is responsible for storing, retrieving and updating user pr
 
 The key decision to make, though, was how to persist these classes. While it was clear that setting up an external database was unnecessary overhead for storing local configuration, two alternatives were contemplated: serializing the data and storing as files or storing in a sqlite database within the same container.
 
-Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof of concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of a file becoming corrupt through two concurrent attempts at updating.
+Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof of concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of a file becoming corrupt from two concurrent attempts at updating if serialization was used.
 
 With this in mind, a simple database was defined with two tables: \texttt{sales\_report\_requests} and \texttt{recipient\_emails}, sharing a one to many relation (one report request can have many recipients). Additionally, following the principle of extensibility, it was decided to use an ORM (\texttt{sqlalchemy}) for handling this database, as it would make the system easier to connect to a different database or add additional configuration if needed --- for example, some type of user authentication.
 
@@ -634,32 +635,34 @@ Manages the cron schedule configuration for automated report generation. \\ \hli
 \chapter{Evaluation and Testing}
 \label{chapter:evaluation-testing}
 
-As mentioned before, this project followed \cite{aiebook2025}'s recommendations regarding LLM evaluations. This included following Evaluation Driven Design, or the practice of writing the evaluations before working on the agent. As such, \autoref{sec:agent-evals} will discuss the evaluation framework designed for the AI Analyst's final output across experiments, which was defined before the start of implementation. Moreover, also following the recommendations of \cite{aiebook2025}, each of the agent's components was evaluated separately. The approach taken to the evaluation of the components is described in \autoref{sec:components-evals}. Finally, \autoref{sec:other-tests} discussed the approach taken to tests for the non-agentic parts of the code, such as the configuration module.
+As mentioned before, this project followed \cite{aiebook2025}'s recommendations regarding LLM evaluations. This included following Evaluation Driven Design, or the practice of writing the evaluations before working on the agent.
+
+As such, \autoref{sec:agent-evals} will discuss the evaluation framework designed for the AI Analyst's final output across experiments, which was defined before the start of implementation. Moreover, also following the recommendations of \cite{aiebook2025}, each of the agent's components was evaluated separately. The approach taken to the evaluation of the components is described in \autoref{sec:components-evals}. Finally, \autoref{sec:other-tests} discussed the approach taken to tests for the non-agentic parts of the code, such as the configuration module.
 
 \section{Agent Output Evaluation}
 \label{sec:agent-evals}
 
 Evaluating the outputs of the AI Analyst was an essential part of the project. Knowing the complexities of Prompt and Context Engineering, it was essential for the development to have a defined evaluation for the AI Analyst's outputs to ensure that iterations could be performed safely, and improvements, or regressions, could be objectively defined.
 
-Nevertheless, in line with some of the research described in \autoref{sec:research-llms}, evaluating the AI Analyst posed a series of challenges.
+Yet, in line with some of the research described in \autoref{sec:research-llms}, evaluating the AI Analyst posed a series of challenges.
 
 First, even for a single type of Sales Report Request, it would be impossible to create a comprehensive set of all possible reports that could be generated, so the traditional Machine Learning strategy of evaluating against ground truths was not viable.
 
-Second, evaluating task completion was not relevant. With the current state of LLMs, obtaining a report is relatively straightforward; the greater challenge lies in ensuring that the report is actually what the users would expect, that is, it has the structure expected, the data extracted is correct and the insights are relevant.
+Second, evaluating task completion was not relevant. With the current state of LLMs, obtaining a report is relatively straightforward; the greater challenge lies in ensuring that the report is actually what the users would expect, that is, it has the structure expected, the data extracted is correct and the insights are relevant. Moreover, it would be ideal to evaluate how useful the contents of the report are for decision making, but it would be extremely complex to define beforehand --- different situations might require different data to make a decision, and in many cases only the actual decision maker would be able to provide feedback on whether the report was enough for them.
 
 Finally, because the scope of the project is only a proof of concept, the evaluations defined are unlikely to be used in production, so it was important to limit the effort dedicated to creating an evaluation framework.
 
 Considering these challenges, it was clear that the best path forward was an ``subjective evaluation''. That is, having an external validator that would take the report generated, review it and grade it. This grading could consider the particularities of the task, and could act as north star for development: higher scores could mean forward progress.
 
-Moreover, the final constraint about limiting effort made it easy to decide to use a Human Judge as evaluator. While AI Judges have advantages, particularly the potential of running them autonomously and thus increase the number of potential iterations, setting up an AI Evaluator added unnecessary complexity at this stage, namely the need to set up an additional evaluation --- you have to ``evaluate the evaluator'' to make sure that its grading is accurate.
+Moreover, the final constraint about limiting effort made it easy to decide to use a Human Judge as evaluator. While AI Judges have advantages, particularly the potential of running autonomously and thus increase the number of iterations performed, setting up an AI Evaluator added unnecessary complexity at this stage, namely, the need to set up additional evaluations --- you have to ``evaluate the evaluator'' to make sure that its grading is accurate.
 
-Knowing that outputs would be evaluated by a human, the key challenge became ensuring that the score accurately reflected the needs of the task, specially considering the findings of \cite{hu2023decipher} regarding potential biases in human evaluation. The solution was to use a tried-and-tested framework from the education industry --- a grading rubric\footnote{Thanks to Professor Griffin for his comments that pointed in this direction.}. In essence, this grading rubric could contain the most relevant aspects of the report and assign a grade to each, thus producing an overall grade for the result. 
+Knowing that outputs would be evaluated by a human, the key challenge became ensuring that the score accurately reflected the needs of the task, specially considering the findings of \cite{hu2023decipher} regarding potential biases in human evaluation. The solution was to use a tried-and-tested framework from education: a grading rubric\footnote{Thanks to Professor Griffin for his comments that pointed in this direction.}. In essence, this grading rubric could contain the most relevant aspects of the report and assign a grade to each, thus producing an overall grade for the result. 
 
 \subsubsection{Rubric Definition}
 
 As mentioned before, when evaluating an Agent \cite{aiebook2025} recommends thinking of three groups: Domain-Specific Capacity, Generation Capacity and Instruction-Following Capacity.
 
-In the context of a report, it is possible to think about both Instruction-Following as the capacity of the agent to follow the structure of the report, while Generation as the capacity to retrieve and present the correct data. Both of these can be considered as part of the ``Form'' of the report --- does the report include the right sections, is the data correct, is the data presented graphically.
+In the context of a report, it is possible to think about both Instruction-Following as the capacity of the agent to follow the structure of the report, while Generation as the capacity to retrieve and present the correct data. Both of these can be considered as part of the \textit{form} of the report --- does the report include the right sections, is the data correct, is the data presented graphically.
 
 Defining a grading rubric for these thus required defining the structure of the output report. While this was not considered part of the requirements elicitation process, as the structure of the report is a variable within the system and not a requirement, it was agreed with Alvarez \& Marsal during the same process, arriving at:
 
@@ -671,15 +674,15 @@ Defining a grading rubric for these thus required defining the structure of the 
     \item Forward Outlook and Recommendations: A projection of the KPI and potential ways to correct negative trends.
 \end{enumerate}
 
-On the contrary, Domain-Specific Capacity on this context can be considered the capacity of the model to perform financial analysis. This is things like accurately representing an evolution instead of just mentioning values or only presenting relevant data. These are more reflective of the Content of the report, not its form.
+On the contrary, Domain-Specific Capacity on this context can be considered the capacity of the model to perform financial analysis. This is things like accurately representing an evolution instead of just mentioning values or only presenting relevant data. These are more reflective of the \textit{content} of the report, not its form.
 
-Finally, in addition to defining the types of questions, it was important to define the level of specificity. If questions became too specific, for example expecting a per-product analysis, the evaluation only becomes usable to one type of Sales Report Request, but very open ended questions lead to subjective grading.
+Finally, in addition to defining the types of questions, it was important to define the level of specificity. If questions became too specific, for example expecting a per-product analysis, the evaluation only becomes valuable for certain scenarios, but very open ended questions lead to subjective grading.
 
 This was solved by defining questions that are wide in scope, but allowing only a Yes or No answer, in the style of ``Does the analysis in the report accurately represent the evolution of the KPI?". While this question requires reviewing the entire report and subjectively defining what accurate is, there is less risk that the same evaluator can have different responses to similar outputs, unlike if required to provide a specific grade.
 
 Moreover, this type of questions had two added benefits. First, it made it easier, and thus quicker, to evaluate a specific report. Second, it simplified the score definition --- the total evaluation score could be calculated as the percentage of positive responses over the total questions.
 
-Thus, the final rubric, which can be found in \autoref{annex:evaluation}, consists of a list of 23 Yes or No questions --- 14 questions focused on the Form of the report, as this covers two types of capacity analysis, and 9 questions focused on its Content.
+Thus, the final rubric, which can be found in \autoref{annex:evaluation}, consists of a list of 23 Yes or No questions --- 14 questions focused on the \textit{form} of the report, as this covers two types of capacity analysis, and 9 questions focused on its \textit{content}.
 
 \section{Components Evaluation}
 \label{sec:components-evals}
@@ -722,18 +725,20 @@ With all of these in mind, 23 test between unit and integration were written for
 \chapter{Reflections}
 \label{chapter:reflections}
 
-As a refresher, the aim of this project was to explore the capabilities of LLMs to access a company's data, extract operational figures and provide initial insights to managers, which was to be done by creating a proof of concept system that acts as a junior analyst who autonomously generates reports about a specific KPI, with a simple user interface where the user can set the specific needs for their report and the interval at which the analyst should run.
+The aim of this project was to to explore the capabilities of AI Agents to act as a junior data analyst within a company. This was done by creating a proof of concept system, or AI Analyst, that can autonomously access a company's sales data, retrieve operational figures, extract initial insights from these figures and generate a sales report according to a user's sales scope.
 
-Success, in this particular project, had two complementary angles. The more tangible angle was to successfully create the proof of concept system, with the set of requirements discussed in \autoref{chapter:requirements-analysis}. The other, more open-ended angle, was to gather insights from building the proof of concept about using LLMs for this type of task, which can be useful for the client's future projects.
+The are thus two outputs from the project. The first is the proof of concept system, with the set of requirements discussed in \autoref{chapter:requirements-analysis} as well as its evaluation results. The other, perhaps more important, is the set of insights from building the proof of concept about using AI Agents for this type of task, which will be useful for the client's future projects.
 
-The project can be considered a success on both fronts. \autoref{sec:requirements-achievement} will reflect on the requirements of the proof of concept system, how many were actually included in the system and why others were not. Yet, as mentioned before, with AI Agents it is important to differentiate between a the functionality existing and it being useful, which is where Evaluations come into play. \autoref{sec:key-insights} will thus reflect on the evolution of the key Evaluation metrics, and through this will explore the question of using LLMs for this type of analysis, and the key learnings from the project. Finally, \autoref{sec:future-work} will reflect on how the proof of concept system can be improved upon to arrive at a production-level application.
+\autoref{sec:requirements-achievement} will reflect on what was actually implemented in the system, compared to its requirements. \autoref{sec:key-insights} will reflect on the performance of the system, and highlight the key learnings from the process. Finally, \autoref{sec:future-work} will reflect on how the proof of concept system can be improved to create a production-level application.
 
 \section{Proof of Concept Requirements Achievement}
 \label{sec:requirements-achievement}
 
-In general terms, the proof of concept system includes all key requirements. It achieved 100\% of both Must Have and Should Have requirements, and 1 of the 2 Could Have requirements. Additional, the system can create reports for Total Sales, which is a KPI within the scope of the CFO, showing that the system as designed can be used as a base for further development of functionality for this type of user. However, implementing this type of user was outside the scope of this project.
+As can be seen in the following tables, the implemented system achieved 100\% of both Must Have and Should Have requirements, and one of the two Could Have requirements.
 
-The only Could Have requirement that was excluded from the proof of concept was FR-6. This was decided as the agent does not reliably recommended remedy actions that are measurable, but could be addressed considering the insights described in \autoref{sec:key-insights} if needed as part of the production system.
+The Could Have requirement that was excluded from the proof of concept was FR-6, providing a sales forecast considering the remedial actions proposed by the agent. This requirement was not deemed possible with the current workflow definition, as with it the agent did not reliably provide measurable remedial actions for special situations. However, it should be possible to implement in a following iteration of the system, following the insights described in \autoref{sec:key-insights}.
+
+Additionally, the system can generate reports on Total Sales —-- a KPI relevant to a CFO-type user —-- demonstrating its potential as a foundation for developing functionality for this type of user. However, implementing CFO-specific features was beyond the scope of the proof of concept.
 
 % Define counters
 \newcounter{ref-frcounter}
@@ -829,57 +834,45 @@ The only Could Have requirement that was excluded from the proof of concept was 
 \newcounter{kfcounter}
 \newcommand{\kfid}{\textbf{Key Insight \arabic{kfcounter}}}
 
-\autoref{fig:evals-total} displays the evolution of the total evaluation score for the system generated report \footnote{Remember the score is just the percentage of items checklist that are correct in the output.}. At first glance, there was a consistently improvement over time, nevertheless, this does not show the entire story. To complement, \autoref{fig:evals-form} shows the evolution of the score when considering only items that evaluate the form of the report and \autoref{fig:evals-content} shows the score considering only items that evaluate the content of the report. This section will break down the meaning and insights that can be extracted from these three charts.
+As mentioned in \autoref{chapter:evaluation-testing}, the AI Analyst's reports were evaluated using a rubric with 23 Yes or No questions about the contents of the report, which can be found \autoref{annex:evaluation}. The evaluation score for each experiment is the percentage of these questions that had a positive answer.
+
+\autoref{fig:evals-total} charts the progression of the evaluation score, with separate curves showing the progression of the score for the \textit{form} and \textit{content} of the report, as well as the total score. The detailed rubric and results can be found in \autoref{annex:experiments}, and this section will explain the insights from these experiments.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.61\textwidth]{images/evals-total.png}
+\includegraphics[width=0.8\textwidth]{images/evals-combined.png}
 \caption{Evolution of evaluation results}
 \label{fig:evals-total}
 \end{figure}
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.61\textwidth]{images/evals-form.png}
-\caption{Evolution of evaluation results considering only form items}
-\label{fig:evals-form}
-\end{figure}
+As mentioned before, the first group of experiments attempted to use a single task architecture, applying Microsoft's Magentic-One orchestration with a task of retrieving and analysing all the information needed for the report. As evidenced in \autoref{fig:evals-total}, this approach could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the ``current" period of data --- in every case, the report provided an analysis of the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.61\textwidth]{images/evals-content.png}
-\caption{Evolution of evaluation results considering only content items}
-\label{fig:evals-content}
-\end{figure}
+Moreover, this approach failed to score more than 60\% on the content score, despite experiments changing both prompts and architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content, making it hard to make targeted changes to improve results.
 
-As mentioned before, the first iteration considered a single orchestration entity, with a single task to create the entire report. As can be seen in \autoref{fig:evals-form}, this iteration could get a reasonably high score on the form evaluation, but never perfect. It consistently failed to properly present the ``current" period of data --- in every case, the report analysed the entire sales history, which is not useful for a report that will be issued periodically. This is a key nuance of the task.
-
-Moreover, as evidenced in \autoref{fig:evals-content}, this agentic architecture failed to score more than 60\% on the content score, despite changes to the task description or architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content.
-
-After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while the agent loops, the context keeps growing and growing, even if the steps taken in that loop do not actually move the task forward. In this particular architecture, this growth in context also affected the context of each sub-agent, making their responses worse as more loops took place. This led to two insights, which drove the approach to the second iteration:
+After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while the agent loops, all of its intermediate responses are added to its context, that is, the information sent with each request. This means that the agent's context keeps growing and growing as it loops, even if the steps taken in each loop do not actually move the task forward. In this particular architecture, when the task is handed over to a subagent it includes the entire conversation history, so they received an enlarged context as, making their responses worse as more loops took place. This led to two insights, which drove the approach to the second iteration:
 
 \begin{itemize}
-    \item \stepcounter{kfcounter}\kfid : while LLMs can indeed perform large tasks with some success, by breaking the task into subtasks we can manage the context at each point, improving their effectiveness and reliability.
-    \item \stepcounter{kfcounter}\kfid : deep research tasks increase the context quickly, but not all intermediate findings actually add information, so they benefit for summarization steps within the workflow\footnote{As opposed to most common architectures which only summarise at the end of the task}. This is in line with the findings of \cite{veseli2025positionalbiasesshiftinputs}.
+    \item \stepcounter{kfcounter}\kfid : while LLMs can indeed perform large tasks with some success, improving their effectiveness and reliability can improve by breaking the task into smaller subtask, as this allows to control the context shared between them.
+    \item \stepcounter{kfcounter}\kfid : deep research tasks increase the agent's context quickly, and the irrelevant context has a masking effect, so they benefit for summarization steps within the workflow\footnote{As opposed to most common architectures which only summarise at the end of the task}. This is in line with the findings of \cite{veseli2025positionalbiasesshiftinputs}.
 \end{itemize}
 
-The first point can be seen clearly in \autoref{fig:evals-form}. After the change to a step-by-step workflow, fluctuations in form score reduced vastly, while the content score slowly increased as the entire workflow was rebuilt. This is also highlighted by the fact that LLM steps were not reliably recommended remedy actions that were measurable; by making the recommendations part of the single deep research task, and not a separate step, the nuance is lost within the large context the task itself creates, resulting in very general recommendations.
+The first point can be seen clearly in \autoref{fig:evals-total}. After the change to a workflow architecture, fluctuations in form score reduced vastly, while the content score slowly increased as the entire workflow was rebuilt. This learning was solidified by the fact that the agent did not reliably provide measurable remedial actions. The request for remedial actions was included in the Research Special Case task, and the nuance for providing measurable actions was consistently lost within the growing context of this research workflow.
 
-Later on, after finishing rebuilding the workflow, the system's default model was changed to use one of OpenAI's reasoning models, leading to \stepcounter{kfcounter}\kfid : changing to a reasoning model has a smaller impact than the change to a step-by-step workflow, as the reasoning step can be approximated by the architecture of each agent within the workflow. That said, the quality of certain parts of the output, such as the visualizations generated, did improve markedly by using a more powerful model.
+After finishing rebuilding the workflow, the system's default model was changed to use o4-mini, one of OpenAI's reasoning models, leading to \stepcounter{kfcounter}\kfid : changing to a reasoning model has a smaller impact on task completion than the change to a step-by-step workflow, as reasoning can be approximated through additional steps in the agent's architecture. It should be noted, however, that the quality of certain parts of the output, such as the visualizations generated, did improve markedly by using a more powerful model.
 
-Nevertheless, as mentioned in \autoref{chapter:design-implementation} with the change to reasoning model runs became more volatile, as reasoning models do not accept configuration variables such as Temperature, Top K or Top P. This was particularly evidenced in sub-agents that work iteratively before responding, which seemed to fall into infinite loops more easily. This led to \stepcounter{kfcounter}\kfid : autonomous agents are not guaranteed to self-recover, and the system must be planned around that. Common architectures use steps to reflect and re-plan, but this assumes that the agent will at some point finalize the task. For cases such as deep research, where there might not be clear measure for the task to be ``done'', it is important to create, and properly handle, forceful ending points.
+Additionally, as mentioned in \autoref{chapter:design-implementation}, with the change to a reasoning model runs became more volatile, as this type of model does not accept configuration variables such as Temperature, Top K or Top P. This was especially evident in the tendency of sub-agents to become trapped in infinite loops. This led to \stepcounter{kfcounter}\kfid : autonomous agents are not guaranteed to self-recover, and the system must be planned around that. Common architectures use steps to reflect and re-plan, but this assumes that the LLM will at some point deem the task complete. For cases such as deep research, where there might not be clear measure for the task to be considered complete, it is important to create, and properly handle, forceful ending points.
 
-Finally, as mentioned in \autoref{chapter:evaluation-testing} the evaluation score does not measure how useful the report is for decisions making. Some reports, for the same request and with access to the same data, might show detailed operational information by City and Product Family, while others might extract insights by Customer. All of these would get the same evaluation score, but might be more or less useful. This highlights \stepcounter{kfcounter}\kfid : at the current state of LLMs, they can be used to reduce the time spent in data extraction, but companies will still need a human in the loop to review the output, confirm whether additional information is needed, and decide how to act based on the extracted insights.
+Finally, as can be evidenced in \autoref{chapter:evaluation-testing} the evaluation score does measure how useful the report is for decisions making, as it would be extremely complex to create a good measure for this. Some reports, for the same request and with access to the same data, might show detailed operational information by City and Product Family, while others might extract insights by Customer. All of these would get the same evaluation score, but might be more or less useful for the actual decision maker. This highlights \stepcounter{kfcounter}\kfid : with the current state of LLMs, they can be used to reduce the time spent in data extraction, but companies will still need a human in the loop to review the output, determine whether additional information is needed, and decide how to act based on the extracted insights.
 
 \section{Future Work}
 \label{sec:future-work}
 
-The current system is a proof of concept. As such, it can --- and should --- be improved upon to create production-ready system. The most important changes to get there would be:
+The output of this project is an exploratory proof of concept system, it has access to anonymized data and is not deployed. As such, it can --- and should --- be improved upon before using in a production environment within a company. The most important changes to make this system production ready would be:
 
 \begin{enumerate}
     \item Improvements to the evaluation framework:
     \begin{itemize}
-        \item Fully automate the evaluation of outputs, to allow for quicker iterations.
+        \item Fully automate the evaluation of outputs, to allow for further iterations.
         \item Evaluate intermediate steps within a full execution, in addition to individually.
         \item Add objective evaluation to intermediate steps when appropriate.
     \end{itemize}
@@ -887,12 +880,11 @@ The current system is a proof of concept. As such, it can --- and should --- be 
     \begin{itemize}
         \item If the system will be deployed in a publicly accessible location, add authentication.
         \item Add acceptance tests that can be run on the CI/CD pipeline.
-        \item Potentially, allow different reports to run on different cron configurations.
     \end{itemize}
     \item Improvements to the agent architecture and outputs:
     \begin{itemize}
         \item Make the corrective actions proposed by the LLM when there is a ``special case" measurable, by creating a separate step in the workflow dedicated to providing and measuring the recommendations.
-        \item Improve retry logic so that the entire workflow is not repeated when one of its steps fails.
+        \item Research and implement ways for finals to provide feedback on the generated reports, particularly their usefulness for decision making.
     \end{itemize}
 \end{enumerate}
 
@@ -943,7 +935,7 @@ System deployment follows a straightforward process:
 
 Configuration is managed through environment variables defined in a \texttt{.env} file. Essential settings include AI model authentication keys, database connection strings, and email service configuration; see \texttt{.env.example}. The system uses Pydantic Settings for type validation, ensuring startup failures if the environment is incorrectly configured.
 
-Deependencies are defined in \texttt{pyproject.toml}, and can be installed with a single command: \texttt{uv sync}.
+Dependencies are defined in \texttt{pyproject.toml}, and can be installed with a single command: \texttt{uv sync}.
 
 Finally, the system includes a Docker configuration and thus can run as
 \texttt{docker-compose up}.
@@ -1006,7 +998,7 @@ When you finish filling the form, click ``Create Request''.
 
 If you have already set up one or more reports to receive, you will be able to see them in the main screen, as \autoref{fig:frontend-filled} shows. The buttons under ``Actions'' allow you to manage these requests. The left, blue button allows you to edit the report, while the right, red button allows you to delete reports you don't need any more. Note that when you edit the report, you will be redirected to a screen that looks like \autoref{fig:frontend-form}, but pre-filled with its current settings.
 
-\chapter{Report Evaluation Questions}
+\chapter{Report Evaluation Rubric}
 \label{annex:evaluation}
 
 \begin{table}[H]
@@ -1029,7 +1021,7 @@ If you have already set up one or more reports to receive, you will be able to s
     Is the content of the In Depth Analysis accurate to the section's description? \\ \hline
     Is the content of the Forward Outlook accurate to the section's description? \\ \hline
 \end{tabular}
-\caption{Checklist of Form Items}
+\caption{Checklist of \textit{form} Items}
 \end{table}
 
 
@@ -1048,7 +1040,7 @@ If you have already set up one or more reports to receive, you will be able to s
     Does the report provide next steps for any ``special case'' present? \\ \hline
 Are all statements in the report sustained with data? \\ \hline
 \end{tabular}
-\caption{Checklist of Content Items}
+\caption{Checklist of \textit{content} Items}
 \end{table}
 
 \chapter{Experiments Performed and Evaluation Results}

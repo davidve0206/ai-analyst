@@ -1129,6 +1129,65 @@
       \verb https://arxiv.org/abs/2508.07479
       \endverb
     \endentry
+    \entry{wallace2024instructionhierarchytrainingllms}{misc}{}{}
+      \name{author}{6}{}{%
+        {{hash=f7bf50210206dec5bb19e32a74e1a580}{%
+           family={Wallace},
+           familyi={W\bibinitperiod},
+           given={Eric},
+           giveni={E\bibinitperiod}}}%
+        {{hash=1dacbf7aed6eae4c4599ef66ac8b8bfb}{%
+           family={Xiao},
+           familyi={X\bibinitperiod},
+           given={Kai},
+           giveni={K\bibinitperiod}}}%
+        {{hash=5d516c202d5630553ddd3327ee50d629}{%
+           family={Leike},
+           familyi={L\bibinitperiod},
+           given={Reimar},
+           giveni={R\bibinitperiod}}}%
+        {{hash=49d03d499031db786a0e61119024cf5a}{%
+           family={Weng},
+           familyi={W\bibinitperiod},
+           given={Lilian},
+           giveni={L\bibinitperiod}}}%
+        {{hash=775da21e2b41a06455791a0c06c61729}{%
+           family={Heidecke},
+           familyi={H\bibinitperiod},
+           given={Johannes},
+           giveni={J\bibinitperiod}}}%
+        {{hash=af12cc8ca94c1e303f4ae44f22264508}{%
+           family={Beutel},
+           familyi={B\bibinitperiod},
+           given={Alex},
+           giveni={A\bibinitperiod}}}%
+      }
+      \strng{namehash}{bf34b8045ad57763c6a9ab69b6b3bdde}
+      \strng{fullhash}{7adb76e8c014b536242430fbcbac065e}
+      \strng{fullhashraw}{7adb76e8c014b536242430fbcbac065e}
+      \strng{bibnamehash}{bf34b8045ad57763c6a9ab69b6b3bdde}
+      \strng{authorbibnamehash}{bf34b8045ad57763c6a9ab69b6b3bdde}
+      \strng{authornamehash}{bf34b8045ad57763c6a9ab69b6b3bdde}
+      \strng{authorfullhash}{7adb76e8c014b536242430fbcbac065e}
+      \strng{authorfullhashraw}{7adb76e8c014b536242430fbcbac065e}
+      \field{sortinit}{W}
+      \field{sortinithash}{4315d78024d0cea9b57a0c6f0e35ed0d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{eprintclass}{cs.CR}
+      \field{eprinttype}{arXiv}
+      \field{title}{The Instruction Hierarchy: Training LLMs to Prioritize Privileged Instructions}
+      \field{year}{2024}
+      \verb{eprint}
+      \verb 2404.13208
+      \endverb
+      \verb{urlraw}
+      \verb https://arxiv.org/abs/2404.13208
+      \endverb
+      \verb{url}
+      \verb https://arxiv.org/abs/2404.13208
+      \endverb
+    \endentry
     \entry{llmcausalreasoning2024}{article}{}{}
       \name{author}{2}{}{%
         {{hash=1f647bb6da8304b7be380ec58eb6373a}{%
