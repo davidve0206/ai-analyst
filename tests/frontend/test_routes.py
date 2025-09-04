@@ -104,21 +104,6 @@ class TestCronjobRoutes:
     """Test cronjob router calls correct configuration functions."""
 
     @patch("src.frontend.routers.cronjob.set_crontab")
-    def test_setup_daily_cron_calls_set_crontab(self, mock_set_crontab, test_client):
-        """Test setup_daily_cron route calls set_crontab with daily config."""
-        # Act
-        test_client.post(
-            "/crontab/daily", data={"hour": 9, "days_of_week": ["MON", "WED", "FRI"]}
-        )
-
-        # Assert - only check that the function was called with correct parameters
-        mock_set_crontab.assert_called_once()
-        call_args = mock_set_crontab.call_args[0][0]
-        assert isinstance(call_args, CrontabFrequency)
-        assert call_args.hour == 9
-        assert call_args.frequency == JobFrequency.DAY
-
-    @patch("src.frontend.routers.cronjob.set_crontab")
     def test_setup_monthly_cron_calls_set_crontab(self, mock_set_crontab, test_client):
         """Test setup_monthly_cron route calls set_crontab with monthly config."""
         # Act

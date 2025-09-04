@@ -8,7 +8,6 @@ from src.configuration.db_models import (
     SalesCurrencyEnum,
 )
 from src.configuration.crontab import (
-    JobFrequency,
     Month,
     get_existing_agent_cronjob,
 )

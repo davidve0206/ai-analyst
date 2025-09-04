@@ -131,7 +131,7 @@ Most single-agent architectures follow one of these two general structures, with
 
 As described by \cite{sapkota2025aiagentsvsagentic}, Agentic AI systems are composed of multiple AI Agents that collaborate for more complex goals. Agentic Orchestration thus refers to the way that the collaboration between agents is structured.
 
-Some of the best known ways to structure this collaboration, as described in \cite{langgraphagmultiagentsystems}, are Networks (or Swarms), where all agents communicate in a single group, and Supervisor (or Orchestrator) architectures, where an LLM acts as the coordinating node. However, agents can be coordinated in arbitrary ways depending on the needs of a specific task.
+Some of the best known ways to structure this collaboration, as described in \cite{langgraphagmultiagentsystems}, are Networks (or Swarms), where all agents communicate in a single group, Supervisor (or Orchestrator) architectures, where an LLM acts as the coordinating node. However, agents can be coordinated in arbitrary ways depending on the needs of a specific task.
 
 For instance, in \cite{fourney2024magenticone} a team of Microsoft researchers described Magentic-One, a generalist open-source system that demonstrated state of the art performance in multiple agentic benchmarks. Their proposed architecture applies \cite{shinn2023reflexion}'s learning to multi-agent orchestration by implementing ``a multi-agent architecture where a lead agent, the Orchestrator, plans, tracks progress, and re-plans to recover from errors". Moreover, according to \cite{fourney2024magenticone} ``Magentic-One's modular design allows agents to be added or removed from the team without additional prompt tuning or training, easing development and making it extensible to future scenarios''.
 
@@ -277,17 +277,17 @@ Finally, several Python frontend options were considered for the configuration i
 
 As mentioned before, the client for this project is Alvarez \& Marsal (A\&M), a global professional services firm specializing in turnaround management, corporate restructuring, and performance improvement.
 
-A\&M clearly identified a problem to solve: Executives spend valuable hours navigating dashboards just to extract the specific information relevant to their needs. As such, they wanted to explore the capabilities of LLMs to help reduce this time by building an Agentic AI system that could access a company's data, extract operational figures and generate report about a specific KPI, delivered directly to a user's email. For this, A\&M shared bullet points with their ideal set of functionalities for the system.
+A\&M clearly identified a problem. Even with the specialized tools they build for companies, executives spend valuable time navigating dashboards just to find the information that is relevant to their specific needs. As such, they wanted to explore the capabilities of AI Agents to reduce this time by building an Agentic AI system that can autonomously access a company's data, retrieve operational figures, extract initial insights from these figures and generate a reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data.
 
-Nevertheless, as a professional services firm, Alvarez \& Marsal was limited in the resources they could share for the development of the system. Particularly, due to client confidentiality clauses, they were only allowed to provide anonymized data, which severely limited the functionalities that could be built --- as an example, while they wanted the system to retrieve news that could explain a reduction in sales, this only makes sense if the system knows which products the company is selling.
+Nevertheless, as a professional services firm, Alvarez \& Marsal had restrictions on the resources they could share for the development of the system, particularly, due to client confidentiality clauses. As such, the requirement elicitation process was performed through a series of meetings with A\&M where they provided context on the needs of their clients and shared bullet points with thoughts on potential functionalities for the system.
 
-Due to this limitation, it was agreed to build a proof of concept system that could later be extended by their internal team. This chapter thus details the process for arriving to the requirements for this proof of concept system. First, the creation of user personas, and their scenarios for using the system, to help narrow the key need for users. Second, the definition of a set of requirements based on said personas.
-
-Readers will note that this process did not include the definition of Use Cases. This is intentional, as the system has a single use case --- a user setting the report they want to receive, and when they want to receive it. Other than that, the system is autonomous.
+Considering the limitations caused by client confidentiality clauses, it was agreed to build an exploratory proof of concept system that could provide key insights about the problem, and later be extended by A\&M's team. This chapter details the process for arriving to the requirements for this proof of concept system. First, it describes the creation of user personas, and their scenarios for using the system, which helped envision the key need for final users. Second, it describes the process of defining and prioritizing the system's requirements based on said personas and A\&M's inputs. Finally, it notes a byproduct of this process, the definition of the structure of the report that the agent should generate.
 
 \section{User Personas and Scenarios}
 
-A\&M identified 2 types of users they wanted to target, based on their experience advising companies: a Sales Manager and a CFO-level user. The following are Fictional Personas, as well as a set of user scenarios where the system could improve their day to day work. The process of creating these drew heavily from \cite{ixdf_personas_2025} and \cite{ixdf_user_scenarios_2025}, and was based both on A\&M and the author's experience in industry.
+Based on their experience advising companies A\&M identified 2 types of users that could reap the highest benefits from this type of system: Sales Managers and a Chief Financial Officers (CFOs). Following the design thinking methodology, drawing heavily from the Interaction Design Foundation's advice in \cite{ixdf_personas_2025} and \cite{ixdf_user_scenarios_2025}, it was decided to create user personas for each of these types of user to help better understand potential users needs and goals.
+
+Due to the same confidentiality reasons mentioned before, this could not be done through user research. Instead, the following are Fictional Personas created based on both on A\&M and the author's experience in industry.
 
 \subsubsection{John, the Sales Manager}
 
@@ -295,16 +295,16 @@ A\&M identified 2 types of users they wanted to target, based on their experienc
 \hline
 \textbf{Hard Facts} & John lives in London, is 30--35 years old, and works as the Sales Manager for Germany for a car parts manufacturer. \\
 \hline
-\textbf{Computer and Internet Use} & He mainly uses a computer for work, including emails, reviewing dashboards, and browsing the internet for news and social media. He also owns an iPad and a MacBook. He is comfortable with computers but isn't particularly tech-savvy. \\
+\textbf{Computer and Internet Use} & He mainly uses a computer for work: sending and receiving emails, reviewing dashboards, and browsing the internet for news and social media. He also owns an iPad and a MacBook. He is comfortable with computers but isn't particularly tech-savvy. \\
 \hline
-\textbf{A Typical Monday} & John starts his work week by reviewing unread emails to set priorities. He can spend up to two hours reviewing the company's dashboard to track sales in Germany. He then schedules follow-up meetings and spends the afternoon in meetings with his team and clients. \\
+\textbf{A Typical Monday} & John starts his work week by reviewing unread emails to set priorities. He can spend up to two hours reviewing the company's dashboard to track sales in Germany. After these two hours he schedules follow-up meetings, either with his team or clients. He spends the rest of his day in said meetings. \\
 \hline
 \textbf{Current Scenarios (As is)} & 
 \begin{minipage}[t]{\linewidth}
     \begin{itemize}
-        \item \textbf{All good}: John navigates the dashboard to see that sales are on track and he can move on with his day.
-        \item \textbf{Issue found}: John notices a sales decline, investigates by manually filtering through different views (clients, number of active clients, churned clients), and then works with his team to create an action plan.
-        \item \textbf{Continue what's working}: John sees a better-than-expected sales increase, investigates by looking at top clients and specific products, and then finds a news article about a change in safety regulations that might be driving the trend. He then advises his team to review the regulation and try to up-sell more customers.
+        \item \textbf{All good}: John navigates a dashboard to see that sales are on track with expectations, he then moves on with his day.
+        \item \textbf{Issue found}: John notices a sales decline and spends a few hours investigating by manually filtering through different dashboard views (sales per client, number of active clients, sales by product). He notes a reduction in total clients, and thus requires his team to investigate what clients churned and why. He then works with his team to create an action plan based on their findings.
+        \item \textbf{Continue what's working}: John sees a better-than-expected sales increase, and spends an hour investigating by looking at top clients and specific products. He decides to look for news and finds an article about a change in safety regulations that might be driving the trend. He then advises his team to review the regulation and try to up-sell more customers.
     \end{itemize}
     \vspace{0.05em}
 \end{minipage} \\
@@ -313,8 +313,8 @@ A\&M identified 2 types of users they wanted to target, based on their experienc
 \begin{minipage}[t]{\linewidth}
     \begin{itemize}
         \item \textbf{All good}: John receives an email with a short report showing sales are on target, skims it, and moves on with his day.
-        \item \textbf{Issue found}: John receives an email with a report attached that notes a sales decline and lists the clients who have churned, allowing him to forward the report and schedule a meeting with his team.
-        \item \textbf{Continue what's working}: John receives an email with a report pointing out a higher-than-expected increase in sales for a specific product and links to a news article about a change in safety regulations, enabling him to forward the report and advise his team.
+        \item \textbf{Issue found}: John receives an email with a report attached that notes a sales decline and lists the clients who have churned and their commonalities, allowing him to forward the report to his team and schedule a meeting to discuss.
+        \item \textbf{Continue what's working}: John receives an email with a report pointing out a higher-than-expected increase in sales for a specific product and links to a news article about a change in safety regulations. He can forward the report and advise his team based on the news.
     \end{itemize}
     \vspace{0.05em}
 \end{minipage} \\
@@ -328,16 +328,16 @@ A\&M identified 2 types of users they wanted to target, based on their experienc
 \hline
 \textbf{Hard Facts} & Clara lives in Cambridge with her family, is 45--50 years old, and works as the CFO of John's company. \\
 \hline
-\textbf{Computer and Internet Use} & She mainly uses a computer for work, including emails, reviewing dashboards, and browsing the internet. She is definitely not a tech-savvy person. \\
+\textbf{Computer and Internet Use} & She mainly uses a computer for work: sending and receiving emails, reviewing dashboards, and browsing the internet. She is definitely not a tech-savvy person. \\
 \hline
 \textbf{A Typical Monday} & Clara starts her week by reviewing emails and spends up to an hour reviewing the company's dashboard to identify high-level trends. She has lunch with the CEO to discuss strategic planning and spends the afternoon in meetings with her team. \\
 \hline
 \textbf{Current Scenarios (As is)} & 
 \begin{minipage}[t]{\linewidth}
     \begin{itemize}
-        \item \textbf{All good}: Clara navigates through different dashboard screens to check various KPIs and finds they are all on track.
-        \item \textbf{Issue found}: Clara notices a decline in Gross Margin, investigates by looking at sales and costs, and finds an unexpected cost increase in France, which she then notes and instructs her team to investigate.
-        \item \textbf{Continue what's working}: Clara sees a positive increase in sales growth, investigates by looking at business lines, and finds an uptick in the Brakes division. She then looks for news, finds a regulation change in Germany, and schedules a meeting with the corresponding sales team to strategize.
+        \item \textbf{All good}: Clara navigates through different dashboard screens to check various KPIs and finds they are all on track. She then moves on with her day.
+        \item \textbf{Issue found}: Clara notices a decline in Gross Margin, and spends a few hours investigating by manually filtering her sales dashboard and cost dashboard for clues. She finds an unexpected cost increase in France and instructs her team to investigate further.
+        \item \textbf{Continue what's working}: Clara sees a increase in sales growth, and spend a few hours investigating by filtering her sales dashboard by business lines, countries, etc. She finds the increase is driven by the Brakes division, and by the Germany unit. She then looks for news, finds a regulation change in Germany, and schedules a meeting with the corresponding sales team to strategize how to replicate this in other countries.
     \end{itemize}
     \vspace{0.05em}
 \end{minipage} \\
@@ -345,9 +345,9 @@ A\&M identified 2 types of users they wanted to target, based on their experienc
 \textbf{Future Scenarios (To be)} & 
 \begin{minipage}[t]{\linewidth}
     \begin{itemize}
-        \item \textbf{All good}: Clara receives an email with a short report on all the KPIs she monitors, skims it, and moves on.
-        \item \textbf{Issue found}: Clara receives an email with a report mentioning a KPI (Gross Margin) decline and a detailed explanation of the cause (increased costs in the France unit), allowing her to instruct her team to investigate immediately.
-        \item \textbf{Continue what's working}: Clara receives an email with a report that points out an increase in sales for the Brakes product group and links to a news article about the related safety regulation change in Germany. This allows her to schedule a meeting with the corresponding sales team to discuss the impact and prepare for similar changes in other countries.
+        \item \textbf{All good}: Clara receives an email with a short report on all the KPIs she monitors, skims it, and moves on with her day.
+        \item \textbf{Issue found}: Clara receives an email with a report mentioning the Gross Margin decline, as well as a detailed explanation of the cause --- increased costs in the France unit. She forwards the report to her team and instructs them to investigate further.
+        \item \textbf{Continue what's working}: Clara receives an email with a report that points out an increase in sales growth, driven by the Brakes product group in Germany. The report also links to a news article about a potentially related safety regulation change. This allows her to schedule a meeting with the corresponding sales team to discuss the impact and prepare for similar changes in other countries.
     \end{itemize}
     \vspace{0.05em}
 \end{minipage} \\
@@ -356,25 +356,28 @@ A\&M identified 2 types of users they wanted to target, based on their experienc
 
 \subsection{Analysis}
 
-As put by \cite{ixdf_personas_2025}, Fictional Personas are deeply flawed. Nevertheless, they can be used as initial sketches of user needs. Based on these two particular user personas, a few things are important to drive adoption of any solution:
+As put in \cite{ixdf_personas_2025}, Fictional Personas are deeply flawed, but they can be used as initial sketches of user needs. For this project, these two user personas highlight a few things are important to drive adoption of any proposed solution:
 
 \begin{enumerate}
-    \item \textbf{User interface needs to be easy to use:}
+    \item \textbf{The user interface should be easy to use:}
     \begin{itemize}
         \item Target personas are not particularly tech savvy.
         \item They are used to the intuitive interface of dashboards.
-        \item They don’t want to spend 5 hours setting something up that only saves them a few hours per month—they want to spend 5 minutes.
-        \item The key output they need is knowing where to look in detail for their next steps, so a high-level report can be good enough.
+        \item They don’t want to spend 5 hours setting something up that saves them a few hours, they want to spend 5 minutes.
+        \item They primary need is direction on where to look more closely for their next steps, or instruct their team to do so, meaning a high-level report can be adequate for early adopters.
     \end{itemize}
 
-    \item \textbf{Our users target a different number of KPIs, and this affects the level of detail they want to see:}
+    \item \textbf{Different users target a different number of KPIs, and this affects the level of detail they want to see:}
     \begin{itemize}
-        \item A Sales Manager tracks a single KPI (Sales), but they want to go into a loot of operational detail. A CFO, on the other side, follows multiple high-level KPIs, but only wants to have a general understanding of the situation.
-        \item Moreover, our target personas are used to being able to see exactly the level of operational detail they want from their dashboards. The system must be aware of that level of detail.
+        \item A Sales Manager tracks a single KPI (Sales), but they want to understand the operational detail. A CFO, on the other side, follows multiple high-level KPIs, but only wants to have a general grasp of the situation.
+        \item The current solution might be less efficient, but allows them to see exactly the level of operational detail they want. The system must be aware of that level of detail and replicate that feeling.
     \end{itemize}
-    \item \textbf{Our users want a quick way of knowing if they need to review the report in detail:}
+
+    \item \textbf{Users want a quick way of knowing if they need to review the report in detail:}
     \begin{itemize}
-        \item This can be addressed in two ways. First, the report must contain an Executive Summary. Second, the email for the report should include the key findings.
+        \item The report must contain an Executive Summary that provides a quick glance to its contents.
+        \item The report must clearly state any ``special case" present. ``Special cases" includes negative performance in KPIs, such as a reduction in margin, or changes in trends.
+        \item The email that delivers the report should also include the key findings.
     \end{itemize}
 \end{enumerate}
 
@@ -388,15 +391,16 @@ As put by \cite{ixdf_personas_2025}, Fictional Personas are deeply flawed. Never
 \newcommand{\frid}{FR-\arabic{frcounter}}
 \newcommand{\nfrid}{NFR-\arabic{nfrcounter}}
 
-Based on the user personas, and the limitations on data availability, the following requirements were defined for the system. Nevertheless, before reviewing them in detail there are a few important things to note.
+The base of the requirements listed below was the list of potential functionalities provided by A\&M at the beginning of the project. This initial set of high-level requirements was then made concrete and prioritized using the MoSCoW method, guided by insights from the User Persona analysis process and A\&M's confidentiality needs.
 
-First, as noted in the analysis of User Personas, the level of detail of the reports for the two types of personas are different --- in practical terms, this means the prompts that are used for one type of user might not work for the other. As such, it was decided to split certain requirements related to the report content by type of users.
+The analysis of User Personas not only helped understand what functionalities would be more important for actual users, but highlighted the differences between the needs of the two types of users. In practical terms, it made it clear that the level of detail of the reports for the two types of personas are different, and thus the prompts used for one type of user might not work for the other. As such, it was decided to split certain requirements related to the report content by type of users.
 
-Second, due to the nature of this project as a proof of concept, and due to the limitations in data availability mentioned before, the system will only implement a subset of all potential requirements. However, knowing what requirements might be implemented in the future can inform design decisions in the present. As such, it was deemed acceptable to have a long list of Won't Have requirements --- that is, a long list of requirements that are known and wanted for the system, but that will be outside of the scope of this project.
+Additionally, as mentioned earlier it was agreed with A\&M that the system created would be an exploratory proof of concepts, as client confidentiality clauses restricted the data that they could share. A key example was using online information sources, the system would not be able to identify if news are relevant when using anonymized data, thus it wouldn't make sense to implement in this stage.
 
-Finally, due to the limitations on data availability, it was decided that the proof of concept would only cover Sales Manager users. While A\&M could anonymize sales data with relative speed \footnote{This speed came with a cost though, as you will notice if you review the sample report, there are some drastic fluctuations in sales that can only be explained by issues with this process.}, the time needed to anonymize enough data for other KPIs was deemed too long for the project.
+However, knowing what requirements might be implemented in the future can inform decisions in the present. As such, it was deemed acceptable to have a long list of Won't Have requirements --- that is, a long list of requirements that are known and wanted for the system, but that will be outside of the scope of this project.
 
-With this in mind, the following tables reflect the requirements for the project's system.
+Finally, due to the limitations on data availability, it was decided that the proof of concept would only cover Sales Manager users. While A\&M could anonymize sales data with relative speed \footnote{This speed came with a cost. As you can notice in the sample report provided in the appendix, there are some drastic fluctuations in sales that can only be explained by data lost while anonymizing.}, the time needed to anonymize enough data for other KPIs was deemed too long for the needs of the project.
+
 \subsection{Functional Requirements}
 
 \subsubsection{Sales Manager}
@@ -405,10 +409,10 @@ With this in mind, the following tables reflect the requirements for the project
 \hline
 \textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
 \hline
-\stepcounter{frcounter}\frid & The system shall allow a Sales Manager-type user to set up their Sales scope (e.g., a specific region or product) & Must Have \\ \hline
-\stepcounter{frcounter}\frid & The system shall be able to generate a Sales performance report based on the user’s preferences & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall allow a Sales Manager-type user to set up a scope for their report (e.g., a specific region or product) & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to generate a report based on the user’s preferences & Must Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to identify “special cases” in Sales trends and perform a deeper analysis & Must Have \\ \hline
-\stepcounter{frcounter}\frid & The system shall be able to provide simple Sales forecasts based on current trends & Should Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall be able to provide a simple Sales forecasts based on current trends & Should Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to recommend potential actions to remedy “special cases” in Sales trends & Should Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to provide simple Sales forecasts based on the remedy actions recommended by itself & Could Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to provide advanced Sales forecasts using regression techniques or any other statistical method & Won’t Have \\
@@ -421,7 +425,7 @@ With this in mind, the following tables reflect the requirements for the project
 \hline
 \textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
 \hline
-\stepcounter{frcounter}\frid & The system shall allow a CFO-type user to set up a list of KPIs they follow & Won’t Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall allow a CFO-type user to set up a list of KPIs they want their report to follow & Won’t Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to generate a report for the user’s KPI list & Won’t Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to provide simple forecasts for each KPI based on current trends & Won’t Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to identify “special cases” in the trend of any KPI and perform a deeper analysis & Won’t Have \\ \hline
@@ -438,9 +442,9 @@ With this in mind, the following tables reflect the requirements for the project
 \textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
 \hline
 \stepcounter{frcounter}\frid & The system shall email the resulting report to the email addresses configured by the user & Must Have \\ \hline
-\stepcounter{frcounter}\frid & The system shall customize the email with the key findings of the report & Should Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall include both financial and operational information in a report & Must Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to load information from a CSV file & Must Have \\ \hline
+\stepcounter{frcounter}\frid & The system shall customize the email body with the key findings of the report & Should Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to load information from other files provided by the user & Won't Have \\ \hline
 \stepcounter{frcounter}\frid & The system shall be able to load information from a set of reliable online information sources & Won't Have \\ \hline
 \end{tabular}
@@ -453,17 +457,29 @@ With this in mind, the following tables reflect the requirements for the project
 \hline
 \stepcounter{nfrcounter}\nfrid & The system shall be extensible to other sources of information & Must Have \\ \hline
 \stepcounter{nfrcounter}\nfrid & The system shall run autonomously at fixed intervals & Must Have \\ \hline
-\stepcounter{nfrcounter}\nfrid & The system shall allow the user to update the fixed interval for runs & Must Have \\ \hline
+\stepcounter{nfrcounter}\nfrid & The system shall allow the user to update the fixed interval at which it runs & Must Have \\ \hline
 \stepcounter{nfrcounter}\nfrid & The system shall provide a user interface to update its configuration & Should Have \\ \hline
 \stepcounter{nfrcounter}\nfrid & The system shall provide a user interface that is clear and easy to use & Should Have \\ \hline
 \stepcounter{nfrcounter}\nfrid & The system shall allow multiple users to set up their reports & Could Have \\ \hline
 \stepcounter{nfrcounter}\nfrid & The system shall allow users to authenticate before updating their report preferences & Won’t Have \\ \hline
 \end{tabular}
 
+\section{Report Structure}
+
+A byproduct from the requirement elicitation process was the structure of the report that the agent should generate. This is not considered part of the system's requirements, as the structure of the report can and should change over time as functionality is added to the system, an initial structure based on the Must Have and Should Have requirements was agreed with Alvarez \& Marsal during this process:
+
+\begin{enumerate}
+    \item Executive Summary: A quick glance of the key findings.
+    \item Overview: An overview of the value of the KPI for the period.
+    \item Trends and Context: An overview of the trend for the KPI and high-level operational metrics.
+    \item In depth analysis: A detailed analysis of operational metrics that drive the trend.
+    \item Forward Outlook and Recommendations: A projection of the KPI and potential ways to correct negative trends.
+\end{enumerate}
+
 \chapter{Design and Implementation}
 \label{chapter:design-implementation}
 
-As an exploratory proof of concept, the project's system exactly as built will likely never be used in production, and as such, at the time of writing it is not deployed. Nevertheless, its implementation followed a two guiding principles that should make it easy for the client to either build upon it or take useful parts: Modularity and Extensibility.
+As an exploratory proof of concept, the project's system exactly as built will likely never be used in a production environment. In fact, at the time of writing it is not deployed anywhere. Nevertheless, its implementation followed a two guiding principles that should make it easy for the client to either build upon it or take useful parts for their production system: Modularity and Extensibility.
 
 These principles were followed not only in the high-level design, explained in \autoref{sec:system-design}, but in the detailed implementation, detailed in \autoref{sec:implementation}.
 
@@ -477,40 +493,41 @@ These principles were followed not only in the high-level design, explained in \
 \label{fig:system-diagram}
 \end{figure}
 
-Following the principle of modularity, as can be seen in \autoref{fig:system-diagram} the system is composed of three main parts.
+Following the principle of modularity, the system is composed of three main services, as can be seen in \autoref{fig:system-diagram}. Each of these services has a well defined scope and thus can be modified with limited effect to the others.
 
-First, at the core of the system is a Configuration Service. This service is responsible for managing the user's configuration for the AI Analyst --- how often it runs, which sets the Cron scheduler, and the topics of the reports it generates, called SalesReportRequest within the system, which are stored in a local SQLite Database. This Configuration Service is used by both the Frontend and Agent services.
+At the core of the system is the Configuration Service. This service is responsible for managing the user's configuration for the AI Analyst --- how often it runs, which sets the Cron scheduler, and the scope of the reports it generates, called SalesReportRequest within the system, which are stored in a local SQLite Database. This Configuration Service is consumed by both the Frontend and Agent services.
 
-Second, the user interface, which is served to the user through a FastAPI application. This user interface has a single functionality, that is, allowing the user to set up the configuration for their AI Analyst. 
+The Frontend Service is responsible for the user interface, which is served to the user through a FastAPI application. This user interface has a single functionality, allowing the user to set up the configuration for their AI Analyst, as can be seen in \autoref{annex:user-manual}. 
 
-Third, the Agent service, where the AI Analyst is defined. This service uses the Configuration Service to retrieve the SalesReportRequests it must execute, and while executing, makes extensive use of the File System to store and retrieve data. Additionally, as inference is provided by Azure, the Agent Service communicates with Azure AI Foundry through HTTP.
+The Agent service is where the AI Analyst is defined. This service uses the Configuration Service to retrieve the SalesReportRequests it must execute, and while executing, makes extensive use of the File System to store and retrieve data. Additionally, as inference is provided by Azure, the Agent Service communicates with Azure AI Foundry through HTTP.
 
-Finally, the system has been designed to run in a single container, implemented in Docker. The intention of the containerization is that the AI Analyst needs access to a company's private data, and as such should be easily deployed inside each company's private cloud, not as a stand-alone product.
+Finally, the system has been designed to run in a single container, implemented in Docker. As the AI Analyst needs access to a company's private data, it should be easy to deploy inside each company's private cloud.
 
 \section{Implementation}
 \label{sec:implementation}
 
 The process of implementing the system was divided in two parts, both of which will be explored in detail in this section.
 
-First and most importantly, the implementation of the AI Analyst as an Agentic system. As an exploratory proof of concept, this was implemented  through an iterative process, defined by a series of experiments with both agent architecture and prompt contents which form the backbone of the reflections in \autoref{chapter:reflections}.
+First and most importantly, the implementation of the AI Analyst as an Agentic system. As an exploratory proof of concept, this was implemented through an iterative process, defined by a series of experiments with agent architecture, prompts and context which form the backbone of the reflections in \autoref{chapter:reflections}. These experiments were grouped in two stages, which are described in detail in \autoref{subsec:ai-analyst-implementation}.
 
-Separately, the implementation of the Configuration Service, as well as the user interface to update the configuration, which was a one-off implementation.
+Separately, the implementation of the Configuration Service, as well as the user interface to update the configuration, which was a one-off implementation, decribed in \autoref{subsec:config-implementation}.
 
 \subsection{AI Analyst Agent}
+\label{subsec:ai-analyst-implementation}
 
-Before detailing the process of building the AI Analyst, it is important to note a few practical challenges that influenced some key decisions, mostly related from the client's restrictions to provide certain resources for developing the system, as mentioned in \autoref{chapter:requirements-analysis}.
+Before detailing the process of building the AI Analyst, it is important to note a few practical challenges that influenced some key decisions, mostly related from the A\&M's restrictions regarding sharing resources for developing the system, as mentioned in \autoref{chapter:requirements-analysis}.
 
-First, the system needed to be developed using Azure's student subscription, which provides a total of USD100 in credits to be used across their platform, independently of the resources needed. Moreover, this subscription limited the LLMs that could be used; some of the highest-performing models, such as OpenAI's o3, were not available for testing.
+First, the system needed to be developed using Azure's student subscription, which provides a total of USD100 in credits to be used across their platform. This subscription also limits the LLMs that can be accessed with these credits. Some of the highest-performing models, such as OpenAI's o3, were thus not available.
 
-Second, while the client reviewed if they could share data for testing, it was initially agreed to use \cite{wideworldimporters2025}, a public dataset that simulates entries a company's database, as the production system would be expected to access a company's actual database. Due to Microsoft's restrictions this dataset had to be hosted on Azure, and ran a the relatively high cost of USD1/day while it was being used.
+Second, in the time that A\&M needed to reviewed what data they could share for development, it was agreed to use \cite{wideworldimporters2025}, a public dataset created by Microsoft to simulate entries in a company's database. This would be closer to the production setup, which would likely need to retrieve its data from a database. Due to Microsoft's restrictions this dataset had to be hosted on Azure, and ran a the relatively high cost of USD1/day while it was being used.
 
-The client was later able to provide anonymized sales data in the form of a CSV file. Thus, the database was turned off and the evaluations and integration tests that used it were removed from the repository, but the agent created for extracting data from it was kept in the repository for the client's future reference --- thus, you will see that code related to the database agent has 0\% coverage. 
+The client was later able to provide anonymized sales data in the form of a CSV file. Thus, the database was turned off and the evaluations and integration tests that used it were removed from the repository, but the code for the agent that can extract data from it was kept in the repository for the client's future reference.
 
-Finally, due to the high cost of the database it was decided to use a lower cost LLM to develop the system, as to reduce the risk of reaching the account's spending cap. As such, the system was built using OpenAI's gpt-4o-mini model, and only when the full structure was created was the model changed to OpenAI's o4-mini, a reasoning model, as it was more than 10 times more expensive per token.
+Finally, due to the high cost of the database it was decided to use a lower cost LLM to develop the system. Reasoning models can be up to 10 times more expensive than their non-reasoning counterparts, which would have increased the risk of reaching the account's spending cap. Consequently, while the system was being structured it used OpenAI's gpt-4o-mini model, and after the entire system was developed the model changed to OpenAI's o4-mini, a reasoning model, for the final prompt engineering experiments.
 
 \subsubsection{Single Task Architecture}
 
-Considering the advances in agentic architectures mentioned in \autoref{sec:research-llms}, the first group of experiments aimed to use \cite{fourney2024magenticone}'s Magentic-One orchestration architecture, without modifications, for the entire task. This was done using Microsoft's Semantic Kernel framework, which exposes its own implementation of the Magentic-One architecture but, for reference, \autoref{fig:magentic-one-architecture} depicts its general structure. The key objective of this approach was extensibility. With this orchestration, adding new sources of information to the analysis should be as easy as adding a new member to the team of subagents, with everything else remaining as it was.
+Considering the advances in agentic architectures mentioned in \autoref{sec:research-llms}, the first group of experiments attempted to leverage \cite{fourney2024magenticone}'s Magentic-One orchestration architecture, without modifications, to create a single task for retrieving and analysing data. This architecture is depicted in \autoref{fig:magentic-one-architecture}, and was implemented using Microsoft's Semantic Kernel framework, which exposes its own implementation of the Magentic-One architecture.
 
 \begin{figure}[h]
 \centering
@@ -519,27 +536,31 @@ Considering the advances in agentic architectures mentioned in \autoref{sec:rese
 \label{fig:magentic-one-architecture}
 \end{figure}
 
-For this group of experiments, three initial subagents were defined:
+The key motivator for this approach was extensibility. With this orchestration architecture, adding new sources of information to the analysis would only require creating a subagent that can retrieve it, and then adding it to the team of subagents. The rest of the architecture could remaining as it was. To start this team, three initial subagents were defined:
 
 \begin{enumerate}
-    \item A \textbf{Database Agent}, which had access to a tool to explore the tables in a database and execute arbitrary SQL queries. This agent used SemanticKernel's default ChatCompletionAgent.
+    \item A \textbf{Database Agent}, which had access to a tool to explore the tables in a database and execute arbitrary SQL queries. This agent used SemanticKernel's ChatCompletionAgent, their default way to create agents with arbitrary LLMs as reasoning engine.
     \item A \textbf{Coder (or Quantitative) Agent}, which had access to a code interpreter tool and thus could run arbitrary code. This agent used Azure's pre-defined agents, as this is the default way to access a code interpreter tool in the framework.
-    \item An \textbf{Editor Agent}, who's system prompt detailed the structure and editing guidelines of the report. This agent also used SemanticKernel's default ChatCompletionAgent, without tools.
+    \item An \textbf{Editor Agent}, with a system prompt detailing the structure and editing guidelines of the report. This agent also used SemanticKernel's default ChatCompletionAgent, without tools.
 \end{enumerate}
 
-The first challenge with this architecture, which became apparent as the first few attempts to run an experiment where unsuccessful, was the interaction with the Database Agent. It quickly became apparent that the Database Agent was essentially a text-to-sql agent, and thus needed request to be defined as queries for information. Magentic-One, however, defines the requests to the next subagent as tasks --- to give an idea, the request might be something like "Investigate the main contributors to sales", but the Database Agent worked best with something like "Retrieve sales by product family". Moreover, the default implementation of Magentic-One passes the entire conversation history as context to every subagent, but the Database Agent worked best with a minimal context.
+The first challenge with this architecture, which became apparent as the first few attempts to run an experiment where unsuccessful, was the integration of the Database Agent. In this set up, the Database Agent was essentially a text-to-sql tool, and thus needed request to be defined as queries for information. Magentic-One, however, defines the requests to the next subagent as tasks --- to give an idea, the request might be something like "Investigate the main contributors to sales", but the Database Agent worked best with a query such as "Retrieve sales by product family". Moreover, the default implementation of Magentic-One passes the entire conversation history as context to every subagent, but the Database Agent worked best with a minimal context.
 
-The solution to this was to create another agent, an \textbf{Internal Data Agent}, which could access the Database Agent as a tool. In this architecture, the Internal Data Agent could receive a task, including the entire conversation, break the task down into a set of natural language queries, and request them one by one to the Database Agent. The advantage of using the agent-as-tool architecture was that the Internal Data Agent need not know how the queries were executed, increasing the modularity of the design.
+The solution to this was to create another agent, an \textbf{Internal Data Agent}, which could access the Database Agent as a tool. In this architecture, the Internal Data Agent could receive a task, including the entire conversation, break the task down into a set of natural language queries, and request them one by one to the Database Agent. The advantage of using the agent-as-tool architecture was that the Internal Data Agent did not need to know how its text queries were executed, increasing the modularity of the design; the Database Agent could be changed for any tool that retrieve data based on a plain text query.
 
-Another interesting question was where to use the Editor Agent, that is, whether to include it in the team of subagents for the Magentic-One task, or as a separate step that would take the results from the research task and generate the formatted report from it (similar to a traditional RAG architecture). After experimenting with both, including the Editor Agent within the Magentic-One task resulted in reports that did not follow the editing guidelines. Again, it seemed like the culprit was the increased context included in each request, in line with \cite{veseli2025positionalbiasesshiftinputs}'s findings.
+Another interesting question was where to use the Editor Agent, that is, whether to include it in the team of subagents for the Magentic-One task, or as a separate step that would take the results from the research task and generate the formatted report from it (similar to a traditional RAG architecture). After experimenting with both, including the Editor Agent within the Magentic-One task resulted in reports that missed more of the editing guidelines. Again, it seemed like the culprit was the increased context included in each request, in line with \cite{veseli2025positionalbiasesshiftinputs}'s findings.
 
-This then set the architecture for the Single Task approach: first, a Magentic-One task for retrieving all the information required, using a team of the Internal Data Agent, who in turn used the Database Agent as tool, and the Quantitative Agent; second, the results from this task were formatted by the Editor Agent.
+This then set the architecture for the Single Task approach as a two-step flow. First, a Magentic-One task for retrieving and analysing all the information required, using a team of two agents: the Internal Data Agent, which in turn used the Database Agent as a tool, and the Quantitative Agent. Second, an editing step where the Editor Agent generated the formatted report using the results from the task as context.
 
-But setting the architecture is just one step in the process of creating an agent. As described in \autoref{sec:research-llms} the agent's output can also be improved with Prompt Engineering. While the experiments with prompts were limited in this stage, as it was quickly clear that the system would need a different architecture, one interesting question that would translate to the following stage arose: How reusable should prompts be? Some of the first prompt attempts were very general, without specific examples, with the idea that the client could change the description of the KPI and easily extend the functionality of the AI Analyst from Sales to any KPI --- this is called a ``zero-shot prompt'' in LLM parlance. These prompts were, generally, not successful, which is in line with commentary on both the literature and prompting guides by LLM providers; the results were easily improved just by adding specific examples about detailed sales data that could be retrieved. It is possible to envision a prompt module that is designed in a way that makes it easy to inject different examples or terms depending on the requested KPI; but as the proof of concept only needed to extract Sales information, this was not implemented.
+After setting the architecture, it the agent's output could be improved through Prompt Engineering. While the experiments with prompts were limited in this stage, as it was quickly clear that the system would need a different architecture, this process left an interesting question for the next stage: should prompts be tailored specific to the sales task, or should they be general enough that they could be reused for any KPI?
 
-\subsubsection{Workflow Driven Architecture}
+Some of the first prompt attempts followed the second philosophy, attempting to be written in way such that changing only one phrase could make them a viable task description for any KPI. This meant using ``zero-shot'' prompts, avoiding examples specific to sales. These prompts were generally not successful, though, which is in line with commentary on both the literature and prompting guides by LLM providers; the results were easily improved just by providing examples on the type of data that could be retrieved for a sales report, and this was the approach taken for the rest of the project.
 
-After a few experiments with the prompts for the Single Task Architecture, it was clear that some of the key nuances of the task were not being properly conveyed in the output. As such, the next stage of the project was to design a workflow that the agent could follow which reflected the ``standard operating procedure (SOP), with step-by-step instructions for how a human would perform the task or process'', as recommended by LangChain in \cite{langchain2025buildAgent}. \autoref{fig:workflow} presents the workflow designed as the SOP.
+It is possible to envision a prompt module that is designed so that it easy to inject different examples or terms depending on the requested KPI; but as the proof of concept only needed to extract Sales information, this was not implemented.
+
+\subsubsection{Workflow Architecture}
+
+After a few experiments with the prompts for the Single Task Architecture, it was clear that some of the key nuances of the task were not being properly conveyed in the output. As such, the next stage of the project was to design a workflow that the agent could follow which reflected the ``standard operating procedure (SOP), with step-by-step instructions for how a human would perform the task or process'', as recommended by LangChain in \cite{langchain2025buildAgent}. Based on the author's experience on financial analysis, the workflow represented in \autoref{fig:workflow} was designed as the SOP for this analysis.
 
 \begin{figure}[h]
 \centering
@@ -548,19 +569,19 @@ After a few experiments with the prompts for the Single Task Architecture, it wa
 \label{fig:workflow}
 \end{figure}
 
-As the new workflow would not use Magentic-One as the basis of its implementation, an important decision had to be made: continue building using Microsoft's Semantic Kernel framework or move to a different framework. Moving to a different framework would mean losing work and manually implementing Magentic-One like architectures for some of the steps in the workflow, but working with Semantic Kernel had already shown some issues --- it was not particularly intuitive for fine-grained control of agent's context, and it lacked examples for use cases that did not fall within its pre-defined structures. LangGraph, in contrast, is specifically designed for this kind of agentic workflow, and due to its popularity there is extensive community content. As such, it was decided to use LangGraph from this point forward.
+As the new workflow would not use Magentic-One as its core architecture, Semantic Kernel was not necessarily the best framework for structuring it. Changing frameworks had some downsides, as it would mean losing the functionalities already implemented, and the loss of Semantic Kernel's implementation of Magentic-One, which could be useful for some of the steps in the workflow. Working with Semantic Kernel, however, had already proven complex. It was not particularly intuitive for fine-grained control of agent's context, which was the main motivator of the architecture change, and it lacked community resources or documentation to support development for use cases that did not fall within its pre-defined structures. LangGraph, in contrast, is specifically designed for this kind of agentic workflow, and due to its popularity there is extensive community content. As such, it was decided to use LangGraph from this point forward.
 
-It was also close to this point that the client was able to provide anonymized sales data for testing. As mentioned before, this was provided as a CSV file and, as such, the Database Agent was not necessary any more. Its function could be replaced by an agent that could write and execute code in the environment that contained the CSV file.\footnote{Though as mentioned before the code for the Database Agent was kept in the repository for the client's reference.} As the files were stored in the filesystem of the AI Agent's container, all agents that need code are allowed to execute it directly in the container's environment. This also made it easier to share data between steps; any intermediate outputs could be stored as CSV files within a temporary folder, and other agents would have access to them if needed.
+It was also close to this point that the client was able to provide anonymized sales data for testing. As mentioned before, this was provided as a CSV file, so the Database Agent's function to the system could be replaced by an agent that could write and execute code in the environment that contained the CSV file.\footnote{Though as mentioned before the code for the Database Agent was kept in the repository for the client's reference.} Furthermore, allowing agents to read and write files from the file system could provide an easier way to pass down large tabular data between steps. Instead of storing it in context, which could easily exceed a model's token limits, intermediate outputs could be stored as CSV files within a temporary folder, and other agents would have access to them if needed. Thus it was decided that any agents that needed tabular data derived from this CSV would be created with tools that allow code execution directly in the container's environment.
 
-Furthermore, considering the change in both framework and data access, the new workflow was implemented iteratively, starting with a version that only included retrieving the sale's history, processing it and creating a report, and adding additional steps one at a time. Each time a step was added or altered significantly, a full experiment and evaluation was performed, so that the impact of each change on the overall output was clear. This also confirmed the extensibility of the design, as additional steps could be added without breaking the existing functionality.
+Considering the change in both framework and data access, the new workflow was implemented iteratively, starting with a version that only included retrieving the sale's history, processing it and creating a report. Further steps were then added to this base system one at a time. Each time a step was added or altered significantly, a full experiment and evaluation was performed, so that the impact of each change on the overall output was clear. This also confirmed the extensibility of the design, as additional steps could be added without breaking the existing functionality.
 
-Following this iterative process, the first versions of the workflow used LangGraph's pre-set implementation of the ReAct architecture for any agent that required tool usage, such as the \textbf{Internal Data Agent}, which now used a tool to run arbitrary code to retrieve data from the provided CSV file, and the \textbf{Quantitative Agent}. Additionally, while the Magentic-One architecture did not generate the expected results for the entire task, it was clear that it had value due to its extensibility and deep research capabilities, so it was used for the \textbf{Research Workflow} in the Research Special Case step --- that is, the step to explore the available data and find potential reasons for special cases, such as sales reductions --- when it was added to the workflow.
+Following this iterative approach, the first versions of the workflow did not used custom architectures for its subagents. Instead LangGraph's implementation of the ReAct architecture was used for any agent that required tool usage, such as the \textbf{Internal Data Agent}, which now used a tool to run arbitrary code to retrieve data from the provided CSV file, and the new version of the \textbf{Quantitative Agent}. Additionally, while the Magentic-One architecture did not generate the expected results for the entire task, it was clear that it had value due to its extensibility and deep research capabilities, so it was used for the first implementation of the \textbf{Research Workflow} that executed the Research Special Case step --- that is, the step to explore the available data and find potential causes of special cases. These architectures would be customized based on the results of experiments, as described later in this section.
 
-Moreover, in early iterations the instruction for analysing data given to the Quantitative Agent included creating visualizations, but this resulted in visualizations that were poorly formatted despite iterations on the prompts. As the analysis task would only become more complex due to the in-depth research for special cases, the plot generation was moved to the end of the workflow. It then made sense to create a separate workflow for the generation of the report, the \textbf{Report Editor Workflow}, which consists of a Supervisor, which ensured task completion, a Report Writer, a Data Loader agent, which is actually code to load a CSV's file contents to the workflow's context from a plain text instruction, and a Data Visualization agent, which uses LangGraph's ReAct implementation.
+Also following this iterative approach, the first experiments used the Quantitative Agent to both analyse data and creating visualizations in a single step. This resulted in visualizations that were poorly formatted despite variations on the prompts, so it was decided to separate plot generation from the analysis step. It then made sense to create a separate workflow for the generation of the report, the \textbf{Report Editor Workflow}, which consists of a Supervisor, which ensured task completion, a Report Writer, which contained the report's editing guidelines, a Data Loader, which can load a CSV file's contents into the workflow's context, and a Data Visualization agent, which uses LangGraph's ReAct implementation and coding tool to generate and store plots.
 
-With this, the system's development was complete, and it was time to use the more expensive reasoning model, o4-mini, for evaluation and prompt engineering. As expected, reasoning models are better at complex tasks, resulting in more detailed analysis even before optimizing the prompts, but they come with a drawback: configurations that limit the range of potential results from the LLM, such as Temperature, Top P or Top K are not available for reasoning models. This resulted in an increased likelihood of agents getting stuck in infinite loops, trying to perform more in depth analysis, find more data than available or attempting to run code with errors without being able to fix it between loops.
+After building this first version of the workflow, the LLM component was changed to the more expensive reasoning model, o4-mini. As was expected, reasoning models are better at complex tasks, and the change resulted in more detailed analysis. However, there was a drawback to the change: configurations that limit the range of potential results from the LLM, such as Temperature, Top P or Top K are not available for reasoning models. This resulted in an increased likelihood of agents getting stuck in infinite loops with the same prompts as data --- they would attempt to run code with errors without being able to fix it between loops, or request unavailable data one time after the other.
 
-Some of these issues were improved upon with prompt engineering, such as providing clearer instructions from when to stop, but the stochastic component of LLMs meant there was no way of ensuring this won't happen on any given experiment. As such, changes to the agent's architecture were needed.
+Some of these issues were improved upon with prompt engineering, such as providing clearer instructions from when to stop, but the stochastic component of LLMs meant there was no way of ensuring this won't happen on any given experiment just with prompting. As such, changes to the agent's architecture were needed.
 
 \begin{figure}[h]
 \centering
@@ -569,9 +590,9 @@ Some of these issues were improved upon with prompt engineering, such as providi
 \label{fig:research-workflow}
 \end{figure}
 
-First, for the Research Workflow, which used the Magentic-One architecture, the main issue was that the model could not consistently decide when the task was considered complete. While a human would execute a judgment call considering that they have ``enough'' findings for the report, an LLM needs a clear stopping rule. Thus, it was decided to add a forceful exit condition, where the workflow would break the execution loop after a number of plan updates (note that this is different to progress ledger updates, which happen every time a sub-agent returns a response, plan updates only happen when the execution is deemed stalled by the orchestrator). This approach is in line with Semantic Kernel's implementation.
+First, for the Research Workflow, which used the Magentic-One architecture, the main issue was that the model could not consistently decide that the task was complete. While a human would execute a judgment call considering that they have ``enough'' findings for the report, an LLM needs a clear stopping rule, which does not exist for a research task. Thus, it was decided to add a forceful exit condition, where the workflow would break the execution loop after a number of plan updates (note that this is different to progress ledger updates, which happen every time a sub-agent returns a response, plan updates only happen when the execution is deemed stalled by the orchestrator). This approach is in line with Semantic Kernel's own implementation.
 
-Additionally, building from the learnings of the first implementation stage, a Summarize Findings step was added to the Magentic-One workflow. Without this step, the best way to share the findings from the task would be to share the entire conversation, adding a large amount of context to the report generation step. Instead, by summarizing the findings, only the actually relevant parts of this conversation, such as findings and files generated, are shared with the main agent, maintaining the total size of the context contained. The final architecture for the Research Workflow can be seen in \autoref{fig:research-workflow}.
+Additionally, building from the learnings of the first stage of experiments, a Summarize Findings step was added to the Magentic-One workflow. Without this step, the best way to share the findings from the task would be to share the entire conversation, adding a large amount of context to the report generation step. Instead, by summarizing the findings, only the actually relevant parts of this conversation, such as findings and files generated, are shared with the following step, maintaining the total size of the context contained. The final architecture for the Research Workflow can be seen in \autoref{fig:research-workflow}.
 
 \begin{figure}[h]
 \centering
@@ -580,49 +601,50 @@ Additionally, building from the learnings of the first implementation stage, a S
 \label{fig:coding-workflow}
 \end{figure}
 
-Second, both the Internal Data Agent and the Quantitative Agent generate code that needs to be executed in the local environment, using a Python Read-Evaluate-Print-Loop (REPL) Tool. For these agents, which first used a basic ReAct architecture, the issues were twofold. On one side, the LLM had a hard time recovering when the code generated had issues, such as not receiving any outputs due to a lack of print statement or error messages. On the other side, it would sometimes return an intermediate thinking step without code generated, which in a default ReAct agent is taken as a final response.
+Second, both the Internal Data Agent and the Quantitative Agent generate code that needs to be executed in the local environment, using a Python Read-Evaluate-Print-Loop (REPL) Tool. For these agents, which first used a basic ReAct architecture, the issues were twofold. On one side, when the code generated had issues, such as error messages, the LLM would not consistently find the right fix, in some instances leading to hundreds of loops with the same error. On the other side, the LLM would sometimes return an intermediate thinking step without a tool call. In a default ReAct agent this is assumed to be a final response, and thus the task would remain incomplete.
 
-To improve the agent's self recovery capabilities, a new architecture,inspired by \cite{shinn2023reflexion} was defined. This architecture includes a step where the code outputs are reviewed for errors. If errors are present, a separate LLM is requested to provide a code review, which is added to the agent's context before looping. Additionally, when an error is detected several times in a row (5 by default) or the agent has looped more than a certain threshold of times (25 by default), the prompt for the next loop is changed for one that requires the LLM to review its attempts, analyse what went wrong and provide the analysis as final response. This approach was particularly for use within the Magentic-One orchestrator, as it can provide information for the orchestration for either retrying the request or replanning.
+To improve the agent's self recovery capabilities, a new architecture, inspired by \cite{shinn2023reflexion} was defined. This architecture includes a step where the code outputs are reviewed for errors. If errors are present, a separate LLM is requested to provide a code review, which is added to the agent's context before looping. Additionally, when an error is detected a set number of times in a row or the agent has looped more than its allowed number of times, the prompt for the next loop is changed for one that requires the LLM to review its attempts, analyse what went wrong and provide this analysis as final response. This approach is particularly useful when the agent is included in the Magentic-One orchestration, as it can provide information to the orchestrator for either retrying the request or changing its plan.
 
-To avoid early returns due to thinking steps, the workflow includes a step where that reviews the response from the agent. If the response includes a tool call for code execution, it moves to the next step. If the response is only text, it is reviewed by an LLM to decide whether it is meant as a final response, in which case it is returned, or as an intermediate thinking step, in which case the loop starts again.
+To avoid early returns due to thinking steps, the architecture includes a step that reviews the response from the agent. If the response includes a tool call for code execution, it moves to the tool execution step. If the response is only text, it is reviewed by an LLM to decide whether it is meant as a final response, in which case it is returned, or as an intermediate thinking step, in which case the loop starts again.
 
-These additional steps have a key trade off, they make the agent more expensive and slower to run, but reduce errors. Nevertheless, as the system is designed to run as a background task, adding latency does not affect user experience. The extra cost could be reduced by using a non-reasoning model for these additional reviews, as neither is a complex task, so gpt-4o-mini was used.
+These additional steps have a key trade off, they make the agent more expensive and slower to run, but reduce errors. Nevertheless, as the system is designed to run as a scheduled task, adding latency does not affect user experience. The extra cost could be reduced by using a non-reasoning model for these additional reviews, as neither is a complex task, so gpt-4o-mini was used.
 
 The final architecture, which can be seen in \autoref{fig:coding-workflow}, was implemented as a reusable agent that can be initiated with a different system prompt depending on if it is needed as an Internal Data or a Quantitative Agent, reducing potential duplications.
 
 \subsection{Configuration Service and Interface}
+\label{subsec:config-implementation}
 
-The Configuration Service is, in reality, a module within the system. This module is responsible for three things:
+The Configuration Service is, in practice, a module within the system, which is imported and used by the other services according to their needs. This module is responsible for three things:
 
-First, is is responsible for loading the system's settings, such as API keys, from the environment, ensuring they are available for the rest of the system. As FastAPI uses Pydantic for type validation, it was an easy decision to use Pydantic's \texttt{pydantic\_settings} library to validate the presence and types of environment variable --- using this package ensure the system will fail on startup if the environment is set incorrectly. Similarly, this module is used to set up any system-wide constant, such as the location of data and temporary files.
+First, it is responsible for loading the system's settings, such as API keys, from the environment or a \texttt{.env} file. As FastAPI uses Pydantic for type validation, it was an easy decision to use Pydantic's \texttt{pydantic\_settings} library to validate the presence and types of environment variable --- using this package ensures the system will fail on startup if the environment is set incorrectly. Similarly, this module is used to set up any system-wide constant, such as the location of data and temporary files.
 
 Second, it is responsible for handling setting and updating the Cron job that runs the AI Analyst according to the user's preferences. The system uses the \texttt{python-crontab} library for this purpose.
 
-Finally, the service is responsible for storing, retrieving and updating user preferences regarding the report to be generated. The preferences are represented in code as a Pydantic model (essentially a class that represents data) called SalesReportRequest, which included attributed for the characteristics of the request --- such as the ``grouping'', that is, if the report should be about total sales or sales for a specific country, product, etc. --- and for the list of emails that should receive the report when generated.
+Finally, the service is responsible for storing, retrieving and updating user preferences regarding the report to be generated. The preferences are represented in code as a Pydantic class called SalesReportRequest, which includes attributed for the characteristics of the scope of the request and for the list of emails that should receive the report when generated.
 
-The key decision to make, though, was how to persist these classes. While it was clear that setting up an external database was unnecessary overhead for storing local configuration, two alternatives were contemplated: serializing the data and storing as files or storing in a sqlite database within the same container.
+The key decision to make for this functionality was how to persist these SalesReportRequests. While it was clear that setting up an external database was unnecessary overhead for storing a local configuration, two alternatives were contemplated: serializing instances of the class and storing them as files, or storing in a sqlite database within the same container.
 
-Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof of concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of a file becoming corrupt from two concurrent attempts at updating if serialization was used.
+Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof of concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of file corruption if users make concurrent attempts at updating configuration.
 
 With this in mind, a simple database was defined with two tables: \texttt{sales\_report\_requests} and \texttt{recipient\_emails}, sharing a one to many relation (one report request can have many recipients). Additionally, following the principle of extensibility, it was decided to use an ORM (\texttt{sqlalchemy}) for handling this database, as it would make the system easier to connect to a different database or add additional configuration if needed --- for example, some type of user authentication.
 
 \subsubsection{User Interface}
 
-To update the Configuration, a frontend was implemented as a FastAPI web application using Jinja2 templates. This implementation follows a modular router-based architecture that separates concerns --- templates can easily be changed to suite the style of a company that will use the AI Analyst internally. The initial templates created consider the analysis in \autoref{chapter:requirements-analysis} and as such try to be simple and intuitive, using Bootstrap 5 to speed implementation.
+To update the Configuration, a frontend was implemented as a FastAPI web application using Jinja2 templates. This implementation also follows a modular architecture --- templates can easily be changed to suite the preferences of any company that uses the AI Analyst, without affecting the rest of the system. The initial templates created consider the analysis in \autoref{chapter:requirements-analysis} and as such try to be simple and intuitive, using Bootstrap 5 to speed implementation.
 
 The FastAPI application consists of three main router modules as detailed in Table \ref{tab:frontend-routes}:
 
 \begin{table}[H]
 \centering
-\begin{tabular}{|p{3cm}|p{5.5cm}|p{6cm}|}
+\begin{tabular}{|p{2.5cm}|p{5.5cm}|p{6.5cm}|}
 \hline
 \textbf{Router} & \textbf{Routes} & \textbf{Functionality} \\ \hline
 \textbf{Index Router} & 
 \texttt{GET /} \newline \texttt{POST /run\_now} & 
-Main dashboard displaying existing sales report requests and cron schedule configuration. \\ \hline
+Main dashboard displaying existing Sales Report Requests and cron schedule configuration, as well as a form to update the cron schedile. Includes a route to run the agent immediately for testing. \\ \hline
 \textbf{Sales Report Router} & 
 \texttt{GET /sales\_report/create} \newline \texttt{POST /sales\_report/create} \newline \texttt{GET /sales\_report/edit/\{id\}} \newline \texttt{POST /sales\_report/edit/\{id\}} \newline \texttt{POST /sales\_report/delete/\{id\}} & 
-Complete CRUD operations for sales report requests. Handles form validation, data persistence, and user feedback with proper error handling and success messages. \\ \hline
+Complete CRUD operations for Sales Report Requests, including a route that serves a form for creating or updating. \\ \hline
 
 \textbf{Cronjob Router} & 
 \texttt{POST /crontab/update} & 
@@ -635,50 +657,40 @@ Manages the cron schedule configuration for automated report generation. \\ \hli
 \chapter{Evaluation and Testing}
 \label{chapter:evaluation-testing}
 
-As mentioned before, this project followed \cite{aiebook2025}'s recommendations regarding LLM evaluations. This included following Evaluation Driven Design, or the practice of writing the evaluations before working on the agent.
+As mentioned before, this project followed \cite{aiebook2025}'s recommendations regarding LLM evaluations. These included following Evaluation Driven Design, or the practice of writing the evaluations before working on the agent, as well as evaluating the components of the agent separatelly.
 
-As such, \autoref{sec:agent-evals} will discuss the evaluation framework designed for the AI Analyst's final output across experiments, which was defined before the start of implementation. Moreover, also following the recommendations of \cite{aiebook2025}, each of the agent's components was evaluated separately. The approach taken to the evaluation of the components is described in \autoref{sec:components-evals}. Finally, \autoref{sec:other-tests} discussed the approach taken to tests for the non-agentic parts of the code, such as the configuration module.
+As such, \autoref{sec:agent-evals} will discuss the evaluation framework designed for the AI Analyst's output, which was defined before the start of implementation and \autoref{sec:components-evals} details the approach taken to the evaluation of the agents components. Finally, \autoref{sec:other-tests} discussed the approach taken to tests for the non-agentic parts of the system, such as the configuration module.
 
 \section{Agent Output Evaluation}
 \label{sec:agent-evals}
 
-Evaluating the outputs of the AI Analyst was an essential part of the project. Knowing the complexities of Prompt and Context Engineering, it was essential for the development to have a defined evaluation for the AI Analyst's outputs to ensure that iterations could be performed safely, and improvements, or regressions, could be objectively defined.
+Knowing the complexities of Prompt and Context Engineering, developing a consistent way to evaluate the outputs of the AI Analyst was essential for the development process, as it would ensure that iterations could be performed safely, and improvements, or regressions, could be objectively defined. Yet, in line with some of the research described in \autoref{sec:research-llms}, evaluating the AI Analyst posed a series of challenges.
 
-Yet, in line with some of the research described in \autoref{sec:research-llms}, evaluating the AI Analyst posed a series of challenges.
+First, even for a single type of Sales Report Request, it would be impossible to create a comprehensive set of all possible valid reports that could be generated, so the traditional Machine Learning strategy of evaluating against ground truths was not viable.
 
-First, even for a single type of Sales Report Request, it would be impossible to create a comprehensive set of all possible reports that could be generated, so the traditional Machine Learning strategy of evaluating against ground truths was not viable.
+Second, evaluating task completion was not relevant. With the current state of LLMs, obtaining a report is relatively straightforward; the greater challenge lies in ensuring that the report is actually what the users would expect, that is, it has the structure expected, the data extracted is correct and the insights are relevant. Moreover, it would be ideal to evaluate how useful the contents of the report are for decision making, but it would be extremely complex to define this beforehand --- different situations might require different data to make a decision, and in many cases only the actual decision maker would be able to provide feedback on whether the report was enough for them.
 
-Second, evaluating task completion was not relevant. With the current state of LLMs, obtaining a report is relatively straightforward; the greater challenge lies in ensuring that the report is actually what the users would expect, that is, it has the structure expected, the data extracted is correct and the insights are relevant. Moreover, it would be ideal to evaluate how useful the contents of the report are for decision making, but it would be extremely complex to define beforehand --- different situations might require different data to make a decision, and in many cases only the actual decision maker would be able to provide feedback on whether the report was enough for them.
+Considering these challenges, it was decided that the best path forward was an ``subjective evaluation''. That is, having an external validator that would take the report generated, review it and grade it. This grading could consider the particularities of the task, and could act as north star for development: higher scores could mean forward progress.
 
-Finally, because the scope of the project is only a proof of concept, the evaluations defined are unlikely to be used in production, so it was important to limit the effort dedicated to creating an evaluation framework.
+But, because the scope of the project is only a proof of concept, the evaluations defined are unlikely to be used in the final system. In fact, having an evaluation module was not even part of the client's requirements. It was thus important to limit the effort dedicated to creating the evaluation framework.
 
-Considering these challenges, it was clear that the best path forward was an ``subjective evaluation''. That is, having an external validator that would take the report generated, review it and grade it. This grading could consider the particularities of the task, and could act as north star for development: higher scores could mean forward progress.
+Due to this, it was decided to use a Human Judge as evaluator. While AI Judges have advantages, particularly the potential of running autonomously and thus increase the number of iterations performed, setting up an AI Evaluator added unnecessary complexity at this stage, namely, the need to set up additional evaluations --- it would add the need to ``evaluate the evaluator'' to make sure that its grading is accurate.
 
-Moreover, the final constraint about limiting effort made it easy to decide to use a Human Judge as evaluator. While AI Judges have advantages, particularly the potential of running autonomously and thus increase the number of iterations performed, setting up an AI Evaluator added unnecessary complexity at this stage, namely, the need to set up additional evaluations --- you have to ``evaluate the evaluator'' to make sure that its grading is accurate.
-
-Knowing that outputs would be evaluated by a human, the key challenge became ensuring that the score accurately reflected the needs of the task, specially considering the findings of \cite{hu2023decipher} regarding potential biases in human evaluation. The solution was to use a tried-and-tested framework from education: a grading rubric\footnote{Thanks to Professor Griffin for his comments that pointed in this direction.}. In essence, this grading rubric could contain the most relevant aspects of the report and assign a grade to each, thus producing an overall grade for the result. 
+Knowing that outputs would be evaluated by a human, the key challenge became ensuring that the score accurately reflected the needs of the task, specially considering the findings of \cite{hu2023decipher} regarding potential biases in human evaluation. The solution was to use a tried-and-tested framework from education: a grading rubric\footnote{Thanks to Professor Griffin for his comments that pointed in this direction.}. In essence, this grading rubric could contain the most relevant aspects of the report and assign a grade to each, thus producing an overall grade. 
 
 \subsubsection{Rubric Definition}
 
-As mentioned before, when evaluating an Agent \cite{aiebook2025} recommends thinking of three groups: Domain-Specific Capacity, Generation Capacity and Instruction-Following Capacity.
+When evaluating an LLM application, \cite{aiebook2025} recommends thinking of three groups: Domain-Specific Capacity, Generation Capacity and Instruction-Following Capacity.
 
-In the context of a report, it is possible to think about both Instruction-Following as the capacity of the agent to follow the structure of the report, while Generation as the capacity to retrieve and present the correct data. Both of these can be considered as part of the \textit{form} of the report --- does the report include the right sections, is the data correct, is the data presented graphically.
+In the context of a report, it is possible to think about Instruction-Following as the capacity of the agent to output a report that follows the structure and editing guidelines provided to it, and Generation as the capacity to retrieve and present the correct data. Both of these can be considered as part of the \textit{form} of the report --- does the report include the right sections, is the data correct and not hallucinated, is the data presented graphically, etc.
 
-Defining a grading rubric for these thus required defining the structure of the output report. While this was not considered part of the requirements elicitation process, as the structure of the report is a variable within the system and not a requirement, it was agreed with Alvarez \& Marsal during the same process, arriving at:
+On the contrary, Domain-Specific Capacity in this context can be considered the capacity of the model to perform financial and operational analysis, such as  accurately representing the evolution of an indicator instead of just mentioning its value or only presenting relevant data. These are more reflective of the \textit{content} of the report.
 
-\begin{enumerate}
-    \item Executive Summary: A quick glance of the key findings.
-    \item Overview: An overview of the value of the KPI for the period.
-    \item Trends and Context: An overview of the trend for the KPI and high-level operational metrics.
-    \item In depth analysis: A detailed analysis of operational metrics that drive the trend.
-    \item Forward Outlook and Recommendations: A projection of the KPI and potential ways to correct negative trends.
-\end{enumerate}
+This defined the two groups of questions to be included in the rubric: questions related to the \textit{form} of the report, and questions related to its \textit{content}. Moreover, in addition to the total score for the rubric, each group of questions is used to calculate its own score.
 
-On the contrary, Domain-Specific Capacity on this context can be considered the capacity of the model to perform financial analysis. This is things like accurately representing an evolution instead of just mentioning values or only presenting relevant data. These are more reflective of the \textit{content} of the report, not its form.
+After defining this general structure of questions, the main challenge for the evaluation rubric was to define the level of specificity of its questions. If the questions included were too specific, the evaluation would only becomes valuable for the specific scenarios, but very open ended questions increase the risk of subjective grading.
 
-Finally, in addition to defining the types of questions, it was important to define the level of specificity. If questions became too specific, for example expecting a per-product analysis, the evaluation only becomes valuable for certain scenarios, but very open ended questions lead to subjective grading.
-
-This was solved by defining questions that are wide in scope, but allowing only a Yes or No answer, in the style of ``Does the analysis in the report accurately represent the evolution of the KPI?". While this question requires reviewing the entire report and subjectively defining what accurate is, there is less risk that the same evaluator can have different responses to similar outputs, unlike if required to provide a specific grade.
+This was solved by defining questions that are wide in scope, but allowing only a Yes or No answer, in the style of ``Does the analysis in the report accurately represent the evolution of the KPI?". While this question requires reviewing the entire report and subjectively defining what ``accurate" is, there is less risk that the same evaluator can have different responses to similar outputs, unlike if required to provide a specific grade.
 
 Moreover, this type of questions had two added benefits. First, it made it easier, and thus quicker, to evaluate a specific report. Second, it simplified the score definition --- the total evaluation score could be calculated as the percentage of positive responses over the total questions.
 
@@ -687,28 +699,28 @@ Thus, the final rubric, which can be found in \autoref{annex:evaluation}, consis
 \section{Components Evaluation}
 \label{sec:components-evals}
 
-In addition to evaluating the final output, evaluating an Agent's components can help spot issues earlier in the development or identify the causes of unexpected behaviour. Nevertheless, it has most of the same challenges described before.
+In addition to evaluating the final output, evaluating an Agent's components can help spot issues earlier in its development, or surface the causes of unexpected behaviour, but it has most of the same challenges described before.
 
-There is one exception to this though, just evaluating the intermediate steps completion does add valuable information, specially for development, as it allows to confidently build the system modularly without the need to run full experiments on every change --- a relevant issue when considering that full experiments could take up to one hour when the system was complete.
+However, unlike with the final output, just evaluating the intermediate steps' completion could add valuable information, specially for development, as it allows to confidently build the system modularly without the need to run full experiments on every change --- a relevant issue when considering that full experiments could take up to one hour as the system became larger.
 
-Moreover, in many cases there is one aspect to the intermediate step that can act as a proxy for its utility to the system, such as making sure that a file is generated or that the output has a certain shape.
+Moreover, in many cases there is one aspect to the intermediate step that can act as a proxy for its utility to the system, such as making sure that a file is generated or that the output has a certain structure.
 
-For these reasons, it was decided to use ``exact evaluation'' for the Agent's components. Whats better, using strict rules to evaluate the results, such as confirming completion or that a file was generated, makes the evaluations similar to a regular automated test, and can be expressed as such in \texttt{pytest}, meaning they can run automatically. In total, 37 evaluations were written with this structure. You can find an example in \autoref{annex:sample-eval}.
+For these reasons, it was decided to use ``exact evaluation'' for the Agent's components. What's better, using strict rules to evaluate the results, such as confirming completion or that a file was generated, makes the evaluations similar to a regular test, and can be expressed as such in \texttt{pytest}, meaning these type of evaluation can be run automatically. Given this, 37 evaluations were written as part of the system's testing suite; you can find an example in \autoref{annex:sample-eval}.
 
 One of the biggest challenges of this approach is that while the evaluations are \textbf{expressed} as tests, they are not actual tests and should be interpreted differently. In some cases, the evaluation rule might check that a specific word or numeric value is included in the test, this is specially useful when evaluating summarization steps. That expected text might not always be present due to the probabilistic nature of LLMs. In such cases, a failing ``test" does not mean the system is not working; instead, it means that a more detailed experiment needs to be run for this specific component.
 
-A solution to this issue is to use a subjective evaluation, but as mentioned before this has additional challenges which, for the scope of this project as proof of concept, are considered an unnecessary effort.
+A solution to this issue is to use a subjective evaluation that can also run automatically, such as using an LLM as judge, but as mentioned before this has additional challenges which, for the scope of this project as proof of concept, are considered unnecessary.
 
-Another unexpected challenge of using this strategy was handling the file system. As defined before, one of the most important aspects of an agent is its capacity to perform actions on its environment. In this project, that mostly meant reading and writing files to store intermediate data, mostly in a temporary folder that is created for each request, all handled in a central module.
+Another unexpected challenge of using this strategy was handling the file system for tests. As defined before, one of the most important implementation decisions was allowing agents to read and write files to store intermediate data, mostly in a temporary folder that is created for each request. The creation of this module, as well as any repeated request to know its path, was handled in a shared module.
 
-Ideally, the testing environment is isolated from the rest of the application, which meant that it needed its own temporary folder, something that sounds easy but becomes difficult with the way \texttt{pytest} manages patching imported modules. Because modules in python are resolved the first time they are imported on a process, patching a central module requires special care --- things like never importing at the module level, and transitively patching when a module imports a module that imports the patched module. While this was solved, if development of the system will continue it is probably worth the time to streamline this.
+Ideally, the testing environment should be isolated from the rest of the application, which meant that it needed its own temporary folder, something that sounds easy but becomes difficult with the way \texttt{pytest} manages patching imported modules. Because modules in python are resolved the first time they are imported on a process, patching a shared module requires special care --- things like never importing at the module level, and transitively patching when a module imports a module that imports the patched module. While this was solved, if development of the system will continue it would be worth considering a simpler way to set up tests, as this can slow down development as the system becomes more complex.
 
-Finally, the biggest challenge of this approach is how long it takes to run the test suite. Evaluations expressed as tests are essentially integration tests; they perform real calls to the model provider, facing latency, and evaluated subagents perform real, if reduced, tasks, which take time. This discourages running the entire evaluation suit on code changes, thus sometimes voiding the benefit of identifying unexpected regressions from a change. A production version of the system might benefit from splitting pure tests and evaluations as two suites that do not have to run together.
+Finally, the biggest issue with this approach is how long it takes to run the test suite. Evaluations expressed as tests are essentially integration tests; they perform real calls to the model provider, facing latency, and evaluated subagents perform real, if reduced, tasks, which might take several loops of the agent. This discourages running the entire evaluation suit on code changes, thus sometimes voiding the benefit of identifying unexpected regressions from a change. A production version of the system might benefit from splitting pure tests and evaluations as two suites that do not have to run together.
 
 \section{Other Tests}
 \label{sec:other-tests}
 
-While the LLM components of the system need to be evaluated, an Agent is also composed of parts that are indeed subject to traditional tests; for example, the tools it uses or the integration with model providers. Furthermore, the entire system goes beyond the actual AI Analyst Agent. These more traditional software components also need testing.
+While the LLM components of the system need to be evaluated, an Agent is also composed of parts that are indeed subject to traditional tests; for example, some of the tools it uses are deterministic, and the integration with model providers is as well. Furthermore, the entire system goes beyond the AI Analyst Agent. These more traditional software components also need testing.
 
 Nevertheless, as mentioned a few times already, as a proof of concept, iteration speed outweighed testing completeness, as this system might face significant changes before becoming production-ready. As such, the approach taken to testing can be summarized as:
 
@@ -720,7 +732,7 @@ Nevertheless, as mentioned a few times already, as a proof of concept, iteration
     \item For the frontend, as it is expected to completely change when integrated to a company's systems, manual acceptance testing was considered acceptable.
 \end{enumerate}
 
-With all of these in mind, 23 test between unit and integration were written for the configuration module, which was considered the most critical, 17 tests were written for functionalities related to the agent execution, such as tools and utilities, and 5 unit test for the frontend. The result of those test, as well as the coverage summary, can be found in \autoref{annex:test-results}.
+Considering this, 23 test were written for the configuration module, as it was considered the most critical part of the system, 17 tests were written for functionalities related to the agent execution, such as tools and utilities, and 5 unit test for the frontend. The result of those test, as well as the coverage summary, can be found in \autoref{annex:test-results}.
 
 \chapter{Reflections}
 \label{chapter:reflections}
@@ -758,7 +770,7 @@ Additionally, the system can generate reports on Total Sales —-- a KPI relevan
         \hline
         \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
         \hline
-        \stepcounter{ref-frcounter}\rfrid & The system shall allow a Sales Manager-type user to set up their Sales scope & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall allow a Sales Manager-type user to set up a scope for their report & Must Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to generate a Sales performance report based on the user’s preferences & Must Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to identify “special cases” in Sales trends and perform a deeper analysis & Must Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide simple Sales forecasts based on current trends & Should Have & Yes \\ \hline
@@ -778,7 +790,7 @@ Additionally, the system can generate reports on Total Sales —-- a KPI relevan
         \hline
         \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
         \hline
-        \stepcounter{ref-frcounter}\rfrid & The system shall allow a CFO-type user to set up a list of KPIs they follow & Won’t Have & No \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall allow a CFO-type user to set up a list of KPIs they want their report to follow & Won’t Have & No \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to generate a report for the user’s KPI list & Won’t Have & No \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to provide simple forecasts for each KPI based on current trends & Won’t Have & No \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to identify “special cases” in the trend of any KPI and perform a deeper analysis & Won’t Have & No \\ \hline
@@ -799,9 +811,9 @@ Additionally, the system can generate reports on Total Sales —-- a KPI relevan
         \textbf{ID} & \textbf{Requirement} & \textbf{Priority} & \textbf{Included} \\
         \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall email the resulting report to the email addresses configured by the user & Must Have & Yes \\ \hline
-        \stepcounter{ref-frcounter}\rfrid & The system shall customize the email with the key findings of the report & Should Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall include both financial and operational information in a report & Must Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from a CSV file & Must Have & Yes \\ \hline
+        \stepcounter{ref-frcounter}\rfrid & The system shall customize the email body with the key findings of the report & Should Have & Yes \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from other files provided by the user & Won't Have & No \\ \hline
         \stepcounter{ref-frcounter}\rfrid & The system shall be able to load information from a set of reliable online information sources & Won't Have & No \\ \hline
     \end{tabular}
@@ -818,7 +830,7 @@ Additionally, the system can generate reports on Total Sales —-- a KPI relevan
     \hline
     \stepcounter{ref-nfrcounter}\rnfrid & The system shall be extensible to other sources of information & Must Have & Yes \\ \hline
     \stepcounter{ref-nfrcounter}\rnfrid & The system shall run autonomously at fixed intervals & Must Have & Yes \\ \hline
-    \stepcounter{ref-nfrcounter}\rnfrid & The system shall allow the user to update the fixed interval for runs & Must Have & Yes \\ \hline
+    \stepcounter{ref-nfrcounter}\rnfrid & The system shall allow the user to update the fixed interval at which it runs & Must Have & Yes \\ \hline
     \stepcounter{ref-nfrcounter}\rnfrid & The system shall provide a user interface to update its configuration & Should Have & Yes \\ \hline
     \stepcounter{ref-nfrcounter}\rnfrid & The system shall provide a user interface that is clear and easy to use & Should Have & Yes \\ \hline
     \stepcounter{ref-nfrcounter}\rnfrid & The system shall allow multiple users to set up their reports & Could Have & Yes \\ \hline
@@ -945,6 +957,7 @@ Finally, the system includes a Docker configuration and thus can run as
 Test execution uses: \texttt{uv run pytest}. Note that the sample data is not included in the repository as it is too large, and thus the test suite will fail. Moreover, consider that the testing framework combines unit tests and agent evaluation, so it needs Azure API Keys to be set in the \texttt{.env} file before running.
 
 \chapter{User Manual}
+\label{annex:user-manual}
 
 This manual provides a guide on how to use the Sales Report Setup user interface to configure your AI Analyst. It is organized by functionality.
 
@@ -992,7 +1005,7 @@ When you finish filling the form, click ``Create Request''.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.8\textwidth]{images/frontend-form.png}
-\caption{Sales report request setup form.}
+\caption{Sales Report Request setup form.}
 \label{fig:frontend-form}
 \end{figure}
 
@@ -1122,7 +1135,9 @@ async def test_file_creation(quantitative_agent):
 \chapter{Automated Testing Suite Results}
 \label{annex:test-results}
 
-The following are the results of the last run of the testing suite. Please note that, as \autoref{sec:components-evals} notes, this includes both evaluations and actual test, and thus failing tests do not necessarily represent a system failure.
+The following are the results of the last run of the testing suite. Please note that, as \autoref{sec:components-evals} notes, this includes both evaluations and actual test, and thus failing tests do not necessarily represent a system failure, but might be due to the probabilistic nature of LLMs.
+
+Additionally, please note that due to the removal of the sample database from azure, the code related to the database (\texttt{configuration/db\_auth}, \texttt{agents/db\_agent} and \texttt{agents/tools/db}), intentionally have 0\% coverage.
 
 \begin{figure}[H]
 \centering

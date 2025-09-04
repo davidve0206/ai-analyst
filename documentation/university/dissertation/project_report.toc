@@ -23,12 +23,13 @@
 \contentsline {subsubsection}{CFO}{14}{section*.9}%
 \contentsline {subsubsection}{User Type Independent Requirements}{15}{section*.10}%
 \contentsline {subsection}{\numberline {3.2.2}Non-Functional Requirements}{15}{subsection.3.2.2}%
+\contentsline {section}{\numberline {3.3}Report Structure}{15}{section.3.3}%
 \contentsline {chapter}{\numberline {4}Design and Implementation}{16}{chapter.4}%
 \contentsline {section}{\numberline {4.1}System Design}{16}{section.4.1}%
 \contentsline {section}{\numberline {4.2}Implementation}{17}{section.4.2}%
 \contentsline {subsection}{\numberline {4.2.1}AI Analyst Agent}{17}{subsection.4.2.1}%
 \contentsline {subsubsection}{Single Task Architecture}{18}{section*.11}%
-\contentsline {subsubsection}{Workflow Driven Architecture}{19}{section*.12}%
+\contentsline {subsubsection}{Workflow Architecture}{19}{section*.12}%
 \contentsline {subsection}{\numberline {4.2.2}Configuration Service and Interface}{23}{subsection.4.2.2}%
 \contentsline {subsubsection}{User Interface}{24}{section*.13}%
 \contentsline {chapter}{\numberline {5}Evaluation and Testing}{25}{chapter.5}%
