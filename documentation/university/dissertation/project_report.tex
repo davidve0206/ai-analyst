@@ -89,7 +89,7 @@ According to \cite{forrester2022}, by Forrester Consulting, knowledge workers sp
 
 However, in recent years a radically new option has arisen. With the explosion of Large Language Models (LLMs), and subsequently of LLM-driven Agentic AI systems, a new family of task automation has become available, they allow the execution of complex, multi-step workflows autonomously. As such, the aim of this project is to explore the capabilities of AI Agents to act as a junior data analyst within a company.
 
-The potential of AI Agents to perform this kind of data analysis is widely know. Agentic data retrieval, with tools like text-to-SQL agents, are already being widely used in industry, and there are benchmarks for LLM financial tasks such as stock price or earnings analysis. Still, there is still uncertainty about whether the quality and robustness that they could achieve in practice is actually at the level where such a system would actually be a benefit to a company. To gain a better understanding of this, the goal of this project is to create a proof of concept system, an ``AI Analyst", that can autonomously access a company's data, retrieve operational figures, extract initial insights from these figures and generate a reports about a specific Key Performance Index (KPI), at set time intervals, based on the company's data.
+The potential of AI Agents to perform this kind of data analysis is widely know. Agentic data retrieval, with tools like text-to-SQL agents, are already being widely used in industry, and there are benchmarks for LLM financial tasks such as stock price or earnings analysis. Still, there is still uncertainty about whether the quality and robustness that they could achieve in practice is actually at the level where such a system would actually be a benefit to a company. To gain a better understanding of this, the goal of this project is to create a proof-of-concept system, an ``AI Analyst", that can autonomously access a company's data, retrieve operational figures, extract initial insights from these figures and generate a reports about a specific Key Performance Index (KPI) at set time intervals.
 
 This specific use case poses a few challenges to the current stat of the art in GenAI agents. For these reports, the AI Analyst must go beyond simply retrieving high-level data for the KPIs, it must also provide granular details that uncover deeper operational insights. For example, rather than merely reporting that sales are down by 10\%, the Analyst should also identify which products or regions are driving this decline.
 
@@ -246,11 +246,11 @@ Celery is a distributed task queue that supports asynchronous and real-time task
 
 In contrast, cron is a native, time-based scheduler available on Unix-like systems, designed specifically for executing tasks at fixed intervals. Cron is straightforward to configure, persistent across system reboots, and does not require any additional services.
 
-Given the project's scope as a proof of concept, and the fact that the requirement was only periodic execution at set intervals, cron was selected as the more practical solution.
+Given the project's scope as a proof-of-concept, and the fact that the requirement was only periodic execution at set intervals, cron was selected as the more practical solution.
 
 \subsection{User Interface Framework}
 
-Finally, several Python frontend options were considered for the configuration interface. As shown in \autoref{tab:framework_comparison}, the main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the proof of concept into a full production application if needed.
+Finally, several Python frontend options were considered for the configuration interface. As shown in \autoref{tab:framework_comparison}, the main alternatives evaluated were Streamlit, Gradio, and FastAPI with Jinja2 templates. While Streamlit and Gradio offer very quick setup and ease of use for prototypes, FastAPI with Jinja2 was chosen for this project due to its high customizability and the ability to easily scale the proof-of-concept into a full production application if needed.
 
 \begin{table}[h]
 \centering
@@ -281,7 +281,7 @@ A\&M clearly identified a problem. Even with the specialized tools they build fo
 
 Nevertheless, as a professional services firm, Alvarez \& Marsal had restrictions on the resources they could share for the development of the system, particularly, due to client confidentiality clauses. As such, the requirement elicitation process was performed through a series of meetings with A\&M where they provided context on the needs of their clients and shared bullet points with thoughts on potential functionalities for the system.
 
-Considering the limitations caused by client confidentiality clauses, it was agreed to build an exploratory proof of concept system that could provide key insights about the problem, and later be extended by A\&M's team. This chapter details the process for arriving to the requirements for this proof of concept system. First, it describes the creation of user personas, and their scenarios for using the system, which helped envision the key need for final users. Second, it describes the process of defining and prioritizing the system's requirements based on said personas and A\&M's inputs. Finally, it notes a byproduct of this process, the definition of the structure of the report that the agent should generate.
+Considering the limitations caused by client confidentiality clauses, it was agreed to build an exploratory proof-of-concept system that could provide key insights about the problem, and later be extended by A\&M's team. This chapter details the process for arriving to the requirements for this proof-of-concept system. First, it describes the creation of user personas, and their scenarios for using the system, which helped envision the key need for final users. Second, it describes the process of defining and prioritizing the system's requirements based on said personas and A\&M's inputs. Finally, it notes a byproduct of this process, the definition of the structure of the report that the agent should generate.
 
 \section{User Personas and Scenarios}
 
@@ -395,11 +395,11 @@ The base of the requirements listed below was the list of potential functionalit
 
 The analysis of User Personas not only helped understand what functionalities would be more important for actual users, but highlighted the differences between the needs of the two types of users. In practical terms, it made it clear that the level of detail of the reports for the two types of personas are different, and thus the prompts used for one type of user might not work for the other. As such, it was decided to split certain requirements related to the report content by type of users.
 
-Additionally, as mentioned earlier it was agreed with A\&M that the system created would be an exploratory proof of concepts, as client confidentiality clauses restricted the data that they could share. A key example was using online information sources, the system would not be able to identify if news are relevant when using anonymized data, thus it wouldn't make sense to implement in this stage.
+Additionally, as mentioned earlier it was agreed with A\&M that the system created would be an exploratory proof-of-concepts, as client confidentiality clauses restricted the data that they could share. A key example was using online information sources, the system would not be able to identify if news are relevant when using anonymized data, thus it wouldn't make sense to implement in this stage.
 
 However, knowing what requirements might be implemented in the future can inform decisions in the present. As such, it was deemed acceptable to have a long list of Won't Have requirements --- that is, a long list of requirements that are known and wanted for the system, but that will be outside of the scope of this project.
 
-Finally, due to the limitations on data availability, it was decided that the proof of concept would only cover Sales Manager users. While A\&M could anonymize sales data with relative speed \footnote{This speed came with a cost. As you can notice in the sample report provided in the appendix, there are some drastic fluctuations in sales that can only be explained by data lost while anonymizing.}, the time needed to anonymize enough data for other KPIs was deemed too long for the needs of the project.
+Finally, due to the limitations on data availability, it was decided that the proof-of-concept would only cover Sales Manager users. While A\&M could anonymize sales data with relative speed \footnote{This speed came with a cost. As you can notice in the sample report provided in the appendix, there are some drastic fluctuations in sales that can only be explained by data lost while anonymizing.}, the time needed to anonymize enough data for other KPIs was deemed too long for the needs of the project.
 
 \subsection{Functional Requirements}
 
@@ -479,7 +479,7 @@ A byproduct from the requirement elicitation process was the structure of the re
 \chapter{Design and Implementation}
 \label{chapter:design-implementation}
 
-As an exploratory proof of concept, the project's system exactly as built will likely never be used in a production environment. In fact, at the time of writing it is not deployed anywhere. Nevertheless, its implementation followed a two guiding principles that should make it easy for the client to either build upon it or take useful parts for their production system: Modularity and Extensibility.
+As an exploratory proof-of-concept, the project's system exactly as built will likely never be used in a production environment. In fact, at the time of writing it is not deployed anywhere. Nevertheless, its implementation followed a two guiding principles that should make it easy for the client to either build upon it or take useful parts for their production system: Modularity and Extensibility.
 
 These principles were followed not only in the high-level design, explained in \autoref{sec:system-design}, but in the detailed implementation, detailed in \autoref{sec:implementation}.
 
@@ -508,7 +508,7 @@ Finally, the system has been designed to run in a single container, implemented 
 
 The process of implementing the system was divided in two parts, both of which will be explored in detail in this section.
 
-First and most importantly, the implementation of the AI Analyst as an Agentic system. As an exploratory proof of concept, this was implemented through an iterative process, defined by a series of experiments with agent architecture, prompts and context which form the backbone of the reflections in \autoref{chapter:reflections}. These experiments were grouped in two stages, which are described in detail in \autoref{subsec:ai-analyst-implementation}.
+First and most importantly, the implementation of the AI Analyst as an Agentic system. As an exploratory proof-of-concept, this was implemented through an iterative process, defined by a series of experiments with agent architecture, prompts and context which form the backbone of the reflections in \autoref{chapter:reflections}. These experiments were grouped in two stages, which are described in detail in \autoref{subsec:ai-analyst-implementation}.
 
 Separately, the implementation of the Configuration Service, as well as the user interface to update the configuration, which was a one-off implementation, decribed in \autoref{subsec:config-implementation}.
 
@@ -556,7 +556,7 @@ After setting the architecture, it the agent's output could be improved through 
 
 Some of the first prompt attempts followed the second philosophy, attempting to be written in way such that changing only one phrase could make them a viable task description for any KPI. This meant using ``zero-shot'' prompts, avoiding examples specific to sales. These prompts were generally not successful, though, which is in line with commentary on both the literature and prompting guides by LLM providers; the results were easily improved just by providing examples on the type of data that could be retrieved for a sales report, and this was the approach taken for the rest of the project.
 
-It is possible to envision a prompt module that is designed so that it easy to inject different examples or terms depending on the requested KPI; but as the proof of concept only needed to extract Sales information, this was not implemented.
+It is possible to envision a prompt module that is designed so that it easy to inject different examples or terms depending on the requested KPI; but as the proof-of-concept only needed to extract Sales information, this was not implemented.
 
 \subsubsection{Workflow Architecture}
 
@@ -624,7 +624,7 @@ Finally, the service is responsible for storing, retrieving and updating user pr
 
 The key decision to make for this functionality was how to persist these SalesReportRequests. While it was clear that setting up an external database was unnecessary overhead for storing a local configuration, two alternatives were contemplated: serializing instances of the class and storing them as files, or storing in a sqlite database within the same container.
 
-Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof of concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of file corruption if users make concurrent attempts at updating configuration.
+Serialization would have been the easiest option to set up, and should have performed well for the needs of the proof-of-concept, which only handles a few reports. Nevertheless, it was decided to use a local sqlite database as it would be more robust if the system is ever implemented within a large company, as A\&M's clients usually are. A large company may have hundreds of sales managers setting up their reports, while databases can handle this without any issue, there is a high risk of file corruption if users make concurrent attempts at updating configuration.
 
 With this in mind, a simple database was defined with two tables: \texttt{sales\_report\_requests} and \texttt{recipient\_emails}, sharing a one to many relation (one report request can have many recipients). Additionally, following the principle of extensibility, it was decided to use an ORM (\texttt{sqlalchemy}) for handling this database, as it would make the system easier to connect to a different database or add additional configuration if needed --- for example, some type of user authentication.
 
@@ -672,7 +672,7 @@ Second, evaluating task completion was not relevant. With the current state of L
 
 Considering these challenges, it was decided that the best path forward was an ``subjective evaluation''. That is, having an external validator that would take the report generated, review it and grade it. This grading could consider the particularities of the task, and could act as north star for development: higher scores could mean forward progress.
 
-But, because the scope of the project is only a proof of concept, the evaluations defined are unlikely to be used in the final system. In fact, having an evaluation module was not even part of the client's requirements. It was thus important to limit the effort dedicated to creating the evaluation framework.
+But, because the scope of the project is only a proof-of-concept, the evaluations defined are unlikely to be used in the final system. In fact, having an evaluation module was not even part of the client's requirements. It was thus important to limit the effort dedicated to creating the evaluation framework.
 
 Due to this, it was decided to use a Human Judge as evaluator. While AI Judges have advantages, particularly the potential of running autonomously and thus increase the number of iterations performed, setting up an AI Evaluator added unnecessary complexity at this stage, namely, the need to set up additional evaluations --- it would add the need to ``evaluate the evaluator'' to make sure that its grading is accurate.
 
@@ -709,7 +709,7 @@ For these reasons, it was decided to use ``exact evaluation'' for the Agent's co
 
 One of the biggest challenges of this approach is that while the evaluations are \textbf{expressed} as tests, they are not actual tests and should be interpreted differently. In some cases, the evaluation rule might check that a specific word or numeric value is included in the test, this is specially useful when evaluating summarization steps. That expected text might not always be present due to the probabilistic nature of LLMs. In such cases, a failing ``test" does not mean the system is not working; instead, it means that a more detailed experiment needs to be run for this specific component.
 
-A solution to this issue is to use a subjective evaluation that can also run automatically, such as using an LLM as judge, but as mentioned before this has additional challenges which, for the scope of this project as proof of concept, are considered unnecessary.
+A solution to this issue is to use a subjective evaluation that can also run automatically, such as using an LLM as judge, but as mentioned before this has additional challenges which, for the scope of this project as proof-of-concept, are considered unnecessary.
 
 Another unexpected challenge of using this strategy was handling the file system for tests. As defined before, one of the most important implementation decisions was allowing agents to read and write files to store intermediate data, mostly in a temporary folder that is created for each request. The creation of this module, as well as any repeated request to know its path, was handled in a shared module.
 
@@ -722,7 +722,7 @@ Finally, the biggest issue with this approach is how long it takes to run the te
 
 While the LLM components of the system need to be evaluated, an Agent is also composed of parts that are indeed subject to traditional tests; for example, some of the tools it uses are deterministic, and the integration with model providers is as well. Furthermore, the entire system goes beyond the AI Analyst Agent. These more traditional software components also need testing.
 
-Nevertheless, as mentioned a few times already, as a proof of concept, iteration speed outweighed testing completeness, as this system might face significant changes before becoming production-ready. As such, the approach taken to testing can be summarized as:
+Nevertheless, as mentioned a few times already, as a proof-of-concept, iteration speed outweighed testing completeness, as this system might face significant changes before becoming production-ready. As such, the approach taken to testing can be summarized as:
 
 \begin{enumerate}
     \item Focus on unit testing, with some narrow integration tests.
@@ -737,20 +737,20 @@ Considering this, 23 test were written for the configuration module, as it was c
 \chapter{Reflections}
 \label{chapter:reflections}
 
-The aim of this project was to to explore the capabilities of AI Agents to act as a junior data analyst within a company. This was done by creating a proof of concept system, or AI Analyst, that can autonomously access a company's sales data, retrieve operational figures, extract initial insights from these figures and generate a sales report according to a user's sales scope.
+The aim of this project was to to explore the capabilities of AI Agents to act as a junior data analyst within a company. This was done by creating a proof-of-concept system, or AI Analyst, that can autonomously access a company's sales data, retrieve operational figures, extract initial insights from these figures and generate a sales report according to a user's sales scope.
 
-The are thus two outputs from the project. The first is the proof of concept system, with the set of requirements discussed in \autoref{chapter:requirements-analysis} as well as its evaluation results. The other, perhaps more important, is the set of insights from building the proof of concept about using AI Agents for this type of task, which will be useful for the client's future projects.
+The are thus two outputs from the project. The first is the proof-of-concept system, with the set of requirements discussed in \autoref{chapter:requirements-analysis} as well as its evaluation results. The other, perhaps more important, is the set of insights from building the proof-of-concept about using AI Agents for this type of task, which will be useful for the client's future projects.
 
-\autoref{sec:requirements-achievement} will reflect on what was actually implemented in the system, compared to its requirements. \autoref{sec:key-insights} will reflect on the performance of the system, and highlight the key learnings from the process. Finally, \autoref{sec:future-work} will reflect on how the proof of concept system can be improved to create a production-level application.
+\autoref{sec:requirements-achievement} will reflect on what was actually implemented in the system, compared to its requirements. \autoref{sec:key-insights} will reflect on the performance of the system, and highlight the key learnings from the process. Finally, \autoref{sec:future-work} will reflect on how the proof-of-concept system can be improved to create a production-level application.
 
-\section{Proof of Concept Requirements Achievement}
+\section{proof-of-concept Requirements Achievement}
 \label{sec:requirements-achievement}
 
 As can be seen in the following tables, the implemented system achieved 100\% of both Must Have and Should Have requirements, and one of the two Could Have requirements.
 
-The Could Have requirement that was excluded from the proof of concept was FR-6, providing a sales forecast considering the remedial actions proposed by the agent. This requirement was not deemed possible with the current workflow definition, as with it the agent did not reliably provide measurable remedial actions for special situations. However, it should be possible to implement in a following iteration of the system, following the insights described in \autoref{sec:key-insights}.
+The Could Have requirement that was excluded from the proof-of-concept was FR-6, providing a sales forecast considering the remedial actions proposed by the agent. This requirement was not deemed possible with the current workflow definition, as with it the agent did not reliably provide measurable remedial actions for special situations. However, it should be possible to implement in a following iteration of the system, following the insights described in \autoref{sec:key-insights}.
 
-Additionally, the system can generate reports on Total Sales —-- a KPI relevant to a CFO-type user —-- demonstrating its potential as a foundation for developing functionality for this type of user. However, implementing CFO-specific features was beyond the scope of the proof of concept.
+Additionally, the system can generate reports on Total Sales —-- a KPI relevant to a CFO-type user —-- demonstrating its potential as a foundation for developing functionality for this type of user. However, implementing CFO-specific features was beyond the scope of the proof-of-concept.
 
 % Define counters
 \newcounter{ref-frcounter}
@@ -861,10 +861,10 @@ As mentioned before, the first group of experiments attempted to use a single ta
 
 Moreover, this approach failed to score more than 60\% on the content score, despite experiments changing both prompts and architecture. In fact, as can be reviewed in \autoref{fig:evals-detailed}, every iteration had issues with different parts of the content, making it hard to make targeted changes to improve results.
 
-After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while the agent loops, all of its intermediate responses are added to its context, that is, the information sent with each request. This means that the agent's context keeps growing and growing as it loops, even if the steps taken in each loop do not actually move the task forward. In this particular architecture, when the task is handed over to a subagent it includes the entire conversation history, so they received an enlarged context as, making their responses worse as more loops took place. This led to two insights, which drove the approach to the second iteration:
+After an in-depth review of the intermediate steps taken by the system, the reason for this issue became clear: while the agent loops, all of its intermediate responses are added to its context, that is, the information sent with each request. This means that the agent's receives more and more information as it loops, even if the steps taken in each loop do not actually move the task forward. In this particular architecture, when the task is handed over to a subagent it includes the entire conversation history, so they received an enlarged context as well, making their responses worse as more loops take place. This led to two insights, which drove the approach to the second iteration:
 
 \begin{itemize}
-    \item \stepcounter{kfcounter}\kfid : while LLMs can indeed perform large tasks with some success, improving their effectiveness and reliability can improve by breaking the task into smaller subtask, as this allows to control the context shared between them.
+    \item \stepcounter{kfcounter}\kfid : while LLMs can indeed perform large tasks with some success, but their effectiveness and reliability can improve by breaking the task into smaller subtask.
     \item \stepcounter{kfcounter}\kfid : deep research tasks increase the agent's context quickly, and the irrelevant context has a masking effect, so they benefit for summarization steps within the workflow\footnote{As opposed to most common architectures which only summarise at the end of the task}. This is in line with the findings of \cite{veseli2025positionalbiasesshiftinputs}.
 \end{itemize}
 
@@ -879,7 +879,7 @@ Finally, as can be evidenced in \autoref{chapter:evaluation-testing} the evaluat
 \section{Future Work}
 \label{sec:future-work}
 
-The output of this project is an exploratory proof of concept system, it has access to anonymized data and is not deployed. As such, it can --- and should --- be improved upon before using in a production environment within a company. The most important changes to make this system production ready would be:
+The output of this project is an exploratory proof-of-concept system, it has access to anonymized data and is not deployed. As such, it can --- and should --- be improved upon before using in a production environment within a company. The most important changes to make this system production ready would be:
 
 \begin{enumerate}
     \item Improvements to the evaluation framework:

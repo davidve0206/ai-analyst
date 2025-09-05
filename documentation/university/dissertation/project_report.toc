@@ -38,7 +38,7 @@
 \contentsline {section}{\numberline {5.2}Components Evaluation}{27}{section.5.2}%
 \contentsline {section}{\numberline {5.3}Other Tests}{28}{section.5.3}%
 \contentsline {chapter}{\numberline {6}Reflections}{29}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Proof of Concept Requirements Achievement}{29}{section.6.1}%
+\contentsline {section}{\numberline {6.1}proof-of-concept Requirements Achievement}{29}{section.6.1}%
 \contentsline {subsection}{\numberline {6.1.1}Functional Requirements}{30}{subsection.6.1.1}%
 \contentsline {subsubsection}{Sales Manager User}{30}{section*.15}%
 \contentsline {subsubsection}{CFO User}{30}{section*.16}%
