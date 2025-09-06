@@ -1135,25 +1135,17 @@ async def test_file_creation(quantitative_agent):
 \chapter{Automated Testing Suite Results}
 \label{annex:test-results}
 
-The following are the results of the last run of the testing suite. Please note that, as \autoref{sec:components-evals} notes, this includes both evaluations and actual test, and thus failing tests do not necessarily represent a system failure, but might be due to the probabilistic nature of LLMs.
-
-Additionally, please note that due to the removal of the sample database from azure, the code related to the database (\texttt{configuration/db\_auth}, \texttt{agents/db\_agent} and \texttt{agents/tools/db}), intentionally have 0\% coverage.
+The following are the results of the last run of the testing suite. Please note that, as \autoref{sec:components-evals} notes, this includes both evaluations and actual tests. Additionally, please note that due to the removal of the sample database from azure, the code related to the database (\texttt{configuration/db\_auth}, \texttt{agents/db\_agent} and \texttt{agents/tools/db}), intentionally have 0\% coverage, as the initial tests were .
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.61\textwidth]{images/test-results.png}
+\includegraphics[width=1\textwidth]{images/test-results.png}
 \caption{Test results by test file}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=1\textwidth]{images/test-results-bottom.png}
-\caption{Test results summary and failures}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.61\textwidth]{images/test-coverage.png}
+\includegraphics[width=0.5\textwidth]{images/test-coverage.png}
 \caption{Test coverage output}
 \end{figure}
 

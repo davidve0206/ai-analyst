@@ -1,13 +1,13 @@
 # Fdb version 4
-["biber project_report"] 1757028535.60728 "project_report.bcf" "project_report.bbl" "project_report" 1757080209.85209 0
+["biber project_report"] 1757028535.60728 "project_report.bcf" "project_report.bbl" "project_report" 1757110880.24717 0
   "bibliography.bib" 1756937184.29746 12928 187bf30a85e8132263576aa61f3dd03c ""
-  "project_report.bcf" 1757080209.77552 111937 8f5d65e2067ac80f2796868abec11e56 "pdflatex"
+  "project_report.bcf" 1757110880.17144 111937 8f5d65e2067ac80f2796868abec11e56 "pdflatex"
   (generated)
   "project_report.bbl"
   "project_report.blg"
   (rewritten before read)
-["pdflatex"] 1757080206.86376 "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" "project_report.pdf" "project_report" 1757080209.85231 0
-  "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" 1757080206.6706 117036 46228f42ed20280c95c883cb24681ded ""
+["pdflatex"] 1757110877.33986 "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" "project_report.pdf" "project_report" 1757110880.24739 0
+  "/Users/davidv/Projects/ai_analyst/documentation/university/dissertation/project_report.tex" 1757110877.16574 116781 adec537e3c9d82fcb72a4b891758c527 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
@@ -146,17 +146,16 @@
   "images/mangentic-one-simplified.png" 1756748831.73988 296351 66dd57c3da621cf031c3fd0cefba04a9 ""
   "images/research-workflow.png" 1756814436.62987 55829 15729c42a5985a8e60bc7cfc609b5467 ""
   "images/system-diagram.png" 1756400941.0433 88418 a1c4b88136dfda8d53c68a6e07b2a099 ""
-  "images/test-coverage.png" 1757029411.64861 234507 bed16080f0ab8dea70d8f6e3daea61dd ""
-  "images/test-results-bottom.png" 1756335992.15659 136885 76d8a2d761c5d34880905da5d3899c5d ""
-  "images/test-results.png" 1756335931.5172 82649 5bb7823b39d0ef707bf3593abde4727b ""
+  "images/test-coverage.png" 1757110595.77157 213265 8b364ecc1a781e0bfa6b7baccc4f1668 ""
+  "images/test-results.png" 1757110831.71147 348068 4258f069468420e38cc268ef94960a80 ""
   "images/ucl_logo.png" 1755793056.89861 6504 3df71c27b7eae94711ab3399c46f3361 ""
   "images/workflow.png" 1756764121.70133 233721 b634803cb547f38b202d95191a1c2b54 ""
-  "project_report.aux" 1757080209.77165 22627 bf947ec699a2c90a0b9533937e02d69e "pdflatex"
+  "project_report.aux" 1757110880.1674 22478 bf9b1acfbe04635b1a898be479112461 "pdflatex"
   "project_report.bbl" 1757028537.21163 61436 5924d9bb625f35339913e9eb0677f72f "biber project_report"
-  "project_report.out" 1757080209.77475 8052 877c9316ce749e151060e55a5270a6e7 "pdflatex"
-  "project_report.run.xml" 1757080209.77601 2377 457f5b043c52a36361c8ed59df280109 "pdflatex"
-  "project_report.tex" 1757080206.6706 117036 46228f42ed20280c95c883cb24681ded ""
-  "project_report.toc" 1757080209.77606 5053 86ab1e2004a2bd0e3b2f5c550c1abfd9 "pdflatex"
+  "project_report.out" 1757110880.17055 8052 877c9316ce749e151060e55a5270a6e7 "pdflatex"
+  "project_report.run.xml" 1757110880.17197 2377 457f5b043c52a36361c8ed59df280109 "pdflatex"
+  "project_report.tex" 1757110877.16574 116781 adec537e3c9d82fcb72a4b891758c527 ""
+  "project_report.toc" 1757110880.17202 5053 86ab1e2004a2bd0e3b2f5c550c1abfd9 "pdflatex"
   (generated)
   "project_report.aux"
   "project_report.bcf"

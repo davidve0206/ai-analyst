@@ -305,11 +305,6 @@ INPUT ./images/test-results.png
 INPUT ./images/test-results.png
 INPUT ./images/test-results.png
 INPUT ./images/test-results.png
-INPUT ./images/test-results-bottom.png
-INPUT ./images/test-results-bottom.png
-INPUT ./images/test-results-bottom.png
-INPUT ./images/test-results-bottom.png
-INPUT ./images/test-results-bottom.png
 INPUT ./images/test-coverage.png
 INPUT ./images/test-coverage.png
 INPUT ./images/test-coverage.png
