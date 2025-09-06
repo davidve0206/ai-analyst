@@ -252,41 +252,6 @@
       \verb https://arxiv.org/abs/1704.00051
       \endverb
     \endentry
-    \entry{ixdf_personas_2025}{online}{}{}
-      \name{author}{2}{}{%
-        {{hash=645ea0bc1a1ba62baf6f62dd0a7010e7}{%
-           family={Dam},
-           familyi={D\bibinitperiod},
-           given={Rikke\bibnamedelima Friis},
-           giveni={R\bibinitperiod\bibinitdelim F\bibinitperiod}}}%
-        {{hash=9bca067f6fc2d75fbd9bf98d9839908b}{%
-           family={Siang},
-           familyi={S\bibinitperiod},
-           given={Teo\bibnamedelima Yu},
-           giveni={T\bibinitperiod\bibinitdelim Y\bibinitperiod}}}%
-      }
-      \strng{namehash}{7080b81787c6f701027dacf45e28ee58}
-      \strng{fullhash}{7080b81787c6f701027dacf45e28ee58}
-      \strng{fullhashraw}{7080b81787c6f701027dacf45e28ee58}
-      \strng{bibnamehash}{7080b81787c6f701027dacf45e28ee58}
-      \strng{authorbibnamehash}{7080b81787c6f701027dacf45e28ee58}
-      \strng{authornamehash}{7080b81787c6f701027dacf45e28ee58}
-      \strng{authorfullhash}{7080b81787c6f701027dacf45e28ee58}
-      \strng{authorfullhashraw}{7080b81787c6f701027dacf45e28ee58}
-      \field{sortinit}{D}
-      \field{sortinithash}{6f385f66841fb5e82009dc833c761848}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{note}{Accessed: 2025-08-26}
-      \field{title}{Personas – A Simple Introduction}
-      \field{year}{2025}
-      \verb{urlraw}
-      \verb https://www.interaction-design.org/literature/article/personas-why-and-how-you-should-use-them?srsltid=AfmBOooAYhlEh0mlGj-G2Ah1HQjFMXz2c1lRuLjGAk-7T5qYeFTLfwXQ#10_steps_to_creating_your_engaging_personas_and_scenarios-6
-      \endverb
-      \verb{url}
-      \verb https://www.interaction-design.org/literature/article/personas-why-and-how-you-should-use-them?srsltid=AfmBOooAYhlEh0mlGj-G2Ah1HQjFMXz2c1lRuLjGAk-7T5qYeFTLfwXQ#10_steps_to_creating_your_engaging_personas_and_scenarios-6
-      \endverb
-    \endentry
     \entry{forrester2022}{report}{}{}
       \name{author}{1}{}{%
         {{hash=ec5cf4d09a415cc6c72648a457f15566}{%
@@ -319,36 +284,6 @@
       \endverb
       \verb{url}
       \verb https://www.airtable.com/lp/resources/reports/crisis-of-the-fractured-organization
-      \endverb
-    \endentry
-    \entry{ixdf_user_scenarios_2025}{online}{}{}
-      \name{author}{1}{}{%
-        {{hash=f6eb87f51f2a3a901855f9891ded0ed2}{%
-           family={Foundation},
-           familyi={F\bibinitperiod},
-           given={Interaction\bibnamedelima Design},
-           giveni={I\bibinitperiod\bibinitdelim D\bibinitperiod}}}%
-      }
-      \strng{namehash}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{fullhash}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{fullhashraw}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{bibnamehash}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{authorbibnamehash}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{authornamehash}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{authorfullhash}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \strng{authorfullhashraw}{f6eb87f51f2a3a901855f9891ded0ed2}
-      \field{sortinit}{F}
-      \field{sortinithash}{2638baaa20439f1b5a8f80c6c08a13b4}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{note}{Accessed: 2025-08-26}
-      \field{title}{What are User Scenarios?}
-      \field{year}{2025}
-      \verb{urlraw}
-      \verb https://www.interaction-design.org/literature/topics/user-scenarios
-      \endverb
-      \verb{url}
-      \verb https://www.interaction-design.org/literature/topics/user-scenarios
       \endverb
     \endentry
     \entry{fourney2024magenticone}{misc}{}{}
