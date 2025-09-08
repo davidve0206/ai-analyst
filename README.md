@@ -48,6 +48,7 @@ Execution can be scheduled via cron jobs.
 
 - Markdown reports converted to PDF and stored locally
 - Automated email delivery
+- You can find sample outputs in the outputs/storage folder
 
 ## Project Structure
 
