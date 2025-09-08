@@ -17,7 +17,6 @@ DOCUMENTATION_DIR = BASE_DIR / "documentation"
 
 class Settings(BaseSettings):
     # Email settings
-    email_from_address: EmailStr = "test@test.com"
     email_username: str | None
     email_password: SecretStr | None
     email_host: str

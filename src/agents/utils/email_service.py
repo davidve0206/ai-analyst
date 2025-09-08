@@ -23,7 +23,9 @@ class MailingService:
 
     def __init__(self, env: Settings):
         self._username = env.email_username
-        self._password = env.email_password
+        self._password = (
+            env.email_password.get_secret_value() if env.email_password else None
+        )
         self._server = env.email_host
         self._port = env.email_port
         self._sender = f"AI Agent <{env.email_username}>"

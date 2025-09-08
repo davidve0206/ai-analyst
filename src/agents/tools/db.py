@@ -10,7 +10,7 @@ from sqlalchemy import ForeignKeyConstraint, MetaData, NullPool, Table, event, t
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 
-from src.configuration.auth import (
+from src.configuration.db_auth import (
     get_db_connection_string,
     provide_azure_sql_token,
 )

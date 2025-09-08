@@ -12,9 +12,6 @@ from src.configuration.db_models import (
     SalesGroupingsEnum,
     SalesCurrencyEnum,
 )
-from src.configuration.crontab import (
-    CrontabFrequency,
-)
 from src.frontend.templates_config import templates
 
 router = APIRouter()

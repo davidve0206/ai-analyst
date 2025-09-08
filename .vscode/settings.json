@@ -1,6 +1,10 @@
 {
     "cSpell.words": [
-        "Agentic"
+        "Agentic",
+        "Huyen",
+        "Magentic",
+        "Marsal",
+        "Pydantic"
     ],
     "python.testing.pytestArgs": [
         "tests"
@@ -16,6 +20,6 @@
     "editor.wordWrap": "on",
     "files.associations": {
         "*.md.j2": "markdown"
-    }
-    
+    },
+    "latex-workshop.formatting.latex": "latexindent"
 }

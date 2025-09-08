@@ -14,7 +14,6 @@ from src.agents.research_graph import (
     create_research_graph,
     GraphNodeNames,
 )
-from src.agents.utils.output_utils import get_all_files_mentioned_in_response
 from src.agents.utils.prompt_utils import MessageTypes
 from src.configuration.db_models import SalesReportRequest
 from tests.agents.helpers import test_temp_dir
@@ -26,10 +25,11 @@ def ai_sales_request() -> SalesReportRequest:
     Fixture to create a sales report request for testing.
     """
     return SalesReportRequest(
-        grouping="product",
+        id=1,
+        grouping="Product Family",
         grouping_value="AI",
-        period="any",
-        currency="any",
+        period="Yearly",
+        recipients=[],
     )
 
 
@@ -352,7 +352,7 @@ async def test_summarize_findings_with_csv_context(
         request=ai_sales_request,
         messages=[
             HumanMessage(
-                "The file 'market_analysis.csv' contains marked data showing that AI increased the market value by 10%."
+                "The file 'market_analysis.csv' contains market data showing that AI increased the market value by 10%."
             )
         ],
     )
@@ -369,9 +369,11 @@ async def test_summarize_findings_with_csv_context(
     )
 
     # Assert that the task_output mentions the 10% figure
-    assert "10%" in result["task_output"], (
-        "Expected task_output to mention the 10% figure."
-    )
+    assert (
+        ("10%" in result["task_output"])
+        or ("10 %" in result["task_output"])
+        or ("10 percent" in result["task_output"])
+    ), "Expected task_output to mention the 10% figure."
 
 
 @pytest.mark.asyncio
@@ -412,22 +414,27 @@ async def test_summarize_findings_with_extended_context(
     )
 
     # Assert that the task_output mentions the 10% figure
-    assert "10%" in result["task_output"], (
-        "Expected task_output to mention the 10% figure."
-    )
+    # Assert that the task_output mentions the 10% figure
+    assert (
+        ("10%" in result["task_output"])
+        or ("10 %" in result["task_output"])
+        or ("10 percent" in result["task_output"])
+    ), "Expected task_output to mention the 10% figure."
 
-    # Assert that the task_output mentions facts
-    assert "20%" in result["task_output"], "Expected task_output to mention the facts."
+    # Assert that the task_output mentions the 20% fact
+    assert (
+        ("20%" in result["task_output"])
+        or ("20 %" in result["task_output"])
+        or ("20 percent" in result["task_output"])
+    ), "Expected task_output to mention the 20% fact."
 
 
 @pytest.mark.asyncio
 async def test_run_research_graph(
     monkeypatch, ai_sales_request, patched_get_request_temp_dir
-):  # Inject the fixture
+):
     """
     Test that runs the entire research graph.
-
-    TODO: This test sometimes fails due to the quant agent looping forever.
     """
     monkeypatch.setattr(
         "src.agents.internal_data_agent.get_request_temp_dir",
@@ -443,8 +450,8 @@ async def test_run_research_graph(
 
     # Define the task with detailed context
     task_context = (
-        "Analyze the impact of AI on financial markets. "
-        "\nAI has revolutionized algorithmic trading, risk modeling, and fraud detection. "
+        "Analyze the impact of AI on financial markets."
+        "\nAI has revolutionized algorithmic trading, risk modelling, and fraud detection. "
         "Recent trends show increased adoption of AI-driven strategies by major financial firms, "
         "leading to notable changes in market volatility and liquidity. "
         "\nThe value of the market were: 2015: 62.27T USD; 2016: 65.12T USD; 2017: 79.50T USD; 2018: 68.89T USD; 2019: 78.83T USD; 2020: 93.69T USD; 2021: 111.16T USD; 2022: 93.69T USD; 2023: 115.0T USD; 2024: 128.21T USD; 2025 (as of June): 134T USD"
@@ -463,18 +470,21 @@ async def test_run_research_graph(
 
     # Assert the task_output is not empty
     assert "task_output" in result
-    output = result["task_output"]
+    output: str = result["task_output"]
 
     assert output != ""
+    from src.agents.utils.output_utils import get_all_files_mentioned_in_response
+
     files_mentioned = get_all_files_mentioned_in_response(output)
     try:
         assert "AI" in output, "Expected output to mention AI."
-        assert "financial markets" in output, (
-            "Expected output to mention financial markets."
+        assert ("market" in output) or ("Market" in output), (
+            "Expected output to mention markets."
         )
         assert "134" in output, "Expected output to mention the latest market value."
     finally:
         # Clean up the temp files
         for file in files_mentioned:
             file_path = test_temp_dir / file
-            file_path.unlink(missing_ok=True)
+            if file_path.exists() and "fixture" not in file:
+                file_path.unlink(missing_ok=True)

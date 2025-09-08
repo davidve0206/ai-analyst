@@ -26,6 +26,12 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "coverage>=7.10.5",
     "ipykernel>=6.29.5",
     "pytest>=8.4.0",
 ]
+
+[tool.coverage.run]
+branch = false
+source = ["src"]
+dynamic_context = "test_function"
